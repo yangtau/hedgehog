@@ -4,14 +4,14 @@
 #include <string.h>
 
 #define CMD_MOD
+// #define LOG_ON
 
 #ifdef CMD_MOD
-#define SHOW_HEADER printf(">>>")
+#define SHOW_HEADER printf("τ: ")
 #else
 #define SHOW_HEADER
 #endif
 
-#define LOG_ON
 #ifdef LOG_ON
 #define log(x, y) printf("LOG:"), printf((x), (y)), printf("\n")
 #else

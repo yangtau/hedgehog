@@ -1,0 +1,197 @@
+Grammar
+
+    0 $accept: line_list $end
+
+    1 line_list: line
+    2          | line_list line
+
+    3 line: expression CR
+
+    4 expression: value
+    5           | IDENTIFIER
+    6           | IDENTIFIER ASSIGN expression
+    7           | IDENTIFIER LP RP
+
+    8 value: DOUBLE
+    9      | INT
+   10      | BOOL
+   11      | STRING
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+IDENTIFIER (258) 5 6 7
+DOUBLE (259) 8
+INT (260) 9
+BOOL (261) 10
+STRING (262) 11
+ASSIGN (263) 6
+CR (264) 3
+LP (265) 7
+RP (266) 7
+
+
+Nonterminals, with rules where they appear
+
+$accept (12)
+    on left: 0
+line_list (13)
+    on left: 1 2, on right: 0 2
+line (14)
+    on left: 3, on right: 1 2
+expression (15)
+    on left: 4 5 6 7, on right: 3 6
+value (16)
+    on left: 8 9 10 11, on right: 4
+
+
+State 0
+
+    0 $accept: . line_list $end
+
+    IDENTIFIER  shift, and go to state 1
+    DOUBLE      shift, and go to state 2
+    INT         shift, and go to state 3
+    BOOL        shift, and go to state 4
+    STRING      shift, and go to state 5
+
+    line_list   go to state 6
+    line        go to state 7
+    expression  go to state 8
+    value       go to state 9
+
+
+State 1
+
+    5 expression: IDENTIFIER .
+    6           | IDENTIFIER . ASSIGN expression
+    7           | IDENTIFIER . LP RP
+
+    ASSIGN  shift, and go to state 10
+    LP      shift, and go to state 11
+
+    $default  reduce using rule 5 (expression)
+
+
+State 2
+
+    8 value: DOUBLE .
+
+    $default  reduce using rule 8 (value)
+
+
+State 3
+
+    9 value: INT .
+
+    $default  reduce using rule 9 (value)
+
+
+State 4
+
+   10 value: BOOL .
+
+    $default  reduce using rule 10 (value)
+
+
+State 5
+
+   11 value: STRING .
+
+    $default  reduce using rule 11 (value)
+
+
+State 6
+
+    0 $accept: line_list . $end
+    2 line_list: line_list . line
+
+    $end        shift, and go to state 12
+    IDENTIFIER  shift, and go to state 1
+    DOUBLE      shift, and go to state 2
+    INT         shift, and go to state 3
+    BOOL        shift, and go to state 4
+    STRING      shift, and go to state 5
+
+    line        go to state 13
+    expression  go to state 8
+    value       go to state 9
+
+
+State 7
+
+    1 line_list: line .
+
+    $default  reduce using rule 1 (line_list)
+
+
+State 8
+
+    3 line: expression . CR
+
+    CR  shift, and go to state 14
+
+
+State 9
+
+    4 expression: value .
+
+    $default  reduce using rule 4 (expression)
+
+
+State 10
+
+    6 expression: IDENTIFIER ASSIGN . expression
+
+    IDENTIFIER  shift, and go to state 1
+    DOUBLE      shift, and go to state 2
+    INT         shift, and go to state 3
+    BOOL        shift, and go to state 4
+    STRING      shift, and go to state 5
+
+    expression  go to state 15
+    value       go to state 9
+
+
+State 11
+
+    7 expression: IDENTIFIER LP . RP
+
+    RP  shift, and go to state 16
+
+
+State 12
+
+    0 $accept: line_list $end .
+
+    $default  accept
+
+
+State 13
+
+    2 line_list: line_list line .
+
+    $default  reduce using rule 2 (line_list)
+
+
+State 14
+
+    3 line: expression CR .
+
+    $default  reduce using rule 3 (line)
+
+
+State 15
+
+    6 expression: IDENTIFIER ASSIGN expression .
+
+    $default  reduce using rule 6 (expression)
+
+
+State 16
+
+    7 expression: IDENTIFIER LP RP .
+
+    $default  reduce using rule 7 (expression)
