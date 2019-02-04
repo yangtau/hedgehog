@@ -72,3 +72,15 @@ void releaseGlobalVariableMemo() {
         free(p);
     }
 }
+
+Variable *searchLocalVariable(char *identifier) {
+    // TODO: need more efficient data structure
+    while (globalVariableList.next != NULL) {
+        VariableNode *p = globalVariableList.next;
+        globalVariableList.next = p->next;
+        if (strcmp(identifier, p->var->identifier) == 0) {
+            return p->var;
+        }
+    }
+    return NULL;
+}
