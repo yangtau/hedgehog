@@ -1,4 +1,5 @@
 #include "cactus.h"
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,6 +14,26 @@ void logMsg(char *x, char *y) {
     printf("--LOG--");
     printf(x, y);
     printf("\n");
+}
+
+void printValue(Value v) {
+    switch (v.type) {
+        case INT_VALUE:
+            printf("%" PRId32, v.u.int_value);
+            break;
+        case BOOL_VALUE:
+            printf("%s", v.u.bool_value.v == 0 ? "false" : "true");
+            break;
+        case DOUBLE_VALUE:
+            printf("%lf", v.u.double_value);
+            break;
+        case STRING_VALUE:
+            printf("%s", v.u.string_value.s);
+            break;
+        default:
+            printf("Error!!!");
+            break;
+    }
 }
 
 Variable *createVariable(char *identifier, Value v) {
@@ -41,10 +62,10 @@ void addToGlobalVariableList(Variable *var) {
 void releaseGlobalVariableMemo() {
     log("release memo", "");
     while (globalVariableList.next != NULL) {
-      VariableNode *p = globalVariableList.next;
-      globalVariableList.next = p->next;
-      free(p->var->identifier);
-      free(p->var);
-      free(p);
+        VariableNode *p = globalVariableList.next;
+        globalVariableList.next = p->next;
+        free(p->var->identifier);
+        free(p->var);
+        free(p);
     }
 }
