@@ -9,6 +9,8 @@ int yywrap(void) { return 1; }
 %%
 <INITIAL>"=" return ASSIGN;
 <INITIAL>\n return CR;
+<INITIAL>"(" return LP;
+<INITIAL>")" return RP;
 <INITIAL>"true" {
     yylval.expression_value.type = BOOL_VALUE;
     yylval.expression_value.u.bool_value.v = 1;
@@ -18,10 +20,6 @@ int yywrap(void) { return 1; }
     yylval.expression_value.type = BOOL_VALUE;
     yylval.expression_value.u.bool_value.v = 0;
     return BOOL;
-}
-<INITIAL>"exit" {
-    releaseGlobalVariableMemo();
-    exit(0);
 }
 
 <INITIAL>[0-9]+ {

@@ -71,3 +71,17 @@ Variable *searchLocalVariable(char *identifier) {
     }
     return NULL;
 }
+
+Value callFunction(char *identifier, ArgumentNode *ArgumentList) {
+    // build-in function
+    Value v;
+    v.type = NULL_VALUE;
+    if (strcmp(identifier, "print")) {
+        // for() loop print argument
+    } else if (strcmp(identifier, "exit")){
+        releaseGlobalVariableMemo();
+    } else {
+        // def function
+    }
+    return v;
+}

@@ -14,8 +14,7 @@
 %token <expression_value> INT
 %token <expression_value> BOOL
 %token <expression_value> STRING
-%token ASSIGN
-%token CR
+%token ASSIGN CR LP RP
 %type <expression_value> expression value
 
 %%
@@ -34,10 +33,33 @@ line:
     ;
 
 expression:
-    value |
+    value 
+    |
+    IDENTIFIER {
+        Variable *var = searchLocalVariable($1);
+        Value v;
+        if (var == NULL) {
+            v.type = NULL_VALUE;
+        } else {
+            log("search var, type:%d", var->v.type);
+            v = var->v;
+        }
+        $$ = v;
+    }
+    |
     IDENTIFIER ASSIGN expression {
-        addToGlobalVariableList(createVariable($1, $3));
+        Variable *var = searchLocalVariable($1);
+        if (var == NULL) {
+            addToGlobalVariableList(createVariable($1, $3));
+        }
+        else {
+            var->v = $3;
+        }
         $$ = $3;
+    }
+    |
+    IDENTIFIER LP RP {
+        Value v =  callFunction( $1,NULL);
     }
     ;
     
@@ -46,23 +68,12 @@ value:
     INT |
     BOOL |
     STRING |
-    IDENTIFIER {
-        Variable *var = searchLocalVariable($1);
-        log("serch var type:%d", var->v.type);
-        Value v;
-        if (var == NULL) {
-            v.type = NULL_VALUE;
-        } else {
-            v = var->v;
-        }
-        $$ = v;
-    }
     ;
 %%
 
 int yyerror(char const *str) {
     extern char *yytext;
-    fprintf(stderr, "--parser error:\n%s\n", yytext);
+    fprintf(stderr, "ERROR:\nparser error:\n%s\n", yytext);
     return 0;
 }
 
