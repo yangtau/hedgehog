@@ -24,7 +24,7 @@ Variable *createVariable(char *identifier, Value v) {
 }
 
 char *createIdentifier(char *s) {
-    log("create var: %s", s);
+    log("create id: %s", s);
     char *id = (char *)malloc(sizeof(char) * (strlen(s) + 1));
     strcpy(id, s);
     return id;
