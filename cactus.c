@@ -30,6 +30,9 @@ void printValue(Value v) {
         case STRING_VALUE:
             printf("%s", v.u.string_value.s);
             break;
+        case NULL_VALUE:
+            printf("%s", "null");
+            break;
         default:
             printf("Error!!!");
             break;
