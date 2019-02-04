@@ -70,4 +70,4 @@ Variable *searchLocalVariable(char *identifier);
 
 void printValue(Value v);
 
-Value callFunction(cahr *identifier, ArgumentNode *argumentList);
+Value callFunction(char *identifier, ArgumentNode *argumentList);

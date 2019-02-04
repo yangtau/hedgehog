@@ -72,14 +72,27 @@ Variable *searchLocalVariable(char *identifier) {
     return NULL;
 }
 
+void showGlobalList() {
+    VariableNode *p = globalVariableList.next;
+    while (p != NULL) {
+        printf("%s: ", p->var->identifier);
+        printValue(p->var->v);
+        p = p->next;
+        if (p != NULL) printf("\n");
+    }
+}
+
 Value callFunction(char *identifier, ArgumentNode *ArgumentList) {
     // build-in function
     Value v;
     v.type = NULL_VALUE;
-    if (strcmp(identifier, "print")) {
+    if (strcmp(identifier, "print") == 0) {
         // for() loop print argument
-    } else if (strcmp(identifier, "exit")){
+    } else if (strcmp(identifier, "exit") == 0) {
         releaseGlobalVariableMemo();
+        exit(0);
+    } else if (strcmp(identifier, "getGlobal") == 0) {
+        showGlobalList();
     } else {
         // def function
     }
