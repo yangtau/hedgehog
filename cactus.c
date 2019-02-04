@@ -3,19 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define LOG_ON
-#ifdef LOG_ON
-#define log(x, y) logMsg((x), (y))
-#else
-#define log(x, y)
-#endif
-
-void logMsg(char *x, char *y) {
-    printf("--LOG--");
-    printf(x, y);
-    printf("\n");
-}
-
 void printValue(Value v) {
     switch (v.type) {
         case INT_VALUE:
@@ -63,7 +50,7 @@ void addToGlobalVariableList(Variable *var) {
 }
 
 void releaseGlobalVariableMemo() {
-    log("release memo", "");
+    log("release memo %s", "");
     while (globalVariableList.next != NULL) {
         VariableNode *p = globalVariableList.next;
         globalVariableList.next = p->next;
@@ -75,12 +62,12 @@ void releaseGlobalVariableMemo() {
 
 Variable *searchLocalVariable(char *identifier) {
     // TODO: need more efficient data structure
-    while (globalVariableList.next != NULL) {
-        VariableNode *p = globalVariableList.next;
-        globalVariableList.next = p->next;
+    VariableNode *p = globalVariableList.next;
+    while (p != NULL) {
         if (strcmp(identifier, p->var->identifier) == 0) {
             return p->var;
         }
+        p = p->next;
     }
     return NULL;
 }
