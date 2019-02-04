@@ -59,7 +59,7 @@ expression:
     }
     |
     IDENTIFIER LP RP {
-        Value v =  callFunction( $1,NULL);
+        $$ =  callFunction( $1,NULL);
     }
     ;
     
@@ -67,7 +67,7 @@ value:
     DOUBLE |
     INT |
     BOOL |
-    STRING |
+    STRING
     ;
 %%
 

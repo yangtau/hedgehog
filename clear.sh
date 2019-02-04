@@ -1,0 +1,1 @@
+rm -f *.o y.tab.h y.tab.c lex.yy.c *.output cactus
