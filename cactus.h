@@ -13,7 +13,7 @@
 
 #define LOG_ON
 #ifdef LOG_ON
-#define log(x, y) printf("LOG:"), printf(x, y), printf("\n")
+#define log(x, y) printf("LOG:"), printf((x), (y)), printf("\n")
 #else
 #define log(x, y)
 #endif
@@ -54,7 +54,7 @@ typedef struct {
 typedef struct node_tag {
     Variable *var;
     struct node_tag *next;
-} VariableNode;
+} VariableNode, ArgumentNode;
 
 VariableNode globalVariableList;
 
@@ -69,3 +69,5 @@ void releaseGlobalVariableMemo();
 Variable *searchLocalVariable(char *identifier);
 
 void printValue(Value v);
+
+Value callFunction(cahr *identifier, ArgumentNode *argumentList);
