@@ -1,0 +1,122 @@
+%{
+// #define YYDEBUG 1
+#include <stdint.h>
+#include <stdio.h>
+#include "hedgehog.h"
+
+%}
+%union {
+    char *identifier;
+    Value value;
+    Statement statement;
+    Expression expression;
+}
+
+%right NOT
+
+%token POWER
+%left MUL DIV MOD
+%left ADD SUB 
+
+%token AND
+%token OR 
+
+%token EQ GE LE NQ GT LT
+%token LP RP 
+%token  CR TAB
+
+%right ASSIGN
+
+%token <identifier> IDENTIFIER
+%token <value> DOUBLE INT TRUE_VALUE FALSE_VALUE NULL_VALUE 
+%type <value> EXPRESSION FUNCTION_CALL_EXPRESSION VALUE_EXPRESSION UNARY_EXPRESSION 
+                        BINARY_EXPRESSION 
+%type <statement> STATEMENT LINE
+
+%%
+STATEMENT:
+    LINE 
+    |
+    STATEMENT LINE
+    ;
+
+LINE:
+    EXPRESSION CR{
+
+    };
+
+EXPRESSION:
+    BINARY_EXPRESSION
+    |
+    IDENTIFIER ASSIGN EXPRESSION {
+
+    }
+    ;
+
+BINARY_EXPRESSION:
+    UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION MUL UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION DIV UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION MOD UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION POWER UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION ADD UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION SUB UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION OR UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION AND UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION EQ UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION NQ UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION LT UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION LE UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION GT UNARY_EXPRESSION
+    |
+    BINARY_EXPRESSION GE UNARY_EXPRESSION
+    ;
+
+UNARY_EXPRESSION:
+    VALUE_EXPRESSION
+    |
+    SUB UNARY_EXPRESSION
+    |
+    NOT UNARY_EXPRESSION
+    ;
+
+VALUE_EXPRESSION:
+    IDENTIFIER {
+
+    }
+    |
+    INT
+    |
+    DOUBLE
+    |
+    TRUE_VALUE
+    |
+    FALSE_VALUE
+    |
+    NULL_VALUE
+    |
+    FUNCTION_CALL_EXPRESSION
+    |
+    LP EXPRESSION RP
+    ;
+
+FUNCTION_CALL_EXPRESSION:
+    IDENTIFIER LP RP {
+        
+    }
+    ;
+
+%%
