@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "interpreter.h": "c",
+        "stdlib.h": "c",
+        "value.h": "c"
+    }
+}
