@@ -1,6 +1,6 @@
 lex.yy.c
 y.tab.*
 *.hg
-**/cmake-build-debug
-**/.vscode
-**/.idea
+cmake-build-debug/
+.vscode/
+.idea/
