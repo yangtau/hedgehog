@@ -1,5 +1,7 @@
 %{
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <inttypes.h>
 #include "hedgehog.h"
 #include "y.tab.h"
@@ -19,7 +21,7 @@ int yywrap(void) { return 1; }
 <INITIAL>"&" return AND;
 <INITIAL>"!" return NOT;
 
-<INITIAL>"==" return EQ:
+<INITIAL>"==" return EQ;
 <INITIAL>"!=" return NQ;
 <INITIAL>">" return GT;
 <INITIAL>"<" return LT;
@@ -29,28 +31,40 @@ int yywrap(void) { return 1; }
 <INITIAL>"(" return LP;
 <INITIAL>")" return RP;
 
-<INITIAL>\t return TAB; 
+<INITIAL>\n return CR;
 
 <INITIAL>"true" {
-    return TRUE_VALUE;
+    yylval.value.type = BOOL_VALUE;
+    yylval.value.v.bool_value.v = 1;
+    return BOOL;
 }
 <INITIAL>"false" {
-    return FALSE_VALUE;
+    yylval.value.type = BOOL_VALUE;
+    yylval.value.v.bool_value.v = 0;
+    return BOOL;
 }
 <INITIAL>"null" {
-    return NULL_VALUE;
+    yylval.value.type = NULL_VALUE;
+    return NULL_V;
 }
 
 
 <INITIAL>[0-9]+ {
-    sscanf(yytext, "%" PRId32, );
+    yylval.value.type = INT_VALUE;
+    sscanf(yytext, "%" PRId32, &yylval.value.v.int_value);
+    return INT;
 }
 <INITIAL>[0-9]+\.[0-9]+ {
-    sscanf(yytext, "%lf" , );
+    yylval.value.type = DOUBLE_VALUE;
+    sscanf(yytext, "%lf" , &yylval.value.v.double_value);
+    return DOUBLE;
 }
 
 <INITIAL>[A-Za-z_][A-Za-z0-9_]* {
-    
+    // TODO: realase
+    yylval.identifier = (char*) malloc((strlen(yytext)+1));
+    strcpy(yylval.identifier, yytext);
+    return IDENTIFIER;
 }
-<INITIAL>[ ];
+<INITIAL>[ \t];
 %%
