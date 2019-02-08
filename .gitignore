@@ -1,0 +1,5 @@
+lex.yy.c
+y.tab.*
+*.hg
+cmake-bulid-debug
+.vscode

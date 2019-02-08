@@ -1,6 +1,7 @@
 /* Created by Tau on 06/02/2019 */
 #ifndef _HG_VALUE_H_
 #define _HG_VALUE_H_
+
 #include <inttypes.h>
 
 typedef enum {
@@ -36,19 +37,41 @@ typedef struct {
     } v;
 } Value;
 
-Value add(Value a, Value b);
-Value subtract(Value a, Value b);
-Value multiply(Value a, Value b);
-Value divide(Value a, Value b);
-Value module(Value a, Value b);
-Value not(Value v);
-Value and(Value a, Value b);
-Value or(Value a, Value b);
-Value minus(Value v);
-Value equal(Value a, Value b);
-Value notEqual(Value a, Value b);
-Value greater(Value a,Value b);
-Value less(Value a, Value b);
-Value greaterOrEqual(Value a, Value b);
-Value lessOrEqual(Value a, Value b);
+// char *toString(Value v);
+
+void valuePrint(Value v);
+
+
+Value valueAdd(Value a, Value b);
+
+Value valueSubtract(Value a, Value b);
+
+Value valueMultiply(Value a, Value b);
+
+Value valueDivide(Value a, Value b);
+
+Value valueModule(Value a, Value b);
+
+Value valuePower(Value a, Value b);
+
+Value valueNot(Value v);
+
+Value valueAnd(Value a, Value b);
+
+Value valueOr(Value a, Value b);
+
+Value valueMinus(Value v);
+
+Value valueEqual(Value a, Value b);
+
+Value valueNotEqual(Value a, Value b);
+
+Value valueGreater(Value a, Value b);
+
+Value valueLess(Value a, Value b);
+
+Value valueGreaterOrEqual(Value a, Value b);
+
+Value valueLessOrEqual(Value a, Value b);
+
 #endif /*_HG_VALUE_H_*/
