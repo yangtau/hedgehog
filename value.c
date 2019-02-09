@@ -6,27 +6,27 @@
 
 // }
 
-void refer(String s) {
-    *s.cnt = *s.cnt + 1;
-    log("string refer: %d", *s.cnt);
+void refer(String* s) {
+    s->cnt++;
+    log("string refer: %d", s->cnt);
 }
-void release(String s) {
-    *s.cnt = *s.cnt - 1;
-    log("string release: %d", *s.cnt);
-    if (*s.cnt == 0) {
-        log("string free: %s", s.str);
-        free(s.str);
+void release(String* s) {
+    s->cnt--;
+    log("string release: %d", s->cnt);
+    if (s->cnt == 0) {
+        log("string free: %s", s->str);
+        free(s->str);
+        free(s);
     }
 }
 
-String initString(char* s) {
-    String str;
-    str.str = (char*)calloc(strlen(s) + 1, sizeof(char));
-    strcpy(str.str, s);
-    str.cnt = (int*)malloc(sizeof(int));
-    *str.cnt= 0;
-    str.refer = refer;
-    str.release = release;
+String* initString(char* s) {
+    String *str = (String*) malloc(sizeof(String));
+    str->str = (char*)calloc(strlen(s) + 1, sizeof(char));
+    strcpy(str->str, s);
+    str->cnt = 0;
+    str->refer = refer;
+    str->release = release;
     return str;
 }
 

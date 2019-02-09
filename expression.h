@@ -35,7 +35,7 @@ typedef enum {
 typedef struct ExpressionTag Expression;
 
 typedef struct {
-    String id;
+    String* id;
 } IdentifierExpression;
 
 typedef struct {
@@ -49,7 +49,7 @@ typedef struct {
 } UnaryExpression;
 
 typedef struct {
-    String id;
+    String* id;
     Expression *expression;
 } AssignExpression;
 
@@ -68,7 +68,7 @@ void freeExpression(Expression *expression);
 
 Value evaluateExpression(Expression *expression);
 
-Expression *createIdentifierExpression(String id);
+Expression *createIdentifierExpression(String* id);
 
 Expression *createBinaryExpression(OperatorType operatorType,
                                    Expression *left,
@@ -77,7 +77,7 @@ Expression *createBinaryExpression(OperatorType operatorType,
 Expression *createUnaryExpression(OperatorType operatorType,
                                   Expression *expression);
 
-Expression *createAssignExpression(String id, Expression *expression);
+Expression *createAssignExpression(String* id, Expression *expression);
 
 Expression *createValueExpression(Value value);
 

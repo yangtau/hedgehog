@@ -13,7 +13,7 @@ typedef struct {
         Value value;
         // TODO: function
     } u;
-    String name;
+    String *name;
 } Identifier;
 
 #define TRIE_NODE_SIZE 53
@@ -30,9 +30,9 @@ typedef struct EnvironmentTag {
     IdentifierTrie *trie;
     struct EnvironmentTag *father;
 
-    void (*addVariable)(struct EnvironmentTag *self, String id, Value v);
+    void (*addVariable)(struct EnvironmentTag *self, String* id, Value v);
 
-    Value (*findVariable)(struct EnvironmentTag *self, String id);
+    Value (*findVariable)(struct EnvironmentTag *self, String* id);
 
     void (*free)(struct EnvironmentTag *self);
 } Environment;

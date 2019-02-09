@@ -4,14 +4,9 @@
 
 #include "expression.h"
 
-typedef struct StatementListTag StatementList;
-typedef struct StatementTag Statement;
-
 typedef enum {
     EXPRESSION_STATEMENT,
     IF_STATEMENT,
-    ELSE_STATEMENT,
-    ELSEIF_STATEMENT,
     FOR_STATEMENT,
     BREAK_STATEMENT,
     CONTINUE_STATEMENT,
@@ -19,30 +14,16 @@ typedef enum {
     RETURN_STATEMENT,
 } StatementType;
 
-
+typedef struct StatementListTag StatementList;
+typedef struct StatementTag Statement;
 typedef struct IfStatementTag IfStatement;
+typedef struct ElsIfStatementTag ElsIfStatement;
 
-typedef struct ElsIfStatementTag {
-    StatementList *block;
-    struct ElsIfStatementTag *next;
-} ElsIfStatement;
-
-IfStatement* initElsIfStatement(Expression* condition, StatementList* block);
-
-struct IfStatementTag {
+struct ElsIfStatementTag {
     Expression *condition;
     StatementList *block;
-    ElsIfStatement *elsIfHead;
-    ElsIfStatement* elsIfTail;
-    StatementList* elseBlock;
-
-    void (*addElsIf)(ElsIfStatement *);
-
-    void (*addElse)(StatementList *);
+    struct ElsIfStatementTag *next;
 };
-
-IfStatement *initIfStatement(Expression *condition, StatementList *block);
-
 
 struct StatementTag {
     StatementType type;
@@ -53,18 +34,33 @@ struct StatementTag {
     Statement *next;
 };
 
+struct IfStatementTag {
+    Expression *condition;
+    StatementList *block;
+    ElsIfStatement *elsIfHead;
+    ElsIfStatement *elsIfTail;
+    StatementList *elseBlock;
+
+    void (*addElsIf)(IfStatement *ifS, Expression *condition, StatementList *block);
+
+    void (*addElse)(IfStatement *ifS, StatementList *elseBlock);
+};
+
 struct StatementListTag {
     Statement *head;
     Statement *tail;
 
-    void (*addStatement)(StatementList *, Statement *);
+    void (*add)(StatementList *, Statement *);
 
     void (*execute)(StatementList *);
 
     void (*free)(StatementList *);
 };
 
-StatementList *initStatementList();
+Statement *initExpressionStatement(Expression *expression);
 
+Statement *initIfStatement(Expression *condition, StatementList *block);
+
+StatementList *initStatementList();
 
 #endif /*_HG_STATEMENT_H_*/
