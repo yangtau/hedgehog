@@ -1,9 +1,34 @@
 #include "value.h"
 #include <stdio.h>
-
+#include "debug.h"
+#include "string.h"
 // char *toString(Value v) {
 
 // }
+
+void refer(String s) {
+    *s.cnt = *s.cnt + 1;
+    log("string refer: %d", *s.cnt);
+}
+void release(String s) {
+    *s.cnt = *s.cnt - 1;
+    log("string release: %d", *s.cnt);
+    if (*s.cnt == 0) {
+        log("string free: %s", s.str);
+        free(s.str);
+    }
+}
+
+String initString(char* s) {
+    String str;
+    str.str = (char*)calloc(strlen(s) + 1, sizeof(char));
+    strcpy(str.str, s);
+    str.cnt = (int*)malloc(sizeof(int));
+    *str.cnt= 0;
+    str.refer = refer;
+    str.release = release;
+    return str;
+}
 
 void valuePrint(Value v) {
     switch (v.type) {
@@ -95,7 +120,7 @@ Value valueDivide(Value a, Value b) {
     v.type = NULL_VALUE;
     if (b.type == INT_VALUE) {
         if (v.v.int_value == 0) {
-//            TODO: error divided by 0
+            //            TODO: error divided by 0
             return v;
         }
         if (a.type == INT_VALUE) {

@@ -4,8 +4,9 @@
 #define HG_DEBUG_H
 
 #include <stdlib.h>
-// #define LOG_ON
+#define LOG_ON
 #ifdef LOG_ON
+#include <stdio.h>
 #define log(x, y) printf("%s: ",__FUNCTION__),printf(x, y),printf("\n")
 #else
 #define log(x, y)

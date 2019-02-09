@@ -1,8 +1,9 @@
 #include <stdlib.h>
-#include "interpreter.h"
+#include "hedgehog.h"
 
 int yyerror(char const *str) {
-    fprintf(stderr, "error %s ", str);
+    extern char *yytext;
+    fprintf(stderr, "--ERROR:%s, %d--\n", str, yytext[0]);
     return 0;
 }
 
@@ -15,8 +16,9 @@ int main(int argc, char **argv) {
             exit(1);
         }
     }
-    Interpreter *interpreter = createInterpreter();
-    interpret(interpreter, file);
-    disposeInterpreter(interpreter);
+    Interpreter *interpreter = initInterpreter();
+    interpreter->compile(interpreter, file);
+    interpreter->interpret(interpreter);
+    interpreter->free(interpreter);
     return 0;
 }
