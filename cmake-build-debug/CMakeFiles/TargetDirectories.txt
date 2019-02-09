@@ -1,3 +1,0 @@
-C:/Users/qyang/code/HG/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/qyang/code/HG/cmake-build-debug/CMakeFiles/HG.dir
-C:/Users/qyang/code/HG/cmake-build-debug/CMakeFiles/rebuild_cache.dir
