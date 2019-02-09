@@ -17,12 +17,17 @@ typedef struct {
     int8_t v;  // v==0 false
 } Bool;
 
-typedef struct {
-    char *str;
+typedef struct StringTag {
+    char* str;
+    int* cnt;
+    void (*refer)(struct StringTag);
+    void (*release)(struct StringTag);
 } String;
 
+String initString(char *s);
+
 typedef struct {
-    char *name;
+    char* name;
     // TODO: object detail
 } Object;
 
@@ -40,7 +45,6 @@ typedef struct {
 // char *toString(Value v);
 
 void valuePrint(Value v);
-
 
 Value valueAdd(Value a, Value b);
 

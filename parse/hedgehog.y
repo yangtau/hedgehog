@@ -2,11 +2,11 @@
 // #define YYDEBUG 1
 #include <stdint.h>
 #include <stdio.h>
-#include "hedgehog.h"
+#include "../hedgehog.h"
 
 %}
 %union {
-    char *identifier;
+    String identifier;
     Value value;
     Statement *statement;
     Expression *expression;
@@ -26,7 +26,10 @@
 
 %right NOT
 
-%token LP RP
+%token LP RP LB RB
+
+%token IF ELSE_IF ELSE
+
 %token  CR TAB
 
 %token <identifier> IDENTIFIER
@@ -36,29 +39,35 @@
                 MUL_EXPRESSION ADD_EXPRESSION GREATER_EXPRESSION
                 EQUAL_EXPRESSION AND_EXPRESSION OR_EXPRESSION
                 EXPRESSION
-%type <statement> STATEMENT LINE
+%type <statement> STATEMENT_LIST STATEMENT 
 
 %%
-STATEMENT:
-    LINE 
+
+STATEMENT_LIST:
+    STATEMENT
     |
-    STATEMENT LINE
+    STATEMENT_LIST STATEMENT
     ;
 
-LINE:
-    EXPRESSION CR{
-        Value v = evaluateExpression($1);
-        freeExpression($1);
-        log("%s","expressin free");
-        valuePrint(v);
-        printf("\n>>");
-        $$ = createStatement();
-    };
+STATEMENT:
+    EXPRESSION CR {
+        $$ = createStatement($1);
+    }
+    ;
+
+IF_STATEMENT:
+    IF OR_EXPRESSION LB STATEMENT_LIST RB
+    |
+    IF_STATEMENT ELSE_IF LB STATEMENT_LIST RB
+    |
+    IF_STATEMENT ELSE_STATEMENT
+    ;
 
 EXPRESSION:
     OR_EXPRESSION
     |
     IDENTIFIER ASSIGN EXPRESSION {
+        ($1).refer($1);
         $$ = createAssignExpression($1, $3);
     }
     ;
@@ -167,6 +176,11 @@ VALUE_EXPRESSION:
     LP EXPRESSION RP {
         $$ = $2;
     }
+    |
+    IDENTIFIER {
+        $1.refer($1);
+        $$ = createIdentifierExpression($1);
+    }
     ;
 
 VALUE:
@@ -178,16 +192,11 @@ VALUE:
     |
     NULL_V
     |
-    IDENTIFIER {
-        $$ = findVariable(getCurrentInterpreter()->globalEnv, $1);
-    }
-    |
     FUNCTION_CALL_EXPRESSION
     ;
 
 FUNCTION_CALL_EXPRESSION:
     IDENTIFIER LP RP {
-
     }
     ;
 

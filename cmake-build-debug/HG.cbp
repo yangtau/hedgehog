@@ -76,10 +76,19 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="C:/Users/qyang/code/HG/create.c">
+		<Unit filename="C:/Users/qyang/code/HG/expression.c">
 			<Option target="HG"/>
 		</Unit>
-		<Unit filename="C:/Users/qyang/code/HG/evaluate.c">
+		<Unit filename="C:/Users/qyang/code/HG/expression.h">
+			<Option target="HG"/>
+		</Unit>
+		<Unit filename="C:/Users/qyang/code/HG/hedgehog.h">
+			<Option target="HG"/>
+		</Unit>
+		<Unit filename="C:/Users/qyang/code/HG/identifier.c">
+			<Option target="HG"/>
+		</Unit>
+		<Unit filename="C:/Users/qyang/code/HG/identifier.h">
 			<Option target="HG"/>
 		</Unit>
 		<Unit filename="C:/Users/qyang/code/HG/interpreter.c">
@@ -94,13 +103,16 @@
 		<Unit filename="C:/Users/qyang/code/HG/main.c">
 			<Option target="HG"/>
 		</Unit>
+		<Unit filename="C:/Users/qyang/code/HG/statement.c">
+			<Option target="HG"/>
+		</Unit>
+		<Unit filename="C:/Users/qyang/code/HG/statement.h">
+			<Option target="HG"/>
+		</Unit>
 		<Unit filename="C:/Users/qyang/code/HG/value.c">
 			<Option target="HG"/>
 		</Unit>
 		<Unit filename="C:/Users/qyang/code/HG/value.h">
-			<Option target="HG"/>
-		</Unit>
-		<Unit filename="C:/Users/qyang/code/HG/y.tab.c">
 			<Option target="HG"/>
 		</Unit>
 		<Unit filename="C:/Users/qyang/code/HG/CMakeLists.txt">

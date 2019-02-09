@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
-#include "hedgehog.h"
+#include "../hedgehog.h"
 #include "y.tab.h"
 int yywrap(void) { return 1; }
 %}
@@ -30,6 +30,14 @@ int yywrap(void) { return 1; }
 
 <INITIAL>"(" return LP;
 <INITIAL>")" return RP;
+<INITIAL>"{" return LB;
+<INITIAL>"}" return RB;
+
+<INITIAL>"if" return IF;
+<INITIAL>"elsif" return ELSE_IF
+<INITIAL>"else" return ELSE;
+
+
 
 <INITIAL>\n return CR;
 
@@ -61,9 +69,7 @@ int yywrap(void) { return 1; }
 }
 
 <INITIAL>[A-Za-z_][A-Za-z0-9_]* {
-    // TODO: realase
-    yylval.identifier = (char*) malloc((strlen(yytext)+1));
-    strcpy(yylval.identifier, yytext);
+    yylval.identifier = initString(yytext);
     return IDENTIFIER;
 }
 <INITIAL>[ \t];

@@ -122,59 +122,59 @@ HG/fast:
 	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/build
 .PHONY : HG/fast
 
-create.obj: create.c.obj
+expression.obj: expression.c.obj
 
-.PHONY : create.obj
-
-# target to build an object file
-create.c.obj:
-	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/create.c.obj
-.PHONY : create.c.obj
-
-create.i: create.c.i
-
-.PHONY : create.i
-
-# target to preprocess a source file
-create.c.i:
-	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/create.c.i
-.PHONY : create.c.i
-
-create.s: create.c.s
-
-.PHONY : create.s
-
-# target to generate assembly for a file
-create.c.s:
-	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/create.c.s
-.PHONY : create.c.s
-
-evaluate.obj: evaluate.c.obj
-
-.PHONY : evaluate.obj
+.PHONY : expression.obj
 
 # target to build an object file
-evaluate.c.obj:
-	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/evaluate.c.obj
-.PHONY : evaluate.c.obj
+expression.c.obj:
+	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/expression.c.obj
+.PHONY : expression.c.obj
 
-evaluate.i: evaluate.c.i
+expression.i: expression.c.i
 
-.PHONY : evaluate.i
+.PHONY : expression.i
 
 # target to preprocess a source file
-evaluate.c.i:
-	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/evaluate.c.i
-.PHONY : evaluate.c.i
+expression.c.i:
+	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/expression.c.i
+.PHONY : expression.c.i
 
-evaluate.s: evaluate.c.s
+expression.s: expression.c.s
 
-.PHONY : evaluate.s
+.PHONY : expression.s
 
 # target to generate assembly for a file
-evaluate.c.s:
-	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/evaluate.c.s
-.PHONY : evaluate.c.s
+expression.c.s:
+	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/expression.c.s
+.PHONY : expression.c.s
+
+identifier.obj: identifier.c.obj
+
+.PHONY : identifier.obj
+
+# target to build an object file
+identifier.c.obj:
+	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/identifier.c.obj
+.PHONY : identifier.c.obj
+
+identifier.i: identifier.c.i
+
+.PHONY : identifier.i
+
+# target to preprocess a source file
+identifier.c.i:
+	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/identifier.c.i
+.PHONY : identifier.c.i
+
+identifier.s: identifier.c.s
+
+.PHONY : identifier.s
+
+# target to generate assembly for a file
+identifier.c.s:
+	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/identifier.c.s
+.PHONY : identifier.c.s
 
 interpreter.obj: interpreter.c.obj
 
@@ -257,6 +257,33 @@ main.c.s:
 	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/main.c.s
 .PHONY : main.c.s
 
+statement.obj: statement.c.obj
+
+.PHONY : statement.obj
+
+# target to build an object file
+statement.c.obj:
+	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/statement.c.obj
+.PHONY : statement.c.obj
+
+statement.i: statement.c.i
+
+.PHONY : statement.i
+
+# target to preprocess a source file
+statement.c.i:
+	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/statement.c.i
+.PHONY : statement.c.i
+
+statement.s: statement.c.s
+
+.PHONY : statement.s
+
+# target to generate assembly for a file
+statement.c.s:
+	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/statement.c.s
+.PHONY : statement.c.s
+
 value.obj: value.c.obj
 
 .PHONY : value.obj
@@ -284,33 +311,6 @@ value.c.s:
 	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/value.c.s
 .PHONY : value.c.s
 
-y.tab.obj: y.tab.c.obj
-
-.PHONY : y.tab.obj
-
-# target to build an object file
-y.tab.c.obj:
-	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/y.tab.c.obj
-.PHONY : y.tab.c.obj
-
-y.tab.i: y.tab.c.i
-
-.PHONY : y.tab.i
-
-# target to preprocess a source file
-y.tab.c.i:
-	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/y.tab.c.i
-.PHONY : y.tab.c.i
-
-y.tab.s: y.tab.c.s
-
-.PHONY : y.tab.s
-
-# target to generate assembly for a file
-y.tab.c.s:
-	$(MAKE) -f CMakeFiles\HG.dir\build.make CMakeFiles/HG.dir/y.tab.c.s
-.PHONY : y.tab.c.s
-
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -320,12 +320,12 @@ help:
 	@echo ... edit_cache
 	@echo ... HG
 	@echo ... rebuild_cache
-	@echo ... create.obj
-	@echo ... create.i
-	@echo ... create.s
-	@echo ... evaluate.obj
-	@echo ... evaluate.i
-	@echo ... evaluate.s
+	@echo ... expression.obj
+	@echo ... expression.i
+	@echo ... expression.s
+	@echo ... identifier.obj
+	@echo ... identifier.i
+	@echo ... identifier.s
 	@echo ... interpreter.obj
 	@echo ... interpreter.i
 	@echo ... interpreter.s
@@ -335,12 +335,12 @@ help:
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
+	@echo ... statement.obj
+	@echo ... statement.i
+	@echo ... statement.s
 	@echo ... value.obj
 	@echo ... value.i
 	@echo ... value.s
-	@echo ... y.tab.obj
-	@echo ... y.tab.i
-	@echo ... y.tab.s
 .PHONY : help
 
 

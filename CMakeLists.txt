@@ -3,4 +3,4 @@ project(HG C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(HG main.c create.c evaluate.c interpreter.c value.c lex.yy.c y.tab.c)
+add_executable(HG main.c hedgehog.h environment.c expression.c interpreter.c statement.c value.c)
