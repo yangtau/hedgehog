@@ -69,18 +69,18 @@ CMakeFiles/HG.dir/main.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/HG.dir/main.c.s"
 	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\qyang\code\HG\main.c -o CMakeFiles\HG.dir\main.c.s
 
-CMakeFiles/HG.dir/identifier.c.obj: CMakeFiles/HG.dir/flags.make
-CMakeFiles/HG.dir/identifier.c.obj: ../identifier.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\qyang\code\HG\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/HG.dir/identifier.c.obj"
-	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\HG.dir\identifier.c.obj   -c C:\Users\qyang\code\HG\identifier.c
+CMakeFiles/HG.dir/environment.c.obj: CMakeFiles/HG.dir/flags.make
+CMakeFiles/HG.dir/environment.c.obj: ../environment.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\qyang\code\HG\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/HG.dir/environment.c.obj"
+	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\HG.dir\environment.c.obj   -c C:\Users\qyang\code\HG\environment.c
 
-CMakeFiles/HG.dir/identifier.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/HG.dir/identifier.c.i"
-	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\qyang\code\HG\identifier.c > CMakeFiles\HG.dir\identifier.c.i
+CMakeFiles/HG.dir/environment.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/HG.dir/environment.c.i"
+	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\qyang\code\HG\environment.c > CMakeFiles\HG.dir\environment.c.i
 
-CMakeFiles/HG.dir/identifier.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/HG.dir/identifier.c.s"
-	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\qyang\code\HG\identifier.c -o CMakeFiles\HG.dir\identifier.c.s
+CMakeFiles/HG.dir/environment.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/HG.dir/environment.c.s"
+	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\qyang\code\HG\environment.c -o CMakeFiles\HG.dir\environment.c.s
 
 CMakeFiles/HG.dir/expression.c.obj: CMakeFiles/HG.dir/flags.make
 CMakeFiles/HG.dir/expression.c.obj: ../expression.c
@@ -108,22 +108,9 @@ CMakeFiles/HG.dir/interpreter.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/HG.dir/interpreter.c.s"
 	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\qyang\code\HG\interpreter.c -o CMakeFiles\HG.dir\interpreter.c.s
 
-CMakeFiles/HG.dir/lex.yy.c.obj: CMakeFiles/HG.dir/flags.make
-CMakeFiles/HG.dir/lex.yy.c.obj: ../lex.yy.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\qyang\code\HG\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/HG.dir/lex.yy.c.obj"
-	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\HG.dir\lex.yy.c.obj   -c C:\Users\qyang\code\HG\lex.yy.c
-
-CMakeFiles/HG.dir/lex.yy.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/HG.dir/lex.yy.c.i"
-	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\qyang\code\HG\lex.yy.c > CMakeFiles\HG.dir\lex.yy.c.i
-
-CMakeFiles/HG.dir/lex.yy.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/HG.dir/lex.yy.c.s"
-	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\qyang\code\HG\lex.yy.c -o CMakeFiles\HG.dir\lex.yy.c.s
-
 CMakeFiles/HG.dir/statement.c.obj: CMakeFiles/HG.dir/flags.make
 CMakeFiles/HG.dir/statement.c.obj: ../statement.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\qyang\code\HG\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/HG.dir/statement.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\qyang\code\HG\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/HG.dir/statement.c.obj"
 	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\HG.dir\statement.c.obj   -c C:\Users\qyang\code\HG\statement.c
 
 CMakeFiles/HG.dir/statement.c.i: cmake_force
@@ -136,7 +123,7 @@ CMakeFiles/HG.dir/statement.c.s: cmake_force
 
 CMakeFiles/HG.dir/value.c.obj: CMakeFiles/HG.dir/flags.make
 CMakeFiles/HG.dir/value.c.obj: ../value.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\qyang\code\HG\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/HG.dir/value.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\qyang\code\HG\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/HG.dir/value.c.obj"
 	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\HG.dir\value.c.obj   -c C:\Users\qyang\code\HG\value.c
 
 CMakeFiles/HG.dir/value.c.i: cmake_force
@@ -147,31 +134,59 @@ CMakeFiles/HG.dir/value.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/HG.dir/value.c.s"
 	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\qyang\code\HG\value.c -o CMakeFiles\HG.dir\value.c.s
 
+CMakeFiles/HG.dir/lex.yy.c.obj: CMakeFiles/HG.dir/flags.make
+CMakeFiles/HG.dir/lex.yy.c.obj: ../lex.yy.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\qyang\code\HG\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/HG.dir/lex.yy.c.obj"
+	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\HG.dir\lex.yy.c.obj   -c C:\Users\qyang\code\HG\lex.yy.c
+
+CMakeFiles/HG.dir/lex.yy.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/HG.dir/lex.yy.c.i"
+	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\qyang\code\HG\lex.yy.c > CMakeFiles\HG.dir\lex.yy.c.i
+
+CMakeFiles/HG.dir/lex.yy.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/HG.dir/lex.yy.c.s"
+	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\qyang\code\HG\lex.yy.c -o CMakeFiles\HG.dir\lex.yy.c.s
+
+CMakeFiles/HG.dir/y.tab.c.obj: CMakeFiles/HG.dir/flags.make
+CMakeFiles/HG.dir/y.tab.c.obj: ../y.tab.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\qyang\code\HG\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/HG.dir/y.tab.c.obj"
+	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\HG.dir\y.tab.c.obj   -c C:\Users\qyang\code\HG\y.tab.c
+
+CMakeFiles/HG.dir/y.tab.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/HG.dir/y.tab.c.i"
+	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\qyang\code\HG\y.tab.c > CMakeFiles\HG.dir\y.tab.c.i
+
+CMakeFiles/HG.dir/y.tab.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/HG.dir/y.tab.c.s"
+	C:\MinGW\bin\gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\qyang\code\HG\y.tab.c -o CMakeFiles\HG.dir\y.tab.c.s
+
 # Object files for target HG
 HG_OBJECTS = \
 "CMakeFiles/HG.dir/main.c.obj" \
-"CMakeFiles/HG.dir/identifier.c.obj" \
+"CMakeFiles/HG.dir/environment.c.obj" \
 "CMakeFiles/HG.dir/expression.c.obj" \
 "CMakeFiles/HG.dir/interpreter.c.obj" \
-"CMakeFiles/HG.dir/lex.yy.c.obj" \
 "CMakeFiles/HG.dir/statement.c.obj" \
-"CMakeFiles/HG.dir/value.c.obj"
+"CMakeFiles/HG.dir/value.c.obj" \
+"CMakeFiles/HG.dir/lex.yy.c.obj" \
+"CMakeFiles/HG.dir/y.tab.c.obj"
 
 # External object files for target HG
 HG_EXTERNAL_OBJECTS =
 
 HG.exe: CMakeFiles/HG.dir/main.c.obj
-HG.exe: CMakeFiles/HG.dir/identifier.c.obj
+HG.exe: CMakeFiles/HG.dir/environment.c.obj
 HG.exe: CMakeFiles/HG.dir/expression.c.obj
 HG.exe: CMakeFiles/HG.dir/interpreter.c.obj
-HG.exe: CMakeFiles/HG.dir/lex.yy.c.obj
 HG.exe: CMakeFiles/HG.dir/statement.c.obj
 HG.exe: CMakeFiles/HG.dir/value.c.obj
+HG.exe: CMakeFiles/HG.dir/lex.yy.c.obj
+HG.exe: CMakeFiles/HG.dir/y.tab.c.obj
 HG.exe: CMakeFiles/HG.dir/build.make
 HG.exe: CMakeFiles/HG.dir/linklibs.rsp
 HG.exe: CMakeFiles/HG.dir/objects1.rsp
 HG.exe: CMakeFiles/HG.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=C:\Users\qyang\code\HG\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking C executable HG.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=C:\Users\qyang\code\HG\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking C executable HG.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\HG.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

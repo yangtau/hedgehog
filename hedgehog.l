@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
-#include "../hedgehog.h"
+#include "hedgehog.h"
 #include "y.tab.h"
 int yywrap(void) { return 1; }
 %}
@@ -30,16 +30,15 @@ int yywrap(void) { return 1; }
 
 <INITIAL>"(" return LP;
 <INITIAL>")" return RP;
+
 <INITIAL>"{" return LB;
 <INITIAL>"}" return RB;
 
 <INITIAL>"if" return IF;
-<INITIAL>"elsif" return ELSE_IF
 <INITIAL>"else" return ELSE;
-
-
-
-<INITIAL>\n return CR;
+<INITIAL>"elsif" return ELSE_IF;
+<INITIAL>";" return SEMIC;
+<INITIAL>\n ;
 
 <INITIAL>"true" {
     yylval.value.type = BOOL_VALUE;
@@ -74,3 +73,7 @@ int yywrap(void) { return 1; }
 }
 <INITIAL>[ \t];
 %%
+// <INITIAL>"\n{\n" return LB;
+// <INITIAL>"{\n" return LB;
+// <INITIAL>"\n{" return LB;
+// <INITIAL>"\n}" return RB;

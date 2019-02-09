@@ -76,6 +76,12 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="C:/Users/qyang/code/HG/environment.c">
+			<Option target="HG"/>
+		</Unit>
+		<Unit filename="C:/Users/qyang/code/HG/environment.h">
+			<Option target="HG"/>
+		</Unit>
 		<Unit filename="C:/Users/qyang/code/HG/expression.c">
 			<Option target="HG"/>
 		</Unit>
@@ -83,12 +89,6 @@
 			<Option target="HG"/>
 		</Unit>
 		<Unit filename="C:/Users/qyang/code/HG/hedgehog.h">
-			<Option target="HG"/>
-		</Unit>
-		<Unit filename="C:/Users/qyang/code/HG/identifier.c">
-			<Option target="HG"/>
-		</Unit>
-		<Unit filename="C:/Users/qyang/code/HG/identifier.h">
 			<Option target="HG"/>
 		</Unit>
 		<Unit filename="C:/Users/qyang/code/HG/interpreter.c">
@@ -113,6 +113,9 @@
 			<Option target="HG"/>
 		</Unit>
 		<Unit filename="C:/Users/qyang/code/HG/value.h">
+			<Option target="HG"/>
+		</Unit>
+		<Unit filename="C:/Users/qyang/code/HG/y.tab.c">
 			<Option target="HG"/>
 		</Unit>
 		<Unit filename="C:/Users/qyang/code/HG/CMakeLists.txt">

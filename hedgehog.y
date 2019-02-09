@@ -2,14 +2,15 @@
 // #define YYDEBUG 1
 #include <stdint.h>
 #include <stdio.h>
-#include "../hedgehog.h"
+#include "hedgehog.h"
 
 %}
 %union {
-    String identifier;
+    String* identifier;
     Value value;
     Statement *statement;
     Expression *expression;
+    StatementList *list;
 }
 
 
@@ -30,7 +31,7 @@
 
 %token IF ELSE_IF ELSE
 
-%token  CR TAB
+%token  CR TAB SEMIC
 
 %token <identifier> IDENTIFIER
 %token <value> DOUBLE INT BOOL NULL_V 
@@ -39,35 +40,78 @@
                 MUL_EXPRESSION ADD_EXPRESSION GREATER_EXPRESSION
                 EQUAL_EXPRESSION AND_EXPRESSION OR_EXPRESSION
                 EXPRESSION
-%type <statement> STATEMENT_LIST STATEMENT 
+%type <statement> STATEMENT IF_STATEMENT
+%type <list> STATEMENT_BLOCK GLOBAL_LIST STATEMENT_LIST
 
 %%
 
-STATEMENT_LIST:
-    STATEMENT
+GLOBAL_LIST:
+    STATEMENT {
+        log("global statement list %s", "");
+    	StatementList* list = getCurrentInterpreter()->list;
+    	list->add(list, $1);
+        $$=list;
+    }
     |
-    STATEMENT_LIST STATEMENT
-    ;
-
-STATEMENT:
-    EXPRESSION CR {
-        $$ = createStatement($1);
+    GLOBAL_LIST STATEMENT {
+        log("global statement list %s", "");
+    	$$=$1;
+    	$$->add($$, $2);
     }
     ;
 
+STATEMENT_BLOCK:
+    LB STATEMENT_LIST RB {
+        $$ = $2;
+    }
+    ;
+
+STATEMENT_LIST:
+    STATEMENT {
+        log("statement block %s", "");
+    	StatementList* list =  initStatementList();
+    	list->add(list, $1);
+    	$$ = list;
+    }
+    |
+    STATEMENT_LIST STATEMENT {
+    	StatementList* list =  $1;
+        list->add(list, $2);
+        $$ = list;
+    }
+    ;
+
+STATEMENT:
+    EXPRESSION SEMIC {
+   	$$ = initExpressionStatement($1);
+    }
+    |
+    IF_STATEMENT
+    ;
+
 IF_STATEMENT:
-    IF OR_EXPRESSION LB STATEMENT_LIST RB
+    IF EXPRESSION STATEMENT_BLOCK {
+    	$$ = initIfStatement($2, $3);
+    }
     |
-    IF_STATEMENT ELSE_IF LB STATEMENT_LIST RB
+    IF_STATEMENT ELSE_IF OR_EXPRESSION STATEMENT_BLOCK {
+        IfStatement* ifS = $1->s.ifStatement;
+    	ifS->addElsIf(ifS, $3, $4);
+        $$=$1;
+    }
     |
-    IF_STATEMENT ELSE_STATEMENT
+    IF_STATEMENT ELSE STATEMENT_BLOCK {
+        IfStatement* ifS = $1->s.ifStatement;
+    	ifS->addElse(ifS, $3);
+        $$=$1;
+    }
     ;
 
 EXPRESSION:
     OR_EXPRESSION
     |
     IDENTIFIER ASSIGN EXPRESSION {
-        ($1).refer($1);
+        ($1)->refer($1);
         $$ = createAssignExpression($1, $3);
     }
     ;
@@ -178,7 +222,7 @@ VALUE_EXPRESSION:
     }
     |
     IDENTIFIER {
-        $1.refer($1);
+        $1->refer($1);
         $$ = createIdentifierExpression($1);
     }
     ;

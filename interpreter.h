@@ -8,7 +8,7 @@
 
 typedef struct InterpreterTag {
     Environment *globalEnv;
-    Statement *statement;
+    StatementList *list;
 
     void (*free)(struct InterpreterTag *);
 

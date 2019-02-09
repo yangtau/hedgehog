@@ -3,7 +3,7 @@
 
 int yyerror(char const *str) {
     extern char *yytext;
-    fprintf(stderr, "--ERROR:%s, %d--\n", str, yytext[0]);
+    fprintf(stderr, "--ERROR:%s, %s--\n", str, yytext);
     return 0;
 }
 
@@ -16,9 +16,12 @@ int main(int argc, char **argv) {
             exit(1);
         }
     }
+    //TODO DEBUG
+    file = fopen("test/test.hg", "r");
     Interpreter *interpreter = initInterpreter();
     interpreter->compile(interpreter, file);
     interpreter->interpret(interpreter);
     interpreter->free(interpreter);
+    log("-----done-----%s", "");
     return 0;
 }

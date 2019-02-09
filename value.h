@@ -19,12 +19,12 @@ typedef struct {
 
 typedef struct StringTag {
     char* str;
-    int* cnt;
-    void (*refer)(struct StringTag);
-    void (*release)(struct StringTag);
+    int cnt;
+    void (*refer)(struct StringTag*);
+    void (*release)(struct StringTag*);
 } String;
 
-String initString(char *s);
+String *initString(char *s);
 
 typedef struct {
     char* name;
