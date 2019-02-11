@@ -3,9 +3,11 @@
 #define _HG_HEDGEHOG_H_
 
 #include "debug.h"
-#include "value.h"
-#include "expression.h"
-#include "statement.h"
-#include "interpreter.h"
 #include "environment.h"
+#include "expression.h"
+#include "function.h"
+#include "interpreter.h"
+#include "statement.h"
+#include "value.h"
+
 #endif /*_HG_HEDGEHOG_H_*/

@@ -1,4 +1,6 @@
 %{
+/* Created by Tau on 05/02/2019 */
+
 // #define YYDEBUG 1
 #include <stdint.h>
 #include <stdio.h>
@@ -10,7 +12,9 @@
     Value value;
     Statement *statement;
     Expression *expression;
-    StatementList *list;
+    StatementList *statement_list;
+    ArgumentList argument_list;
+    ParameterList *parameter_list;
 }
 
 
@@ -29,7 +33,7 @@
 
 %token LP RP LB RB
 
-%token IF ELSE_IF ELSE
+%token IF ELSE_IF ELSE FOR BREAK CONTINUE RETURN AS WITH IN ON SWITCH FUNC
 
 %token  CR TAB SEMIC
 
@@ -40,8 +44,10 @@
                 MUL_EXPRESSION ADD_EXPRESSION GREATER_EXPRESSION
                 EQUAL_EXPRESSION AND_EXPRESSION OR_EXPRESSION
                 EXPRESSION
-%type <statement> STATEMENT IF_STATEMENT
-%type <list> STATEMENT_BLOCK GLOBAL_LIST STATEMENT_LIST
+%type <argument_list> ARGUMENT_LIST
+%type <parameter_list> PARAMETER_LIST
+%type <statement> STATEMENT IF_STATEMENT FOR_STATEMENT FUNCTION_DEFINE_STATEMENT
+%type <statement_list> STATEMENT_BLOCK GLOBAL_LIST STATEMENT_LIST
 
 %%
 
@@ -87,10 +93,32 @@ STATEMENT:
     }
     |
     IF_STATEMENT
+    |
+    FOR_STATEMENT
+    |
+    FUNCTION_DEFINE_STATEMENT
+    |
+    BREAK SEMIC{
+    	$$ = initBreakStatement();
+    }
+    |
+    CONTINUE SEMIC{
+   	$$ = initContinueStatement();
+    }
+    ;
+
+FOR_STATEMENT:
+    FOR EXPRESSION SEMIC EXPRESSION SEMIC EXPRESSION STATEMENT_BLOCK {
+        $$ = initForStatement($2, $4, $6, $7);
+    }
+    |
+    FOR EXPRESSION STATEMENT_BLOCK {
+        $$ = initForStatement(NULL, $2, NULL, $3);
+    }
     ;
 
 IF_STATEMENT:
-    IF EXPRESSION STATEMENT_BLOCK {
+    IF OR_EXPRESSION STATEMENT_BLOCK {
     	$$ = initIfStatement($2, $3);
     }
     |
@@ -106,6 +134,42 @@ IF_STATEMENT:
         $$=$1;
     }
     ;
+
+FUNCTION_DEFINE_STATEMENT:
+    FUNC IDENTIFIER LP RP STATEMENT_BLOCK {
+        $$ = initFunctionDefine($2, NULL, $5);
+    }
+    |
+    FUNC IDENTIFIER LP PARAMETER_LIST RP STATEMENT_BLOCK {
+        $$ = initFunctionDefine($2, $4, $6);
+    }
+    ;
+
+
+PARAMETER_LIST:
+    IDENTIFIER {
+        $$  = initParameterList($1);
+    }
+    |
+    PARAMETER_LIST SEMIC IDENTIFIER {
+        $1->add($1, $1);
+        $$=$1;
+    }
+    ;
+
+
+ARGUMENT_LIST:
+    OR_EXPRESSION {
+        $$ = initArgumentList();
+        $$->add($$, $1);
+    }
+    |
+    ARGUMENT_LIST SEMIC OR_EXPRESSION {
+        $$=$1;
+        $$->add($$, $3);
+    }
+    ;
+
 
 EXPRESSION:
     OR_EXPRESSION

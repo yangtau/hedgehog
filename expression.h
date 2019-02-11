@@ -1,5 +1,7 @@
+/* Created by Tau on 7/2/2019. */
 #ifndef _HG_EXPRESSION_H_
 #define _HG_EXPRESSION_H_
+#include "environment.h"
 #include "value.h"
 
 typedef enum {
@@ -45,12 +47,12 @@ typedef struct {
 
 typedef struct {
     OperatorType operatorType;
-    Expression *expression;
+    Expression* expression;
 } UnaryExpression;
 
 typedef struct {
     String* id;
-    Expression *expression;
+    Expression* expression;
 } AssignExpression;
 
 struct ExpressionTag {
@@ -62,23 +64,33 @@ struct ExpressionTag {
         UnaryExpression unaryExpression;
         IdentifierExpression identifierExpression;
     } e;
+    Expression* next;
 };
 
-void freeExpression(Expression *expression);
+void freeExpression(Expression* expression);
 
-Value evaluateExpression(Expression *expression);
+Value evaluateExpression(Expression* expression, Environment* env);
 
-Expression *createIdentifierExpression(String* id);
+Expression* createIdentifierExpression(String* id);
 
-Expression *createBinaryExpression(OperatorType operatorType,
-                                   Expression *left,
-                                   Expression *right);
+Expression* createBinaryExpression(OperatorType operatorType,
+                                   Expression* left,
+                                   Expression* right);
 
-Expression *createUnaryExpression(OperatorType operatorType,
-                                  Expression *expression);
+Expression* createUnaryExpression(OperatorType operatorType,
+                                  Expression* expression);
 
-Expression *createAssignExpression(String* id, Expression *expression);
+Expression* createAssignExpression(String* id, Expression* expression);
 
-Expression *createValueExpression(Value value);
+Expression* createValueExpression(Value value);
+
+typedef struct ArgumentListTag ArgumentList;
+struct ArgumentListTag {
+    Expression* head;
+    Expression* tail;
+    void (*add)(ArgumentList* self, Expression* exp);
+    void (*free)(ArgumentList* self);
+};
+ArgumentList* initArgumentList();
 
 #endif /*_HG_EXPRESSION_H_*/

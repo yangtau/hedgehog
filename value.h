@@ -13,9 +13,7 @@ typedef enum {
     Object_VALUE,
 } ValueType;
 
-typedef struct {
-    int8_t v;  // v==0 false
-} Bool;
+typedef int8_t Bool;
 
 typedef struct StringTag {
     char* str;
@@ -24,7 +22,7 @@ typedef struct StringTag {
     void (*release)(struct StringTag*);
 } String;
 
-String *initString(char *s);
+String* initString(char* s);
 
 typedef struct {
     char* name;
@@ -34,7 +32,7 @@ typedef struct {
 typedef struct {
     ValueType type;
     union {
-        Bool bool_value;
+        Bool  bool_value;
         int32_t int_value;
         double double_value;
         Object object_value;

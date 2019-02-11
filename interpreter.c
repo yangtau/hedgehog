@@ -1,3 +1,5 @@
+/* Created by Tau on 06/02/2019 */
+
 #include "interpreter.h"
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +13,7 @@ static void freeInterpreter(Interpreter* interpreter) {
 }
 
 static void interpret(Interpreter* interpreter) {
-    interpreter->list->execute(interpreter->list);
+    interpreter->list->execute(interpreter->list, interpreter->globalEnv);
 }
 
 static Interpreter* current_interpreter;

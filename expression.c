@@ -92,10 +92,11 @@ void freeExpression(Expression* expression) {
 
 static Value evaluateBinaryExpression(OperatorType operatorType,
                                       Expression* left,
-                                      Expression* right) {
+                                      Expression* right,
+                                      Environment* env) {
     log("type%d", operatorType);
-    Value leftValue = evaluateExpression(left);
-    Value rightValue = evaluateExpression(right);
+    Value leftValue = evaluateExpression(left, env);
+    Value rightValue = evaluateExpression(right, env);
     switch (operatorType) {
         case ADD_OPERATOR:
             return valueAdd(leftValue, rightValue);
@@ -131,8 +132,9 @@ static Value evaluateBinaryExpression(OperatorType operatorType,
 }
 
 static Value evaluateUnaryExpression(OperatorType operatorType,
-                                     Expression* expression) {
-    Value value = evaluateExpression(expression);
+                                     Expression* expression,
+                                     Environment* env) {
+    Value value = evaluateExpression(expression, env);
     switch (operatorType) {
         case SUB_OPERATOR:
             return valueMinus(value);
@@ -144,22 +146,22 @@ static Value evaluateUnaryExpression(OperatorType operatorType,
     }
 }
 
-static Value evaluateAssignExpression(String* id, Expression* expression) {
-    Value value = evaluateExpression(expression);
-    Environment* globalEnv = getCurrentInterpreter()->globalEnv;
-    globalEnv->addVariable(globalEnv, id, value);
+static Value evaluateAssignExpression(String* id,
+                                      Expression* expression,
+                                      Environment* env) {
+    Value value = evaluateExpression(expression, env);
+    env->addVariable(env, id, value);
     // id.refer(id);
     // id.release(id);
     return value;
 }
 
-static Value evaluateIdentifierExpression(String* id) {
-    Environment* globalEnv = getCurrentInterpreter()->globalEnv;
+static Value evaluateIdentifierExpression(String* id, Environment* env) {
     id->refer(id);
-    return globalEnv->findVariable(globalEnv, id);
+    return env->findVariable(env, id);
 }
 
-Value evaluateExpression(Expression* expression) {
+Value evaluateExpression(Expression* expression, Environment* env) {
     log("type: %d", expression->type);
     switch (expression->type) {
         case VALUE_EXPRESSION:
@@ -168,22 +170,48 @@ Value evaluateExpression(Expression* expression) {
             return evaluateBinaryExpression(
                 expression->e.binaryExpression.operatorType,
                 expression->e.binaryExpression.left,
-                expression->e.binaryExpression.right);
+                expression->e.binaryExpression.right, env);
         case ASSIGN_EXPRESSION:
             expression->e.assignExpression.id->refer(
                 expression->e.assignExpression.id);
             return evaluateAssignExpression(
                 expression->e.assignExpression.id,
-                expression->e.assignExpression.expression);
+                expression->e.assignExpression.expression, env);
         case UNARY_EXPRESSION:
             return evaluateUnaryExpression(
                 expression->e.unaryExpression.operatorType,
-                expression->e.unaryExpression.expression);
+                expression->e.unaryExpression.expression, env);
         case IDENTIFIER_EXPRESSION:
             return evaluateIdentifierExpression(
-                expression->e.identifierExpression.id);
+                expression->e.identifierExpression.id, env);
         default:
             panic("%s", "bad case...");
             break;
     }
+}
+
+static void addExpressionToList(ArgumentList* list, Expression* exp) {
+    exp->next = NULL;
+    list->tail->next = exp;
+    list->tail = exp;
+}
+
+static void freeArgumentList(ArgumentList* list) {
+    while (list->head->next != NULL) {
+        Expression* p = list->head->next;
+        list->head->next = p->next;
+        freeExpression(p);
+    }
+    free(list->head);
+    free(list);
+}
+
+ArgumentList* initArgumentList() {
+    ArgumentList* list = (ArgumentList*)malloc(sizeof(ArgumentList));
+    list->head = (Expression*)malloc(sizeof(Expression));
+    list->tail = list->head;
+    list->add = addExpressionToList;
+    list->free = freeArgumentList;
+    list->tail->next = NULL;
+    return list;
 }

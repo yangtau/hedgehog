@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
         }
     }
     //TODO DEBUG
-    file = fopen("test/test.hg", "r");
+    file = fopen("../test/test.hg", "r");
     Interpreter *interpreter = initInterpreter();
     interpreter->compile(interpreter, file);
     interpreter->interpret(interpreter);
