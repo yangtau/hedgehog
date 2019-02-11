@@ -1,3 +1,4 @@
+/* Created by Tau on 06/02/2019 */
 #include "value.h"
 #include <stdio.h>
 #include "debug.h"
@@ -42,7 +43,7 @@ void valuePrint(Value v) {
             printf("null");
             break;
         case BOOL_VALUE:
-            printf("%s", (v.v.bool_value.v == 0 ? "false" : "true"));
+            printf("%s", (v.v.bool_value == 0 ? "false" : "true"));
             break;
         case STRING_VALUE:
             printf("%s", v.v.string_value.str);
@@ -168,7 +169,7 @@ Value valuePower(Value a, Value b) {
 
 Value valueNot(Value v) {
     if (v.type == BOOL_VALUE) {
-        v.v.bool_value.v = !v.v.bool_value.v;
+        v.v.bool_value = !v.v.bool_value;
     } else {
         // TODO:error
         v.type = NULL_VALUE;
@@ -180,7 +181,7 @@ Value valueAnd(Value a, Value b) {
     Value v;
     if (a.type == BOOL_VALUE && b.type == BOOL_VALUE) {
         v.type = BOOL_VALUE;
-        v.v.bool_value.v = (a.v.bool_value.v && b.v.bool_value.v);
+        v.v.bool_value = (a.v.bool_value && b.v.bool_value);
     } else {
         // TODO: error
         v.type = NULL_VALUE;
@@ -192,7 +193,7 @@ Value valueOr(Value a, Value b) {
     Value v;
     if (a.type == BOOL_VALUE && b.type == BOOL_VALUE) {
         v.type = BOOL_VALUE;
-        v.v.bool_value.v = (a.v.bool_value.v || b.v.bool_value.v);
+        v.v.bool_value = (a.v.bool_value || b.v.bool_value);
     } else {
         // TODO: error
         v.type = NULL_VALUE;
@@ -219,20 +220,20 @@ Value valueEqual(Value a, Value b) {
     Value v;
     v.type = BOOL_VALUE;
     if (a.type != b.type) {
-        v.v.bool_value.v = 0;
+        v.v.bool_value = 0;
     } else {
         switch (a.type) {
             case NULL_VALUE:
-                v.v.bool_value.v = 1;
+                v.v.bool_value = 1;
                 break;
             case BOOL_VALUE:
-                v.v.bool_value.v = a.v.bool_value.v == b.v.bool_value.v;
+                v.v.bool_value = a.v.bool_value == b.v.bool_value;
                 break;
             case INT_VALUE:
-                v.v.bool_value.v = a.v.int_value == b.v.int_value;
+                v.v.bool_value = a.v.int_value == b.v.int_value;
                 break;
             case DOUBLE_VALUE:
-                v.v.bool_value.v = a.v.double_value == b.v.double_value;
+                v.v.bool_value = a.v.double_value == b.v.double_value;
                 break;
             case STRING_VALUE:
 
@@ -250,17 +251,17 @@ Value valueNotEqual(Value a, Value b) {
     Value v;
     v.type = BOOL_VALUE;
     if (a.type != b.type) {
-        v.v.bool_value.v = 1;
+        v.v.bool_value = 1;
     } else {
         switch (a.type) {
             case BOOL_VALUE:
-                v.v.bool_value.v = a.v.bool_value.v != b.v.bool_value.v;
+                v.v.bool_value = a.v.bool_value != b.v.bool_value;
                 break;
             case INT_VALUE:
-                v.v.bool_value.v = a.v.int_value != b.v.int_value;
+                v.v.bool_value = a.v.int_value != b.v.int_value;
                 break;
             case DOUBLE_VALUE:
-                v.v.bool_value.v = a.v.double_value != b.v.double_value;
+                v.v.bool_value = a.v.double_value != b.v.double_value;
                 break;
             case STRING_VALUE:
                 break;
@@ -279,9 +280,9 @@ Value valueGreater(Value a, Value b) {
     v.type = BOOL_VALUE;
     if (a.type != b.type) {
         if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-            v.v.bool_value.v = a.v.double_value > b.v.int_value;
+            v.v.bool_value = a.v.double_value > b.v.int_value;
         } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-            v.v.bool_value.v = a.v.int_value > b.v.double_value;
+            v.v.bool_value = a.v.int_value > b.v.double_value;
         } else {
             v.type = NULL_VALUE;
             // TODO: error
@@ -289,10 +290,10 @@ Value valueGreater(Value a, Value b) {
     } else {
         switch (a.type) {
             case INT_VALUE:
-                v.v.bool_value.v = (a.v.int_value > b.v.int_value);
+                v.v.bool_value = (a.v.int_value > b.v.int_value);
                 break;
             case DOUBLE_VALUE:
-                v.v.bool_value.v = (a.v.double_value > b.v.double_value);
+                v.v.bool_value = (a.v.double_value > b.v.double_value);
                 break;
             case STRING_VALUE:
                 break;
@@ -311,9 +312,9 @@ Value valueLess(Value a, Value b) {
     v.type = BOOL_VALUE;
     if (a.type != b.type) {
         if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-            v.v.bool_value.v = a.v.double_value < b.v.int_value;
+            v.v.bool_value = a.v.double_value < b.v.int_value;
         } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-            v.v.bool_value.v = a.v.int_value < b.v.double_value;
+            v.v.bool_value = a.v.int_value < b.v.double_value;
         } else {
             v.type = NULL_VALUE;
             // TODO: error
@@ -321,10 +322,10 @@ Value valueLess(Value a, Value b) {
     } else {
         switch (a.type) {
             case INT_VALUE:
-                v.v.bool_value.v = a.v.int_value < b.v.int_value;
+                v.v.bool_value = a.v.int_value < b.v.int_value;
                 break;
             case DOUBLE_VALUE:
-                v.v.bool_value.v = a.v.double_value < b.v.double_value;
+                v.v.bool_value = a.v.double_value < b.v.double_value;
                 break;
             case STRING_VALUE:
                 break;
@@ -343,9 +344,9 @@ Value valueGreaterOrEqual(Value a, Value b) {
     v.type = BOOL_VALUE;
     if (a.type != b.type) {
         if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-            v.v.bool_value.v = a.v.double_value >= b.v.int_value;
+            v.v.bool_value = a.v.double_value >= b.v.int_value;
         } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-            v.v.bool_value.v = a.v.int_value >= b.v.double_value;
+            v.v.bool_value = a.v.int_value >= b.v.double_value;
         } else {
             v.type = NULL_VALUE;
             // TODO: error
@@ -353,10 +354,10 @@ Value valueGreaterOrEqual(Value a, Value b) {
     } else {
         switch (a.type) {
             case INT_VALUE:
-                v.v.bool_value.v = a.v.int_value >= b.v.int_value;
+                v.v.bool_value = a.v.int_value >= b.v.int_value;
                 break;
             case DOUBLE_VALUE:
-                v.v.bool_value.v = a.v.double_value >= b.v.double_value;
+                v.v.bool_value = a.v.double_value >= b.v.double_value;
                 break;
             case STRING_VALUE:
                 break;
@@ -379,10 +380,10 @@ Value valueLessOrEqual(Value a, Value b) {
     } else {
         switch (a.type) {
             case INT_VALUE:
-                v.v.bool_value.v = a.v.int_value <= b.v.int_value;
+                v.v.bool_value = a.v.int_value <= b.v.int_value;
                 break;
             case DOUBLE_VALUE:
-                v.v.bool_value.v = a.v.double_value <= b.v.double_value;
+                v.v.bool_value = a.v.double_value <= b.v.double_value;
                 break;
             case STRING_VALUE:
                 break;

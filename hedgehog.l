@@ -1,4 +1,5 @@
 %{
+/* Created by Tau on 05/02/2019 */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,17 +38,27 @@ int yywrap(void) { return 1; }
 <INITIAL>"if" return IF;
 <INITIAL>"else" return ELSE;
 <INITIAL>"elsif" return ELSE_IF;
+<INITIAL>"for" return FOR;
+<INITIAL>"break" return BREAK;
+<INITIAL>"continue" return CONTINUE;
+<INITIAL>"return" return RETURN;
+<INITIAL>"as" return AS;
+<INITIAL>"with" return WITH;
+<INITIAL>"in" return IN;
+<INITIAL>"on" return ON;
+<INITIAL>"switch" return SWITCH;
 <INITIAL>";" return SEMIC;
+<INITIAL>"func" return FUNC;
 <INITIAL>\n ;
 
 <INITIAL>"true" {
     yylval.value.type = BOOL_VALUE;
-    yylval.value.v.bool_value.v = 1;
+    yylval.value.v.bool_value = 1;
     return BOOL;
 }
 <INITIAL>"false" {
     yylval.value.type = BOOL_VALUE;
-    yylval.value.v.bool_value.v = 0;
+    yylval.value.v.bool_value = 0;
     return BOOL;
 }
 <INITIAL>"null" {
@@ -65,7 +76,7 @@ int yywrap(void) { return 1; }
     yylval.value.type = DOUBLE_VALUE;
     sscanf(yytext, "%lf" , &yylval.value.v.double_value);
     return DOUBLE;
-}
+} 
 
 <INITIAL>[A-Za-z_][A-Za-z0-9_]* {
     yylval.identifier = initString(yytext);
