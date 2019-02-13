@@ -5,15 +5,11 @@
 #include "environment.h"
 #include "expression.h"
 
-typedef enum {
-    EXPRESSION_STATEMENT,
-    IF_STATEMENT,
-    FOR_STATEMENT,
-    BREAK_STATEMENT,
-    CONTINUE_STATEMENT,
-    FUNCTION_DEFINE_STATEMENT,
-    RETURN_STATEMENT,
-} StatementType;
+typedef struct StatementListTag StatementList;
+typedef struct StatementTag Statement;
+typedef struct IfStatementTag IfStatement;
+typedef struct ElsIfStatementTag ElsIfStatement;
+typedef struct ForStatementTag ForStatement;
 
 typedef enum {
     BREAK_RESULT,
@@ -22,22 +18,25 @@ typedef enum {
     NORMAL_RESULT,
     ELSE_IF_EXE_RESULT,  // else_if statement execute
     ELSE_IF_NE_RESULT,   // else_if statement not execute
+} StatementResultType;
+
+typedef struct {
+    StatementResultType type;
+    Value returnValue;
 } StatementResult;
 
-typedef struct StatementListTag StatementList;
-typedef struct StatementTag Statement;
-typedef struct IfStatementTag IfStatement;
-typedef struct ElsIfStatementTag ElsIfStatement;
-typedef struct ForStatementTag ForStatement;
 
-struct ElsIfStatementTag {
-    Expression *condition;
-    StatementList *block;
-    struct ElsIfStatementTag *next;
+struct StatementTag {
+    StatementResult (*execute)(void *self, Environment *env);
+
+    void (*free)(void *self);
+
+    Statement *next;
 };
 
+
 struct IfStatementTag {
-    // Environment *env;
+    Statement base;
     Expression *condition;
     StatementList *block;
     ElsIfStatement *elsIfHead;
@@ -51,50 +50,31 @@ struct IfStatementTag {
     void (*addElse)(IfStatement *ifS, StatementList *elseBlock);
 };
 
-struct ForStatementTag {
-    // Environment *env;
-    Expression *initial;  // assign
-    Expression *condition;
-    Expression *post;
-    StatementList *block;
-};
-
-struct StatementTag {
-    StatementType type;
-    union {
-        Expression *expression;
-        IfStatement *ifStatement;
-        ForStatement *forStatement;
-        FunctionDefine  *func;
-    } s;
-    Statement *next;  
-};
 
 struct StatementListTag {
     Statement *head;
     Statement *tail;
 
-    void (*add)(StatementList *, Statement *);
+    StatementList *(*add)(StatementList *self, Statement *s);
 
-    StatementResult (*execute)(StatementList *, Environment *);
+    StatementResult (*execute)(StatementList *self, Environment *env);
 
-    void (*free)(StatementList *);
+    void (*free)(StatementList *self);
 };
 
-Statement *initExpressionStatement(Expression *expression);
+void *initExpressionStatement(Expression *expression);
 
-Statement *initIfStatement(Expression *condition, StatementList *block);
+void *initIfStatement(Expression *condition, StatementList *block);
 
-Statement *initForStatement(Expression *initial,
-                            Expression *condition,
-                            Expression *post,
-                            StatementList *block);
+void *initForStatement(Expression *initial, Expression *condition, Expression *post, StatementList *block);
 
-Statement *initBreakStatement();
+void *initBreakStatement();
 
-Statement *initContinueStatement();
+void *initContinueStatement();
 
-Statement *initReturnStatement();
+void *initReturnStatement(Expression *exp);
+
+void *initFunctionDefineStatement(String *id, ParameterList *paras, StatementList *block);
 
 StatementList *initStatementList();
 

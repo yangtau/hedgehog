@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "debug.h"
+#include "function.h"
 // char to int
 
 static void freeInterpreter(Interpreter* interpreter) {
@@ -36,7 +37,8 @@ Interpreter* getCurrentInterpreter() {
 Interpreter* initInterpreter() {
     Interpreter* interpreter = (Interpreter*)malloc(sizeof(Interpreter));
     interpreter->list = initStatementList();
-    interpreter->globalEnv = initEnvironment(NULL);
+    interpreter->globalEnv = initEnvironment();
+    addNativeFunction(interpreter->globalEnv);
     interpreter->free = freeInterpreter;
     interpreter->compile = compile;
     interpreter->interpret = interpret;

@@ -3,29 +3,27 @@
 #include <stdio.h>
 #include "debug.h"
 #include "string.h"
-// char *toString(Value v) {
 
-// }
-
-void refer(String* s) {
+void refer(String *s) {
     s->cnt++;
-    log("string refer: %d", s->cnt);
+    log(("%s: %d", s->str, s->cnt));
 }
-void release(String* s) {
+
+void release(String *s) {
     s->cnt--;
-    log("string release: %d", s->cnt);
+    log(("%s: %d", s->str, s->cnt));
     if (s->cnt == 0) {
-        log("string free: %s", s->str);
+        log(("string free: %s", s->str));
         free(s->str);
         free(s);
     }
 }
 
-String* initString(char* s) {
-    String *str = (String*) malloc(sizeof(String));
-    str->str = (char*)calloc(strlen(s) + 1, sizeof(char));
+String *initString(char *s) {
+    String *str = (String *) malloc(sizeof(String));
+    str->str = (char *) calloc(strlen(s) + 1, sizeof(char));
     strcpy(str->str, s);
-    str->cnt = 0;
+    str->cnt = 1;
     str->refer = refer;
     str->release = release;
     return str;
@@ -46,9 +44,13 @@ void valuePrint(Value v) {
             printf("%s", (v.v.bool_value == 0 ? "false" : "true"));
             break;
         case STRING_VALUE:
-            printf("%s", v.v.string_value.str);
+            printf("%s", v.v.string_value->str);
+            break;
+        case FUNCTION_VALUE:
+            printf("function");
             break;
         default:
+            panic("bad case..%s", "");
             break;
     }
 }

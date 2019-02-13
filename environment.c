@@ -1,8 +1,17 @@
 /* Created by Tau on 08/02/2019 */
-#include "environment.h"
 #include <stdlib.h>
+#include "environment.h"
 #include "debug.h"
-#include "value.h"
+#include "oop.h"
+
+
+//trie
+#define TRIE_NODE_SIZE 53
+// a-zA-Z_
+typedef struct TrieNodeTag {
+    struct TrieNodeTag *children[TRIE_NODE_SIZE];
+    Variable *obj;
+} TrieNode;
 
 static int _hashChar(char c) {
     if (c == '_')
@@ -13,50 +22,45 @@ static int _hashChar(char c) {
         return 27 + c - 'a';
 }
 
-static Identifier* _createVariableIdentifier(String* name, Value v) {
-    Identifier* id = (Identifier*)malloc(sizeof(Identifier));
-    id->name = name;
-    id->type = VARIABLE_IDENTIFIER;
-    id->u.value = v;
-    // name.refer(name);
-    // name.release(name);
-    return id;
-}
-
-static Identifier* _createFunctionIdentifier(String* name, FunctionDefine *func) {
-    Identifier* id = (Identifier*)malloc(sizeof(Identifier));
-    id->name = name;
-    id->type = FUNCTION_IDENTIFIER;
-    id->u.function = func;
-    // name.refer(name);
-    // name.release(name);
-    return id;
-}
-
-static void _freeIdentifier(Identifier* id) {
-    id->name->release(id->name);
-    free(id);
-}
-
-static TrieNode* createTrie() {
-    TrieNode* t = (TrieNode*)malloc(sizeof(TrieNode));
-    t->id = NULL;
+static TrieNode *createTrie() {
+    TrieNode *t = (TrieNode *) malloc(sizeof(TrieNode));
+    t->obj = NULL;
     for (int i = 0; i < TRIE_NODE_SIZE; i++)
         t->children[i] = NULL;
     return t;
 }
 
-static void freeTrie(TrieNode* root) {
+static void freeTrie(TrieNode *root) {
     for (int i = 0; i < TRIE_NODE_SIZE; i++) {
         if (root->children[i] != NULL)
             freeTrie(root->children[i]);
     }
-    if (root->id != NULL)
-        _freeIdentifier(root->id);
+    if (root->obj != NULL)
+        del(root->obj);
     free(root);
 }
 
-static TrieNode* _searchIdentifier(IdentifierTrie* trie, String* name) {
+static TrieNode *searchTrieNode(ObjectTrie *trie, String *name) {
+    TrieNode *p = trie, *q;
+    int i = 0;
+    char c = name->str[0];
+    while (1) {
+        int index = _hashChar(c);
+        q = p->children[index];
+        if (q == NULL) {
+            name->release(name);
+            return NULL;
+        }
+        c = name->str[++i];
+        if (c == '\0') {
+            name->release(name);
+            return q;
+        }
+        p = q;
+    }
+}
+
+static TrieNode *createTrieNode(ObjectTrie *trie, String *name) {
     TrieNode *p = trie, *q;
     int i = 0;
     char c = name->str[0];
@@ -75,92 +79,64 @@ static TrieNode* _searchIdentifier(IdentifierTrie* trie, String* name) {
     }
 }
 
-static void addVariable(Environment* Env, String* name, Value value) {
-    // name.refer(name);
-    log("add %s", name->str);
-    TrieNode* t = _searchIdentifier(Env->trie, name);
+
+//environment
+
+static void addVariable(Environment *self, Variable *var) {
+    log(("add %s", var->id->str));
+    TrieNode *t = NULL;
+    on_self(var->id, refer);
+    t = searchTrieNode(self->trie, var->id);
+//    Environment *pEnv = self;
+//    while (pEnv != NULL) {
+//        on_self(var->id, refer);
+//        t = searchTrieNode(pEnv->trie, var->id);
+//        if (t != NULL) break;
+//        pEnv = pEnv->father;
+//    }
     if (t == NULL) {
-        panic("%s", "unexpected error, maybe memory...");
-    } else {
-        if (t->id == NULL) {
-            name->refer(name);
-            t->id = _createVariableIdentifier(name, value);
-        } else {
-            // TODO: some id cannot be changed
-            t->id->type = VARIABLE_IDENTIFIER;
-            t->id->u.value = value;
-        }
+        on_self(var->id, refer);
+        t = createTrieNode(self->trie, var->id);
     }
-    // name.release(name);
+    t->obj = var;
 }
 
-static Value findVariable(Environment* env, String* name) {
-    log("find %s", name->str);
-    name->refer(name);
-    TrieNode* t = _searchIdentifier(env->trie, name);
-    Value v;
-    v.type = NULL_VALUE;
-    if (t == NULL) {
-        panic("%s", "unexpected error, maybe memory...");
-    } else if (t->id == NULL) {
-        name->refer(name);
-        if (env->father!=NULL) return findVariable(env->father, name);//find name in father env
+static Variable *findVariable(Environment *self, String *name) {
+    log(("find %s", name->str));
+    TrieNode *t = NULL;
+    Environment *pEnv = self;
+    while (pEnv != NULL) {
+        on_self(name, refer);
+        t = searchTrieNode(pEnv->trie, name);
+        if (t != NULL) break;
+        pEnv = pEnv->father;
+    }
+    if (t == NULL || t->obj == NULL) {
         panic("\"%s\" not found", name->str);
     } else {
-        v = t->id->u.value;
-    }
-    name->release(name);
-    return v;
-}
-
-static void addFunction(Environment* Env, String* name, FunctionDefine *func) {
-    // name.refer(name);
-    log("add %s", name->str);
-    TrieNode* t = _searchIdentifier(Env->trie, name);
-    if (t == NULL) {
-        panic("%s", "unexpected error, maybe memory...");
-    } else {
-        if (t->id == NULL) {
-            name->refer(name);
-            t->id = _createFunctionIdentifier(name, func);
-        } else {
-            panic("func \"%s\" has been defined", name->str);
-        }
-    }
-    // name.release(name);
-}
-
-static FunctionDefine* findFunction(Environment* env, String* name) {
-    log("find %s", name->str);
-    name->refer(name);
-    TrieNode* t = _searchIdentifier(env->trie, name);
-
-    if (t == NULL) {
-        panic("%s", "unexpected error, maybe memory...");
-    } else if (t->id == NULL) {
-        name->refer(name);
-        if (env->father != NULL)
-            return findFunction(env->father, name);  // find name in father env
-        panic("func \"%s\" not found", name->str);
-    } else {
         name->release(name);
-        return t->id->u.function;
+        return t->obj;
     }
 }
 
-static void freeEnvironment(Environment* env) {
-    freeTrie(env->trie);
-    free(env);
+
+static void freeEnvironment(Environment *self) {
+    freeTrie(self->trie);
+    free(self);
 }
 
-Environment* initEnvironment(Environment* father) {
-    log("father %s", father == NULL ? "null" : "not null");
-    Environment* env = (Environment*)malloc(sizeof(Environment));
-    env->trie = createTrie();
-    env->father = father;
-    env->free = freeEnvironment;
-    env->addVariable = addVariable;
-    env->findVariable = findVariable;
-    log("%s", "done");
-    return env;
+static void addFather(Environment *self, Environment *father) {
+    self->father = father;
 }
+
+const static Environment EnvironmentBase = {
+        addFather, addVariable, findVariable, freeEnvironment
+};
+
+void *initEnvironment() {
+    Environment *p = malloc(sizeof(Environment));
+    *p = EnvironmentBase;
+    p->trie = createTrie();
+    return p;
+}
+
