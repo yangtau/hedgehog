@@ -2,46 +2,25 @@
 #ifndef _HG_IDENTIFIER_H_
 #define _HG_IDENTIFIER_H_
 
-#include "function.h"
-#include "value.h"
-typedef struct {
-    enum {
-        FUNCTION_IDENTIFIER,
-        VARIABLE_IDENTIFIER,
-    } type;
-    union {
-        Value value;
-        FunctionDefine *function;
-    } u;
-    String* name;
-} Identifier;
+#include "variable.h"
 
-#define TRIE_NODE_SIZE 53
-// a-zA-Z_
-typedef struct TrieNodeTag {
-    struct TrieNodeTag* children[TRIE_NODE_SIZE];
-    Identifier* id;
-} TrieNode;
+//interface
+typedef struct EnvironmentTag Environment;
+typedef struct TrieNodeTag ObjectTrie;
 
-typedef TrieNode IdentifierTrie;
+struct EnvironmentTag {
+    void (*addFather)(Environment *self, Environment *father);
 
-typedef struct EnvironmentTag {
-    IdentifierTrie* trie;
-    struct EnvironmentTag* father;
+    void (*addVariable)(Environment *self, Variable *var);
 
-    void (*addVariable)(struct EnvironmentTag* self, String* id, Value v);
+    Variable *(*findVariable)(Environment *self, String *id);
 
-    Value (*findVariable)(struct EnvironmentTag* self, String* id);
+    void (*free)(Environment *self);
 
-    FunctionDefine (*findFunction)(struct EnvironmentTag* self, String* id);
+    ObjectTrie *trie;
+    Environment *father;
+};
 
-    void (*addFunction)(struct EnvironmentTag* self,
-                        String* id,
-                        FunctionDefine *v);
-
-    void (*free)(struct EnvironmentTag* self);
-} Environment;
-
-Environment* initEnvironment(Environment* father);
+void *initEnvironment();
 
 #endif /*_HG_IDENTIFIER_H_*/

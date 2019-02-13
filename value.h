@@ -4,43 +4,41 @@
 
 #include <inttypes.h>
 
+typedef struct FunctionDefineTag FunctionDefine;
 typedef enum {
     BOOL_VALUE,
     NULL_VALUE,
     INT_VALUE,
     DOUBLE_VALUE,
     STRING_VALUE,
-    Object_VALUE,
+    FUNCTION_VALUE,
 } ValueType;
 
 typedef int8_t Bool;
 
 typedef struct StringTag {
-    char* str;
+    char *str;
     int cnt;
-    void (*refer)(struct StringTag*);
-    void (*release)(struct StringTag*);
+
+    void (*refer)(struct StringTag *);
+
+    void (*release)(struct StringTag *);
 } String;
 
-String* initString(char* s);
+String *initString(char *s);
 
-typedef struct {
-    char* name;
-    // TODO: object detail
-} Object;
 
 typedef struct {
     ValueType type;
     union {
-        Bool  bool_value;
+        Bool bool_value;
         int32_t int_value;
         double double_value;
-        Object object_value;
-        String string_value;
+        String* string_value;
+        FunctionDefine *function;
     } v;
 } Value;
 
-// char *toString(Value v);
 
 void valuePrint(Value v);
 

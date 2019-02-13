@@ -7,7 +7,33 @@
 #include "hedgehog.h"
 #include "y.tab.h"
 int yywrap(void) { return 1; }
+
+char *string_buf;
+int cnt = 0;
+int size = 256;
+void start_string_buf() {
+    string_buf = calloc(sizeof(char), size);
+    cnt = 0;
+}
+
+void add_char_to_string_buf(char c) {
+    string_buf[cnt++] = c;
+    if (cnt+1>=size) {
+        size*=2;
+        string_buf = realloc(string_buf, sizeof(char)*size);
+    }
+    string_buf[cnt] = '\0';
+}
+
+void close_string_buf() {
+    free(string_buf);
+    string_buf = NULL;
+    cnt = 0;
+    size=1024;
+}
+
 %}
+%start COMMENT_STATE STRING_STATE
 
 %%
 <INITIAL>"+" return ADD;
@@ -48,9 +74,9 @@ int yywrap(void) { return 1; }
 <INITIAL>"on" return ON;
 <INITIAL>"switch" return SWITCH;
 <INITIAL>";" return SEMIC;
+<INITIAL>"," return COMMA;
 <INITIAL>"func" return FUNC;
 <INITIAL>\n ;
-
 <INITIAL>"true" {
     yylval.value.type = BOOL_VALUE;
     yylval.value.v.bool_value = 1;
@@ -66,6 +92,13 @@ int yywrap(void) { return 1; }
     return NULL_V;
 }
 
+<INITIAL>\" {
+    start_string_buf();
+    BEGIN STRING_STATE;
+}
+<INITIAL>"//" {
+    BEGIN COMMENT_STATE;
+}
 
 <INITIAL>[0-9]+ {
     yylval.value.type = INT_VALUE;
@@ -83,8 +116,20 @@ int yywrap(void) { return 1; }
     return IDENTIFIER;
 }
 <INITIAL>[ \t];
+
+<STRING_STATE>\" {
+    yylval.value.type = STRING_VALUE;
+    yylval.value.v.string_value = initString(string_buf);
+    close_string_buf();
+    BEGIN INITIAL;
+    return STRING;
+}
+<STRING_STATE>\\\" add_char_to_string_buf('\"');
+<STRING_STATE>\\\\ add_char_to_string_buf('\\');
+<STRING_STATE>\\n add_char_to_string_buf('\n');
+<STRING_STATE>\\t add_char_to_string_buf('\t');
+<STRING_STATE>. add_char_to_string_buf(yytext[0]);
+
+<COMMENT_STATE>\n BEGIN INITIAL;
+<COMMENT_STATE>. ;
 %%
-// <INITIAL>"\n{\n" return LB;
-// <INITIAL>"{\n" return LB;
-// <INITIAL>"\n{" return LB;
-// <INITIAL>"\n}" return RB;

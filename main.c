@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include "hedgehog.h"
+#include "value.h"
+
+#define TEST
 
 int yyerror(char const *str) {
     extern char *yytext;
@@ -16,12 +19,12 @@ int main(int argc, char **argv) {
             exit(1);
         }
     }
-    //TODO DEBUG
-    file = fopen("../test/test.hg", "r");
+#ifdef TEST
+    file = fopen("test.hg", "r");
+#endif
     Interpreter *interpreter = initInterpreter();
     interpreter->compile(interpreter, file);
     interpreter->interpret(interpreter);
     interpreter->free(interpreter);
-    log("-----done-----%s", "");
     return 0;
 }

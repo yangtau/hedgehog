@@ -1,18 +1,9 @@
 /* Created by Tau on 7/2/2019. */
 #ifndef _HG_EXPRESSION_H_
 #define _HG_EXPRESSION_H_
+
 #include "environment.h"
 #include "value.h"
-
-typedef enum {
-    VALUE_EXPRESSION,
-    IDENTIFIER_EXPRESSION,
-    ASSIGN_EXPRESSION,
-    BINARY_EXPRESSION,
-    UNARY_EXPRESSION,
-    FUNCTION_CALL_EXPRESSION,
-} ExpressionType;
-
 typedef enum {
     ADD_OPERATOR,
     SUB_OPERATOR,
@@ -32,65 +23,65 @@ typedef enum {
     GE_OPERATOR,  //>=
     LE_OPERATOR,  //<=
 } OperatorType;
-// BINARY_EXPRESSION, UNARY_EXPRESSION,
 
 typedef struct ExpressionTag Expression;
-
-typedef struct {
-    String* id;
-} IdentifierExpression;
-
-typedef struct {
-    OperatorType operatorType;
-    Expression *left, *right;
-} BinaryExpression;
-
-typedef struct {
-    OperatorType operatorType;
-    Expression* expression;
-} UnaryExpression;
-
-typedef struct {
-    String* id;
-    Expression* expression;
-} AssignExpression;
+typedef struct ArgumentListTag ArgumentList;
+typedef struct ParameterTag Parameter;
+typedef struct ParameterListTag ParameterList;
 
 struct ExpressionTag {
-    ExpressionType type;
-    union {
-        Value value;
-        AssignExpression assignExpression;
-        BinaryExpression binaryExpression;
-        UnaryExpression unaryExpression;
-        IdentifierExpression identifierExpression;
-    } e;
-    Expression* next;
+
+    void (*free)(void *self);
+
+    Value (*evaluate)(void *self, Environment *env);
+
+    void *next;
 };
 
-void freeExpression(Expression* expression);
 
-Value evaluateExpression(Expression* expression, Environment* env);
+void *initVariableExpression(String *id);
 
-Expression* createIdentifierExpression(String* id);
+void *initBinaryExpression(OperatorType operatorType,
+                           Expression *left,
+                           Expression *right);
 
-Expression* createBinaryExpression(OperatorType operatorType,
-                                   Expression* left,
-                                   Expression* right);
+void *initUnaryExpression(OperatorType operatorType,
+                          Expression *expression);
 
-Expression* createUnaryExpression(OperatorType operatorType,
-                                  Expression* expression);
+void *initAssignExpression(String *id, Expression *expression);
 
-Expression* createAssignExpression(String* id, Expression* expression);
+void *initValueExpression(Value value);
 
-Expression* createValueExpression(Value value);
+void *initFunctionCallExpression(String *id, ArgumentList *args);
 
-typedef struct ArgumentListTag ArgumentList;
 struct ArgumentListTag {
-    Expression* head;
-    Expression* tail;
-    void (*add)(ArgumentList* self, Expression* exp);
-    void (*free)(ArgumentList* self);
+    Expression *head;
+    Expression *tail;
+    int cnt;
+
+    ArgumentList *(*add)(ArgumentList *list, void *exp);
+
+    void (*free)(ArgumentList *list);
 };
-ArgumentList* initArgumentList();
+
+ArgumentList *initArgumentList(Expression *head);
+
+struct ParameterTag {
+    String *name;
+    Parameter *next;
+};
+
+struct ParameterListTag {
+    Parameter *head;
+    Parameter *tail;
+    int cnt;
+
+    ParameterList *(*add)(ParameterList *list, String *para);
+
+    void (*free)(ParameterList *self);
+};
+
+ParameterList *initParameterList(String *head);
 
 #endif /*_HG_EXPRESSION_H_*/
+

@@ -2,76 +2,99 @@
 #include "function.h"
 #include <stdlib.h>
 #include "debug.h"
-#define del(x) (x)->free(x)
-#define self(x, y) (x)->y(x)
+#include "oop.h"
+#include "environment.h"
+#include "value.h"
 
-static void addParameterToList(ParameterList* list, String* id) {
-    list->tail->next = (Parameter*)malloc(sizeof(Parameter));
-    list->tail = list->tail->next;
-    list->tail->next = NULL;
-    id->refer(id);
-    list->tail->name = id;
-    id->release(id);
-}
-
-static void freeParameterList(ParameterList* list) {
-    while (list->head != NULL) {
-        Parameter* p = list->head->next;
-        free(list->head);
-        list->head = p;
+static void freeFunction(FunctionDefine *self) {
+    del(self->block);
+    for (int i = 0; i < self->parameter_cnt; i++) {
+        on_self(self->parameters[i], release);
     }
-    free(list);
+    free(self);
 }
 
-ParameterList* initParameterList(String* head) {
-    ParameterList* list = (ParameterList*)malloc(sizeof(ParameterList));
-    list->head = list->tail = (Parameter*)malloc(sizeof(Parameter));
-    list->tail->name = head;
-    list->tail->next = NULL;
-    head->refer(head);
-    list->add = addParameterToList;
-    list->free = freeParameterList;
-    return list;
-}
 
-static void freeFunction(FunctionDefine* func) {
-    // func->block->free(func->block);
-    del(func->block);
-    del(func->paras);
-    free(func);
-}
-
-static Value callFunction(FunctionDefine* func,
-                          ArgumentList* args,
-                          Environment* env) {
-    Environment* localEnv = initEnvironment(env);
-    Expression* ep = args->head->next;
-    for (Parameter* p = func->paras->head; p != NULL;
-         p = p->next, ep = ep->next) {
-        if (ep == NULL) {
-            panic("%s", "too few arguments in function call");  // TODO: name of
-                                                                // function
+static Value callFunction(FunctionDefine *func,
+                          ArgumentList *args,
+                          Environment *env) {
+    Environment *localEnv = initEnvironment();
+    localEnv->addFather(localEnv, env);
+    if (args != NULL) {
+        if (func->parameter_cnt != args->cnt) {
+            panic("too few or too many arguments in function call.%s", "");
         }
-        localEnv->addVariable(localEnv, p->name, evaluateExpression(ep, env));
+        Expression *arg = args->head;
+        for (int i = 0; i < func->parameter_cnt; i++) {
+            on_self(func->parameters[i], refer);
+            Variable *var = initVariable(func->parameters[i], arg->evaluate(arg, env));
+            localEnv->addVariable(localEnv, var);
+            arg = arg->next;
+        }
+    } else if (func->parameter_cnt != 0) {
+        panic("too few arguments in function call.%s", "");
     }
-    if (ep != NULL) {
-        panic("%s",
-              "too many arguments in function call");  // TODO: name of function
+    StatementResult res = func->block->execute(func->block, localEnv);
+    Value v;
+    if (res.type == RETURN_RESULT) {
+        v = res.returnValue;
+    } else {
+        v.type = NULL_VALUE;
     }
-    func->block->execute(func->block, localEnv);
-    // TODO: return statement;!!!!
+    return v;
 }
 
-FunctionDefine* initFunctionDefine(String* id,
-                                   ParameterList* paras,
-                                   StatementList* block) {
-    FunctionDefine* func = (FunctionDefine*)malloc(sizeof(FunctionDefine));
-    // func->id= TODO: add function to env
-    
+FunctionDefine *initFunctionDefine(
+        ParameterList *paras,
+        StatementList *block) {
+    FunctionDefine *func = (FunctionDefine *) malloc(sizeof(FunctionDefine));
     func->block = block;
-    func->paras = paras;
-    func->call;
+    if (paras == NULL) func->parameter_cnt = 0;
+    else {
+        func->parameter_cnt = paras->cnt;
+        func->parameters = calloc(sizeof(String *), func->parameter_cnt);
+        Parameter *p = paras->head;
+        size_t cnt = 0;
+        while (p != NULL) {
+            func->parameters[cnt++] = p->name;
+            on_self(p->name, refer);
+            p = p->next;
+        }
+    }
+    func->call = callFunction;
     func->free = freeFunction;
-    id->release(id);
     return func;
+}
+
+static Value call_native_print(FunctionDefine *func,
+                               ArgumentList *args,
+                               Environment *env) {
+    Environment *localEnv = initEnvironment();
+//    localEnv->addFather(localEnv, env);
+    if (args != NULL) {
+        Expression *arg = args->head;
+        while (arg != NULL) {
+            Value v = arg->evaluate(arg, env);
+            valuePrint(v);
+            arg = arg->next;
+            if (arg) printf(", ");
+        }
+    }
+    printf("\n");
+    Value v;
+    v.type = NULL_VALUE;
+    return v;
+}
+
+static void freeNULL(FunctionDefine *_) {}
+
+static FunctionDefine printFunction = {
+        NULL, -1, NULL, call_native_print, freeNULL
+};
+
+void addNativeFunction(Environment *env) {
+    Value v;
+    v.type = FUNCTION_VALUE;
+    v.v.function = &printFunction;
+    env->addVariable(env, initVariable(initString("print"), v));
 }

@@ -1,103 +1,80 @@
 /* Created by Tau on 7/2/2019. */
-#include "expression.h"
 #include <stdlib.h>
-#include <string.h>
+#include "expression.h"
 #include "debug.h"
 #include "environment.h"
-#include "interpreter.h"
+#include "value.h"
+#include "function.h"
+#include "oop.h"
 
-static Expression* initExpression() {
-    Expression* p = (Expression*)malloc(sizeof(Expression));
-    return p;
+typedef struct {
+    Expression base;
+    String *id;
+} VariableExpression;
+
+typedef struct {
+    Expression base;
+    OperatorType operatorType;
+    Expression *left, *right;
+} BinaryExpression;
+
+typedef struct {
+    Expression base;
+    OperatorType operatorType;
+    Expression *expression;
+} UnaryExpression;
+
+typedef struct {
+    Expression base;
+    String *id;
+    Expression *expression;
+} AssignExpression;
+
+typedef struct {
+    Expression base;
+    Value value;
+} ValueExpression;
+
+typedef struct {
+    Expression base;
+    String *id;
+    ArgumentList *args;
+} FunctionCallExpression;
+
+
+// identifier expression
+static void freeVariableExpression(void *_self) {
+    VariableExpression *self = _self;
+    on_self(self->id, release);
+    free(self);
 }
 
-Expression* createIdentifierExpression(String* id) {
-    log("id: %s", id->str);
-    Expression* p = initExpression();
-    p->type = IDENTIFIER_EXPRESSION;
-    // id.refer(id);
-    p->e.identifierExpression.id = id;
-    // id.release(id);
-    return p;
+static Value evaluateVariableExpression(void *_self, Environment *env) {
+    VariableExpression *self = _self;
+    on_self(self->id, refer);
+    return env->findVariable(env, self->id)->v;
 }
 
-Expression* createBinaryExpression(OperatorType operatorType,
-                                   Expression* left,
-                                   Expression* right) {
-    log("operator: %d", operatorType);
-    Expression* p = initExpression();
-    p->type = BINARY_EXPRESSION;
-    p->e.binaryExpression.right = right;
-    p->e.binaryExpression.left = left;
-    p->e.binaryExpression.operatorType = operatorType;
-    return p;
+const static Expression VariableExpressionBase = {
+        freeVariableExpression, evaluateVariableExpression
+};
+
+void *initVariableExpression(String *id) {
+    VariableExpression *exp = malloc(sizeof(VariableExpression));
+    exp->base = VariableExpressionBase;
+    exp->id = id;
+    return exp;
 }
 
-Expression* createAssignExpression(String* id, Expression* expression) {
-    log("id: %s", id->str);
-    Expression* p = initExpression();
-    p->type = ASSIGN_EXPRESSION;
-    p->e.assignExpression.expression = expression;
-    p->e.assignExpression.id = id;
-    // id.refer(id);
-    // id.release(id);
-    return p;
-}
+// binary expression
 
-Expression* createUnaryExpression(OperatorType operatorType,
-                                  Expression* expression) {
-    log("operator: %d", operatorType);
-    Expression* p = initExpression();
-    p->type = UNARY_EXPRESSION;
-    p->e.unaryExpression.expression = expression;
-    p->e.unaryExpression.operatorType = operatorType;
-    return p;
-}
-
-Expression* createValueExpression(Value value) {
-    log("value_type: %d", value.type);
-    Expression* p = initExpression();
-    p->type = VALUE_EXPRESSION;
-    p->e.value = value;
-    return p;
-}
-
-void freeExpression(Expression* expression) {
-    log("type: %d", expression->type);
-    switch (expression->type) {
-        case VALUE_EXPRESSION:
-            break;
-        case BINARY_EXPRESSION:
-            free(expression->e.binaryExpression.left);
-            free(expression->e.binaryExpression.right);
-            break;
-        case UNARY_EXPRESSION:
-            free(expression->e.unaryExpression.expression);
-            break;
-        case ASSIGN_EXPRESSION:
-            free(expression->e.assignExpression.expression);
-            expression->e.assignExpression.id->release(
-                expression->e.assignExpression.id);
-            break;
-        case IDENTIFIER_EXPRESSION:
-            expression->e.identifierExpression.id->release(
-                expression->e.identifierExpression.id);
-            break;
-        default:
-            panic("%s", "bad case..");
-            break;
-    }
-    free(expression);
-}
-
-static Value evaluateBinaryExpression(OperatorType operatorType,
-                                      Expression* left,
-                                      Expression* right,
-                                      Environment* env) {
-    log("type%d", operatorType);
-    Value leftValue = evaluateExpression(left, env);
-    Value rightValue = evaluateExpression(right, env);
-    switch (operatorType) {
+static Value evaluateBinaryExpression(void *_self,
+                                      Environment *env) {
+    BinaryExpression *self = _self;
+    log(("type:%d", self->operatorType));
+    Value leftValue = self->left->evaluate(self->left, env);
+    Value rightValue = self->right->evaluate(self->right, env);
+    switch (self->operatorType) {
         case ADD_OPERATOR:
             return valueAdd(leftValue, rightValue);
         case SUB_OPERATOR:
@@ -131,11 +108,67 @@ static Value evaluateBinaryExpression(OperatorType operatorType,
     }
 }
 
-static Value evaluateUnaryExpression(OperatorType operatorType,
-                                     Expression* expression,
-                                     Environment* env) {
-    Value value = evaluateExpression(expression, env);
-    switch (operatorType) {
+static void freeBinaryExpression(void *_self) {
+    BinaryExpression *self = _self;
+    del(self->left);
+    del(self->right);
+    free(self);
+}
+
+const static Expression BinaryExpressionBase = {
+        freeBinaryExpression, evaluateBinaryExpression
+};
+
+void *initBinaryExpression(OperatorType operatorType,
+                           Expression *left,
+                           Expression *right) {
+//    log(("operator: %d", operatorType));
+    BinaryExpression *exp = malloc(sizeof(BinaryExpression));
+    exp->base = BinaryExpressionBase;
+    exp->right = right;
+    exp->left = left;
+    exp->operatorType = operatorType;
+    return exp;
+}
+
+// assignment expression
+
+static Value evaluateAssignExpression(void *_self,
+                                      Environment *env) {
+    AssignExpression *self = _self;
+    Value value = self->expression->evaluate(self->expression, env);
+//    on_self(self->id, refer);
+    env->addVariable(env, initVariable(self->id, value));
+//    on_self(self->id, release);
+    return value;
+}
+
+static void freeAssignExpression(void *_self) {
+    AssignExpression *self = _self;
+    del(self->expression);
+    free(_self);
+}
+
+const static Expression AssignExpressionBase = {
+        freeAssignExpression, evaluateAssignExpression
+};
+
+void *initAssignExpression(String *id, Expression *expression) {
+//    log(("id: %s", id->str));
+    AssignExpression *exp = malloc(sizeof(UnaryExpression));
+    exp->expression = expression;
+    exp->base = AssignExpressionBase;
+    exp->id = id;
+    return exp;
+}
+
+
+// unary expression
+static Value evaluateUnaryExpression(void *_self,
+                                     Environment *env) {
+    UnaryExpression *self = _self;
+    Value value = self->expression->evaluate(self->expression, env);
+    switch (self->operatorType) {
         case SUB_OPERATOR:
             return valueMinus(value);
         case NOT_OPERATOR:
@@ -146,72 +179,155 @@ static Value evaluateUnaryExpression(OperatorType operatorType,
     }
 }
 
-static Value evaluateAssignExpression(String* id,
-                                      Expression* expression,
-                                      Environment* env) {
-    Value value = evaluateExpression(expression, env);
-    env->addVariable(env, id, value);
-    // id.refer(id);
-    // id.release(id);
-    return value;
+void freeUnaryExpression(void *_self) {
+    UnaryExpression *self = _self;
+    del(self->expression);
+    free(self);
 }
 
-static Value evaluateIdentifierExpression(String* id, Environment* env) {
-    id->refer(id);
-    return env->findVariable(env, id);
+const static Expression UnaryExpressionBase = {
+        freeUnaryExpression, evaluateUnaryExpression
+};
+
+void *initUnaryExpression(OperatorType operatorType,
+                          Expression *expression) {
+//    log(("operator: %d", operatorType));
+    UnaryExpression *exp = malloc(sizeof(UnaryExpression));
+    exp->base = UnaryExpressionBase;
+    exp->operatorType = operatorType;
+    exp->expression = expression;
+    return exp;
 }
 
-Value evaluateExpression(Expression* expression, Environment* env) {
-    log("type: %d", expression->type);
-    switch (expression->type) {
-        case VALUE_EXPRESSION:
-            return expression->e.value;
-        case BINARY_EXPRESSION:
-            return evaluateBinaryExpression(
-                expression->e.binaryExpression.operatorType,
-                expression->e.binaryExpression.left,
-                expression->e.binaryExpression.right, env);
-        case ASSIGN_EXPRESSION:
-            expression->e.assignExpression.id->refer(
-                expression->e.assignExpression.id);
-            return evaluateAssignExpression(
-                expression->e.assignExpression.id,
-                expression->e.assignExpression.expression, env);
-        case UNARY_EXPRESSION:
-            return evaluateUnaryExpression(
-                expression->e.unaryExpression.operatorType,
-                expression->e.unaryExpression.expression, env);
-        case IDENTIFIER_EXPRESSION:
-            return evaluateIdentifierExpression(
-                expression->e.identifierExpression.id, env);
-        default:
-            panic("%s", "bad case...");
-            break;
+//value Expression
+
+static Value evaluateValueExpression(void *_self, Environment *env) {
+    return ((ValueExpression *) _self)->value;
+}
+
+static void freeValueExpression(void *_self) {
+    ValueExpression *self = _self;
+    if (self->value.type == STRING_VALUE) {
+        on_self(self->value.v.string_value, release);
     }
+    free(_self);
 }
 
-static void addExpressionToList(ArgumentList* list, Expression* exp) {
-    exp->next = NULL;
+const static Expression ValueExpressionBase = {
+        freeValueExpression, evaluateValueExpression,
+};
+
+void *initValueExpression(Value value) {
+    ValueExpression *exp = malloc(sizeof(ValueExpression));
+    exp->value = value;
+    exp->base = ValueExpressionBase;
+    return exp;
+}
+
+// function call expression
+
+static void freeFunctionCallExpression(void *_self) {
+    FunctionCallExpression *self = _self;
+    if (self->args != NULL)
+        del(self->args);
+    on_self(self->id, release);
+    free(self);
+}
+
+
+static Value evaluateFunctionExpression(void *_self, Environment *env) {
+    FunctionCallExpression *self = _self;
+    on_self(self->id, refer);
+    Variable *var = env->findVariable(env, self->id);
+    if (var->v.type != FUNCTION_VALUE) {
+        panic("%s is not callable", var->id->str);
+    }
+    FunctionDefine *func = var->v.v.function;
+    return func->call(func, self->args, env);
+}
+
+const static Expression FunctionCallExpressionBase = {
+        freeFunctionCallExpression, evaluateFunctionExpression
+};
+
+void *initFunctionCallExpression(String *id, ArgumentList *args) {
+    FunctionCallExpression *exp = malloc(sizeof(FunctionCallExpression));
+    exp->base = FunctionCallExpressionBase;
+    exp->id = id;
+//    on_self(id, refer);
+    exp->args = args;
+    return exp;
+}
+
+
+
+/*
+ * both argument list and parameter list insert node after head,
+ * thus they can work properly.
+ * */
+// argument list
+
+static ArgumentList *addToArgumentList(ArgumentList *list, void *exp) {
     list->tail->next = exp;
     list->tail = exp;
+//    list->tail->next = NULL;
+    list->cnt++;
+    return list;
 }
 
-static void freeArgumentList(ArgumentList* list) {
-    while (list->head->next != NULL) {
-        Expression* p = list->head->next;
-        list->head->next = p->next;
-        freeExpression(p);
+static void freeArgumentList(ArgumentList *list) {
+    while (list->head != NULL) {
+        Expression *p = list->head->next;
+        del(list->head);
+        list->head = p;
     }
-    free(list->head);
     free(list);
 }
 
-ArgumentList* initArgumentList() {
-    ArgumentList* list = (ArgumentList*)malloc(sizeof(ArgumentList));
-    list->head = (Expression*)malloc(sizeof(Expression));
-    list->tail = list->head;
-    list->add = addExpressionToList;
+
+ArgumentList *initArgumentList(Expression *head) {
+    ArgumentList *list = malloc(sizeof(ArgumentList));
+    list->head = list->tail = head;
+    list->head->next = NULL;
+    list->cnt = 1;
     list->free = freeArgumentList;
-    list->tail->next = NULL;
+    list->add = addToArgumentList;
+    return list;
+}
+
+// parameter list
+static ParameterList *addToParameterList(ParameterList *list, String *id) {
+    Parameter *p = malloc(sizeof(Parameter));
+    p->name = id;
+    p->next = list->tail->next;
+    list->tail->next = p;
+    list->tail = p;
+    list->cnt++;
+    return list;
+//    id->refer(id);
+//    id->release(id);
+}
+
+static void freeParameterList(ParameterList *list) {
+    while (list->head != NULL) {
+        Parameter *p = list->head->next;
+        on_self(list->head->name, release);
+        free(list->head);
+        list->head = p;
+    }
+    free(list);
+}
+
+
+ParameterList *initParameterList(String *head) {
+    ParameterList *list = malloc(sizeof(ParameterList));
+    Parameter *p = malloc(sizeof(Parameter));
+    p->next = NULL;
+    p->name = head;
+    list->head = list->tail = p;
+//    head->refer(head);
+    list->free = freeParameterList;
+    list->add = addToParameterList;
+    list->cnt = 1;
     return list;
 }
