@@ -295,7 +295,8 @@ void *initReturnStatement(Expression *exp) {
 
 static void freeFunctionDefineStatement(void *_self) {
     FunctionDefineStatement *self = _self;
-//    del(self->block);
+    if (self->block != NULL)
+        del(self->block);
     on_self(self->id, release);
     if (self->paras != NULL)
         del(self->paras);

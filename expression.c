@@ -45,6 +45,7 @@ typedef struct {
 // identifier expression
 static void freeVariableExpression(void *_self) {
     VariableExpression *self = _self;
+//    log(("free %s %d:", self->id->str, self->id->cnt));
     on_self(self->id, release);
     free(self);
 }
@@ -137,15 +138,15 @@ static Value evaluateAssignExpression(void *_self,
                                       Environment *env) {
     AssignExpression *self = _self;
     Value value = self->expression->evaluate(self->expression, env);
-//    on_self(self->id, refer);
+    on_self(self->id, refer);
     env->addVariable(env, initVariable(self->id, value));
-//    on_self(self->id, release);
     return value;
 }
 
 static void freeAssignExpression(void *_self) {
     AssignExpression *self = _self;
     del(self->expression);
+    on_self(self->id, release);
     free(_self);
 }
 
@@ -209,6 +210,8 @@ static void freeValueExpression(void *_self) {
     ValueExpression *self = _self;
     if (self->value.type == STRING_VALUE) {
         on_self(self->value.v.string_value, release);
+    } else if (self->value.type == FUNCTION_VALUE) {
+        del(self->value.v.function);
     }
     free(_self);
 }
@@ -309,6 +312,7 @@ static ParameterList *addToParameterList(ParameterList *list, String *id) {
 }
 
 static void freeParameterList(ParameterList *list) {
+    log(("free parameter"));
     while (list->head != NULL) {
         Parameter *p = list->head->next;
         on_self(list->head->name, release);
