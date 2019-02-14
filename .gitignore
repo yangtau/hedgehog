@@ -1,6 +1,5 @@
 lex.yy.c
 y.tab.*
-*.hg
 *.output
 cmake-build-debug/
 .vscode/

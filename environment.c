@@ -85,19 +85,20 @@ static TrieNode *createTrieNode(ObjectTrie *trie, String *name) {
 static void addVariable(Environment *self, Variable *var) {
     log(("add %s", var->id->str));
     TrieNode *t = NULL;
-    on_self(var->id, refer);
-    t = searchTrieNode(self->trie, var->id);
-//    Environment *pEnv = self;
-//    while (pEnv != NULL) {
-//        on_self(var->id, refer);
-//        t = searchTrieNode(pEnv->trie, var->id);
-//        if (t != NULL) break;
-//        pEnv = pEnv->father;
-//    }
+//    on_self(var->id, refer);
+//    t = searchTrieNode(self->trie, var->id);
+    Environment *pEnv = self;
+    while (pEnv != NULL) {
+        on_self(var->id, refer);
+        t = searchTrieNode(pEnv->trie, var->id);
+        if (t != NULL) break;
+        pEnv = pEnv->father;
+    }
     if (t == NULL) {
         on_self(var->id, refer);
         t = createTrieNode(self->trie, var->id);
     }
+    if (t->obj) del(t->obj);
     t->obj = var;
 }
 
