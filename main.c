@@ -2,7 +2,7 @@
 #include "hedgehog.h"
 #include "value.h"
 
-#define TEST
+//#define TEST
 
 int yyerror(char const *str) {
     extern char *yytext;
