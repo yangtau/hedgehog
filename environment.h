@@ -4,23 +4,22 @@
 
 #include "variable.h"
 
-//interface
+// interface
 typedef struct EnvironmentTag Environment;
 typedef struct TrieNodeTag ObjectTrie;
 
 struct EnvironmentTag {
-    void (*addFather)(Environment *self, Environment *father);
+    void (*addVariableToLocal)(Environment* self, Variable* var);
+    void (*addFather)(Environment* self, Environment* father);
+    void (*addVariable)(Environment* self, Variable* var);
+    Variable* (*findVariable)(Environment* self, String* id);
 
-    void (*addVariable)(Environment *self, Variable *var);
+    void (*free)(Environment* self);
 
-    Variable *(*findVariable)(Environment *self, String *id);
-
-    void (*free)(Environment *self);
-
-    ObjectTrie *trie;
-    Environment *father;
+    ObjectTrie* trie;
+    Environment* father;
 };
 
-void *initEnvironment();
+void* initEnvironment();
 
 #endif /*_HG_IDENTIFIER_H_*/

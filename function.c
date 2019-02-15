@@ -32,7 +32,7 @@ static Value callFunction(FunctionDefine *func,
         for (; p != NULL && arg != NULL;) {
             on_self(p->name, refer);
             Variable *var = initVariable(p->name, arg->evaluate(arg, env));
-            localEnv->addVariable(localEnv, var);
+            localEnv->addVariableToLocal(localEnv, var);
             p = p->next;
             arg = arg->next;
         }
