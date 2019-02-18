@@ -4,3 +4,6 @@ y.tab.*
 cmake-build-debug/
 .vscode/
 .idea/
+hedgehog
+CMakeLists.txt
+*.txt

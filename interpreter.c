@@ -7,21 +7,21 @@
 #include "function.h"
 // char to int
 
-static void freeInterpreter(Interpreter* interpreter) {
+static void freeInterpreter(Interpreter *interpreter) {
     interpreter->globalEnv->free(interpreter->globalEnv);
     interpreter->list->free(interpreter->list);
     free(interpreter);
 }
 
-static void interpret(Interpreter* interpreter) {
+static void interpret(Interpreter *interpreter) {
     interpreter->list->execute(interpreter->list, interpreter->globalEnv);
 }
 
-static Interpreter* current_interpreter;
+static Interpreter *current_interpreter;
 
-static void compile(Interpreter* interpreter, FILE* file) {
+static void compile(Interpreter *interpreter, FILE *file) {
     extern int yyparse(void);
-    extern FILE* yyin;
+    extern FILE *yyin;
     yyin = file;
     current_interpreter = interpreter;
     if (yyparse()) {
@@ -30,12 +30,12 @@ static void compile(Interpreter* interpreter, FILE* file) {
     }
 }
 
-Interpreter* getCurrentInterpreter() {
+Interpreter *getCurrentInterpreter() {
     return current_interpreter;
 }
 
-Interpreter* initInterpreter() {
-    Interpreter* interpreter = (Interpreter*)malloc(sizeof(Interpreter));
+Interpreter *initInterpreter() {
+    Interpreter *interpreter = (Interpreter *) malloc(sizeof(Interpreter));
     interpreter->list = initStatementList();
     interpreter->globalEnv = initEnvironment();
     addNativeFunction(interpreter->globalEnv);

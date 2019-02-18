@@ -27,9 +27,9 @@ typedef struct {
 
 
 struct StatementTag {
-    StatementResult (*execute)(void *self, Environment *env);
+    StatementResult (*execute)(Statement *self, Environment *env);
 
-    void (*free)(void *self);
+    void (*free)(Statement *self);
 
     Statement *next;
 };
@@ -43,9 +43,7 @@ struct IfStatementTag {
     ElsIfStatement *elsIfTail;
     StatementList *elseBlock;
 
-    void (*addElsIf)(IfStatement *ifS,
-                     Expression *condition,
-                     StatementList *block);
+    void (*addElsIf)(IfStatement *ifS, Expression *condition, StatementList *block);
 
     void (*addElse)(IfStatement *ifS, StatementList *elseBlock);
 };

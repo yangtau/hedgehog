@@ -7,13 +7,11 @@
 struct FunctionDefineTag {
 
     ParameterList *parameterList;
-//    int parameter_cnt;
     StatementList *block;
 
     Value (*call)(FunctionDefine *self,
                   ArgumentList *args,
                   Environment *env);
-
 
     void (*free)(FunctionDefine *self);
 };
