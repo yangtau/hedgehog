@@ -1,12 +1,10 @@
-
 func fibonacci(n) {
     if n < 0 {
         return -1;
     } elsif n == 0 {
         return 0;
     } else {
-        a = 0;
-        b = 1;
+        a, b = 0, 1;
         for j=1;j<n;j=j+1 {
             a, b = b, a+b;
         }
@@ -16,34 +14,11 @@ func fibonacci(n) {
 
 print(fibonacci(20));
 
-func fibonac(n) {
+func fibonacci(n) {
     if n<0 {return -1;}
     elsif n==0 {return 0;}
     elsif n==1 {return 1;}
-    return fibonac(n-1)+fibonac(n-2);
+    return fibonacci(n-1)+fibonacci(n-2);
 }
 
-print(fibonac(20));
-
-func sum(n) {
-	if n==1 {return 1;}
-	return sum(n-1)+n;
-}
-
-print(sum(5));
-
-func empty() {
-
-}
-
-empty();
-a=10;
-if a>5 {
-
-} else {
-    print("hello");
-}
-
-a, b= 10, 30;
-print(a);
-print(b);
+print(fibonacci(20));
