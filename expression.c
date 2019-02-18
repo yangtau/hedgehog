@@ -225,6 +225,7 @@ void *initValueExpression(Value value) {
 // function call expression
 
 static void freeFunctionCallExpression(Expression *_self) {
+    log(("here"));
     FunctionCallExpression *self = (FunctionCallExpression *) _self;
     if (self->args != NULL)
         del(self->args);
@@ -250,7 +251,6 @@ void *initFunctionCallExpression(String *id, ArgumentList *args) {
     FunctionCallExpression *exp = malloc(sizeof(FunctionCallExpression));
     exp->base = FunctionCallExpressionBase;
     exp->id = id;
-    //    on_self(id, refer);
     exp->args = args;
     return exp;
 }
@@ -258,10 +258,6 @@ void *initFunctionCallExpression(String *id, ArgumentList *args) {
 // argument list
 
 static ArgumentList *addToArgumentList(ArgumentList *list, Expression *exp) {
-//    list->tail->next = exp;
-//    list->tail = exp;
-//    //    list->tail->next = NULL;
-//    list->cnt++;
     exp->pre = list->last;
     list->last = exp;
     return list;
@@ -280,9 +276,6 @@ ArgumentList *initArgumentList(Expression *head) {
     ArgumentList *list = malloc(sizeof(ArgumentList));
     list->last = head;
     head->pre = NULL;
-//    list->head = list->tail = head;
-//    list->head->next = NULL;
-//    list->cnt = 1;
     list->free = freeArgumentList;
     list->add = addToArgumentList;
     return list;
@@ -294,20 +287,17 @@ static ParameterList *addToParameterList(ParameterList *list, String *id) {
     p->name = id;
     p->pre = list->last;
     list->last = p;
-//    p->next = list->tail->next;
-//    list->tail->next = p;
-//    list->tail = p;
-//    list->cnt++;
     return list;
 }
 
 static void freeParameterList(ParameterList *list) {
-//    log(("free parameter"));
-    while (list->last != NULL) {
-        Parameter *p = list->last->pre;
-        on_self(list->last->name, release);
-        free(list->last);
-        list->last = p;
+    log(("free parameter"));
+    Parameter *p = list->last;
+    while (p != NULL) {
+        Parameter *q = p->pre;
+        on_self(p->name, release);
+        free(p);
+        p = q;
     }
     free(list);
 }
@@ -318,24 +308,25 @@ ParameterList *initParameterList(String *head) {
     p->pre = NULL;
     p->name = head;
     list->last = p;
-//    list->head = list->tail = p;
     list->free = freeParameterList;
     list->add = addToParameterList;
-//    list->cnt = 1;
     return list;
 }
 
-//multi assign expression
+// multi assign expression
 
 static void freeMultiAssignExpression(Expression *_self) {
+    log(("here"));
     MultiAssignExpression *self = (MultiAssignExpression *) _self;
     del(self->paras);
     del(self->args);
     free(self);
 }
 
-
-void multiAssign(ParameterList *paras, ArgumentList *args, Environment *evalEnv, Environment *varEnv) {
+void multiAssign(ParameterList *paras,
+                 ArgumentList *args,
+                 Environment *evalEnv,
+                 Environment *varEnv) {
     if (args != NULL && paras != NULL) {
         Expression *arg = args->last;
         Parameter *p = paras->last;
@@ -343,7 +334,6 @@ void multiAssign(ParameterList *paras, ArgumentList *args, Environment *evalEnv,
         int len = 6;
         Value *values = calloc(sizeof(Value), len);
         while (arg != NULL) {
-            on_self(p->name, refer);
             if (cnt == len) {
                 len *= 2;
                 values = realloc(values, sizeof(Value) * len);
@@ -354,6 +344,7 @@ void multiAssign(ParameterList *paras, ArgumentList *args, Environment *evalEnv,
         int i = 0;
         for (; i < cnt && p; i++, p = p->pre) {
             on_self(p->name, refer);
+            if (values[i].type == STRING_VALUE) on_self(values[i].v.string_value, refer);
             Variable *var = initVariable(p->name, values[i]);
             varEnv->addVariable(varEnv, var);
         }
@@ -369,37 +360,19 @@ void multiAssign(ParameterList *paras, ArgumentList *args, Environment *evalEnv,
     }
 }
 
-static Value evaluateMultiAssignExpression(Expression *_self, Environment *env) {
+static Value evaluateMultiAssignExpression(Expression *_self,
+                                           Environment *env) {
     MultiAssignExpression *self = (MultiAssignExpression *) _self;
     Value v = {NULL_VALUE};
     multiAssign(self->paras, self->args, env, env);
-//    if (self->args != NULL && self->paras != NULL) {
-//        Expression *arg = self->args->last;
-//        Parameter *p = self->paras->last;
-//        for (; p != NULL && arg != NULL;) {
-//            on_self(p->name, refer);
-//            Variable *var = initVariable(p->name, arg->evaluate(arg, env));
-//            env->addVariable(env, var);
-//            p = p->pre;
-//            arg = arg->pre;
-//        }
-//        if (arg != NULL)
-//            panic(("too many arguments."));
-//        if (p != NULL)
-//            panic(("too few arguments."));
-//    } else if (self->args == NULL && self->paras != NULL) {
-//        panic(("too few arguments."));
-//    } else if (self->args != NULL && self->paras == NULL) {
-//        panic(("too many arguments."));
-//    }
     return v;
 }
 
-static Expression MultiAssignExpressionBase = {
-        freeMultiAssignExpression, evaluateMultiAssignExpression
-};
+static Expression MultiAssignExpressionBase = {freeMultiAssignExpression,
+                                               evaluateMultiAssignExpression};
 
 void *initMultiAssignExpression(ParameterList *paras, ArgumentList *args) {
+    log(("init"));
     MultiAssignExpression *expr = malloc(sizeof(MultiAssignExpression));
     expr->args = args;
     expr->paras = paras;

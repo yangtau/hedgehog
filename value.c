@@ -6,12 +6,12 @@
 
 void refer(String *s) {
     s->cnt++;
-//    log(("%s: %d", s->str, s->cnt));
+   log(("%s: %d", s->str, s->cnt));
 }
 
 void release(String *s) {
     s->cnt--;
-//    log(("%s: %d", s->str, s->cnt));
+   log(("%s: %d", s->str, s->cnt));
     if (s->cnt == 0) {
         log(("string free: %s", s->str));
         free(s->str);

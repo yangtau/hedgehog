@@ -1,30 +1,34 @@
-# HEDGEHOG
+# Hedgehog
 Hedgehog is a simple dynamic programming language made with yacc and lex.
 
 ## Feature so far
 - Value
     ```
-    a = 10;
-    b = 3.14;
-    c = true;
-    d = null;
-    s="Hello, World!";
+    a = 10;//int
+    b = 3.14;//float
+    c = true;//boolean
+    d = null;//null
+    s = "Hello, World!";//string
     ```
-- Control
-  There must be `{}` after `if`, `elsif` and `else`, even if there is only one.
+- Control 
+
+  There must be `{}` after `if`, `elsif` and `else`, even if there is only one statement in the block.
+
     ```
     a = 10;
-    if a > 10 {
+    if a > 10 { // `()` is not necessary.
         b = a+20;
     } elsif a==10 {
         b = a+10;
     } else {
         b = a-10;
     }
-    print(b);// block has no local environment, 
-             //so 'b' is a global variable.
+    print(b);
+    // block has no local environment, 
+    // so 'b' is a global variable.
     ```
 - Loops
+
   There is no `while` loop, for `for` can replace it.
     ```
     for i=0; i<10; i=i+1 {
@@ -38,12 +42,13 @@ Hedgehog is a simple dynamic programming language made with yacc and lex.
     }
     ```
 - Function
+
   A function is also treated as a value.
     ```
     func Hello() {
         print("Hello, world!");
     }
-
+  
     Hello();
     ```
     ```
@@ -54,7 +59,7 @@ Hedgehog is a simple dynamic programming language made with yacc and lex.
             a, b = b, a+b;
         }
     }
-
+  
     fbi(100);
     ```
     ```
@@ -62,7 +67,7 @@ Hedgehog is a simple dynamic programming language made with yacc and lex.
         if n==0 {return 1;}
         return n*factorial(n-1);
     }
-
+  
     print(factorial(5));
     ```
     And there is only one native function so far, `print`, which takes one value argument.
@@ -75,8 +80,9 @@ gcc -std=c99 -o hedgehog *.c
 
 ## Usage
 run test:
-`./hedgehog test/tes.hg`
+	`./hedgehog test/tes.hg`
 code examples:
+
 ```
 print("Hello world");
 ```
