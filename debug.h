@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #include <stdlib.h>
-//#define LOG_ON
+// #define LOG_ON
 #ifdef LOG_ON
 #define log(x) printf("%s: ",__FUNCTION__),(printf x ),printf("\n")
 #else

@@ -54,3 +54,12 @@ func factorial(n) {
 }
 
 print(factorial(5));
+
+b = 2;
+a = 10;
+if a>20 & b<10 {
+    print("`b` is less than 10 and `a` is greater than 20");
+}
+if a>20 | b<10 {
+    print("`b` is less than 10 or `a` is greater than 20");
+}

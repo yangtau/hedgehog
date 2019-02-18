@@ -8,6 +8,7 @@ struct FunctionDefineTag {
 
     ParameterList *parameterList;
     StatementList *block;
+    // int cnt;
 
     Value (*call)(FunctionDefine *self,
                   ArgumentList *args,

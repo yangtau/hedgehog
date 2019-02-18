@@ -42,6 +42,7 @@ FunctionDefine *initFunctionDefine(ParameterList *paras, StatementList *block) {
     func->parameterList = paras;
     func->call = callFunction;
     func->free = freeFunction;
+    // func->cnt = 1;
     return func;
 }
 

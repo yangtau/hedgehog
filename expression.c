@@ -155,7 +155,7 @@ const static Expression AssignExpressionBase = {freeAssignExpression,
 
 void *initAssignExpression(String *id, Expression *expression) {
     //    log(("id: %s", id->str));
-    AssignExpression *exp = malloc(sizeof(UnaryExpression));
+    AssignExpression *exp = malloc(sizeof(AssignExpression));
     exp->expression = expression;
     exp->base = AssignExpressionBase;
     exp->id = id;

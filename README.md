@@ -53,7 +53,7 @@ Hedgehog is a simple dynamic programming language made with yacc and lex.
     ```
     ```
     func fbi(n) {
-        a, b = 0, 1
+        a, b = 0, 1;
         for a<n {
             print(a);
             a, b = b, a+b;
@@ -71,6 +71,20 @@ Hedgehog is a simple dynamic programming language made with yacc and lex.
     print(factorial(5));
     ```
     And there is only one native function so far, `print`, which takes one value argument.
+- Operator
+  
+  Most operator in hedgehog is the same with c. However, there is only one `&` for `logical and`, and one `|` for `logical or`.
+    ```
+    b = 2;
+    a = 10;
+    if a>20 & b<10 {
+        print("`b` is less than 10 and `a` is greater than 20");
+    }
+    if a>20 | b<10 {
+        print("`b` is less than 10 or `a` is greater than 20");
+    }
+    ```
+
 ## Compile:
 ```
 yacc -d hedgehog.y
