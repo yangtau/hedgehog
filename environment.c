@@ -2,6 +2,7 @@
 #include "environment.h"
 #include <stdlib.h>
 #include "debug.h"
+#include "interpreter.h"
 #include "oop.h"
 
 // trie
@@ -86,33 +87,12 @@ static void addVariable(Environment* self, Variable* var) {
     //    on_self(var->id, refer);
     //    t = searchTrieNode(self->trie, var->id);
     Environment* pEnv = self;
-    while (pEnv != NULL) {
-        on_self(var->id, refer);
-        t = searchTrieNode(pEnv->trie, var->id);
-        if (t != NULL)
-            break;
-        pEnv = pEnv->father;
-    }
-    if (t == NULL) {
-        on_self(var->id, refer);
-        t = createTrieNode(self->trie, var->id);
-    }
-    if (t->obj)
-        del(t->obj);
-    t->obj = var;
-}
-static void addVariableToLocal(Environment* self, Variable* var) {
-    log(("add %s", var->id->str));
-    TrieNode* t = NULL;
-    on_self(var->id, refer);
-    t = searchTrieNode(self->trie, var->id);
-    // Environment* pEnv = self;
     // while (pEnv != NULL) {
-    //     on_self(var->id, refer);
-    //     t = searchTrieNode(pEnv->trie, var->id);
-    //     if (t != NULL)
-    //         break;
-    //     pEnv = pEnv->father;
+    on_self(var->id, refer);
+    t = searchTrieNode(pEnv->trie, var->id);
+    // if (t != NULL)
+    //     break;
+    // pEnv = pEnv->father;
     // }
     if (t == NULL) {
         on_self(var->id, refer);
@@ -122,20 +102,40 @@ static void addVariableToLocal(Environment* self, Variable* var) {
         del(t->obj);
     t->obj = var;
 }
+// static void addVariableToLocal(Environment* self, Variable* var) {
+//     log(("add %s", var->id->str));
+//     TrieNode* t = NULL;
+//     on_self(var->id, refer);
+//     t = searchTrieNode(self->trie, var->id);
+//     // Environment* pEnv = self;
+//     // while (pEnv != NULL) {
+//     //     on_self(var->id, refer);
+//     //     t = searchTrieNode(pEnv->trie, var->id);
+//     //     if (t != NULL)
+//     //         break;
+//     //     pEnv = pEnv->father;
+//     // }
+//     if (t == NULL) {
+//         on_self(var->id, refer);
+//         t = createTrieNode(self->trie, var->id);
+//     }
+//     if (t->obj)
+//         del(t->obj);
+//     t->obj = var;
+// }
 
 static Variable* findVariable(Environment* self, String* name) {
     log(("find %s", name->str));
     TrieNode* t = NULL;
-    Environment* pEnv = self;
-    while (pEnv != NULL) {
+    on_self(name, refer);
+    t = searchTrieNode(self->trie, name);
+    if (t == NULL) {
         on_self(name, refer);
-        t = searchTrieNode(pEnv->trie, name);
-        if (t != NULL)
-            break;
-        pEnv = pEnv->father;
+        // When variable was not found in local environment, search it in global environment.
+        t = searchTrieNode(getCurrentInterpreter()->globalEnv->trie, name);
     }
     if (t == NULL || t->obj == NULL) {
-        panic("\"%s\" not found", name->str);
+        panic(("\"%s\" not found", name->str));
     } else {
         name->release(name);
         return t->obj;
@@ -146,13 +146,8 @@ static void freeEnvironment(Environment* self) {
     freeTrie(self->trie);
     free(self);
 }
-
-static void addFather(Environment* self, Environment* father) {
-    self->father = father;
-}
-
-const static Environment EnvironmentBase = {
-    addVariableToLocal, addFather, addVariable, findVariable, freeEnvironment};
+const static Environment EnvironmentBase = {addVariable, findVariable,
+                                            freeEnvironment};
 
 void* initEnvironment() {
     Environment* p = malloc(sizeof(Environment));
