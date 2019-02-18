@@ -11,9 +11,6 @@ static void freeFunction(FunctionDefine *self) {
     if (self->block != NULL) {
         del(self->block);
     }
-    //    for (int i = 0; i < self->parameter_cnt; i++) {
-    //        on_self(self->parameters[i], release);
-    //    }
     if (self->parameterList != NULL) {
         del(self->parameterList);
     }

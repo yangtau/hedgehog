@@ -21,7 +21,9 @@ int main(int argc, char **argv) {
 //    file = fopen("test.hg", "r");//todo
     Interpreter *interpreter = initInterpreter();
     interpreter->compile(interpreter, file);
+    log(("compile done"));
     interpreter->interpret(interpreter);
+    log(("interpret done"));
     interpreter->free(interpreter);
     return 0;
 }
