@@ -2,11 +2,10 @@
 #include "hedgehog.h"
 #include "value.h"
 
-//#define TEST
 
 int yyerror(char const *str) {
     extern char *yytext;
-    fprintf(stderr, "--ERROR:%s, %s--\n", str, yytext);
+    fprintf(stderr, "--ERROR:%s, near '%s'--\n", str, yytext);
     return 0;
 }
 
@@ -19,9 +18,7 @@ int main(int argc, char **argv) {
             exit(1);
         }
     }
-#ifdef TEST
-    file = fopen("test.hg", "r");
-#endif
+//    file = fopen("test.hg", "r");//todo
     Interpreter *interpreter = initInterpreter();
     interpreter->compile(interpreter, file);
     interpreter->interpret(interpreter);

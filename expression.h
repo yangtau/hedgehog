@@ -4,6 +4,7 @@
 
 #include "environment.h"
 #include "value.h"
+
 typedef enum {
     ADD_OPERATOR,
     SUB_OPERATOR,
@@ -11,11 +12,9 @@ typedef enum {
     DIV_OPERATOR,
     MOD_OPERATOR,
     POWER_OPERATOR,
-
     OR_OPERATOR,
-    AND_OPERATOR,  // 7
+    AND_OPERATOR,
     NOT_OPERATOR,
-
     EQ_OPERATOR,  //==
     NQ_OPERATOR,  //!=
     GT_OPERATOR,  //>
@@ -30,14 +29,12 @@ typedef struct ParameterTag Parameter;
 typedef struct ParameterListTag ParameterList;
 
 struct ExpressionTag {
+    void (*free)(Expression *self);
 
-    void (*free)(void *self);
+    Value (*evaluate)(Expression *self, Environment *env);
 
-    Value (*evaluate)(void *self, Environment *env);
-
-    void *next;
+    Expression *pre;//used in argument list
 };
-
 
 void *initVariableExpression(String *id);
 
@@ -45,8 +42,7 @@ void *initBinaryExpression(OperatorType operatorType,
                            Expression *left,
                            Expression *right);
 
-void *initUnaryExpression(OperatorType operatorType,
-                          Expression *expression);
+void *initUnaryExpression(OperatorType operatorType, Expression *expression);
 
 void *initAssignExpression(String *id, Expression *expression);
 
@@ -54,12 +50,14 @@ void *initValueExpression(Value value);
 
 void *initFunctionCallExpression(String *id, ArgumentList *args);
 
-struct ArgumentListTag {
-    Expression *head;
-    Expression *tail;
-    int cnt;
+void *initMultiAssignExpression(ParameterList *paras, ArgumentList *args);
 
-    ArgumentList *(*add)(ArgumentList *list, void *exp);
+void multiAssign(ParameterList *paras, ArgumentList *args, Environment *evalEnv, Environment *varEnv);
+
+struct ArgumentListTag {
+    Expression *last;  // the expression int the end of the list;
+
+    ArgumentList *(*add)(ArgumentList *list, Expression *expr);
 
     void (*free)(ArgumentList *list);
 };
@@ -68,13 +66,11 @@ ArgumentList *initArgumentList(Expression *head);
 
 struct ParameterTag {
     String *name;
-    Parameter *next;
+    Parameter *pre;
 };
 
 struct ParameterListTag {
-    Parameter *head;
-    Parameter *tail;
-    int cnt;
+    Parameter *last;
 
     ParameterList *(*add)(ParameterList *list, String *para);
 
@@ -84,4 +80,3 @@ struct ParameterListTag {
 ParameterList *initParameterList(String *head);
 
 #endif /*_HG_EXPRESSION_H_*/
-

@@ -67,6 +67,10 @@ STATEMENT_BLOCK:
     LB STATEMENT_LIST RB {
         $$ = $2;
     }
+    |
+    LB RB {
+        $$ = NULL;
+    }
     ;
 
 STATEMENT_LIST:
@@ -176,9 +180,12 @@ ARGUMENT_LIST:
 EXPRESSION:
     OR_EXPRESSION
     |
-    IDENTIFIER ASSIGN EXPRESSION {
-//        ($1)->refer($1);
-        $$ = initAssignExpression($1, $3);
+//    IDENTIFIER ASSIGN EXPRESSION {
+//        $$ = initAssignExpression($1, $3);
+//    }
+//    |
+    PARAMETER_LIST ASSIGN ARGUMENT_LIST {
+    	$$ = initMultiAssignExpression($1, $3);
     }
     ;
 
@@ -290,7 +297,6 @@ VALUE_EXPRESSION:
     }
     |
     IDENTIFIER {
-//        $1->refer($1);
         $$ = initVariableExpression($1);
     }
     ;
@@ -309,12 +315,10 @@ VALUE:
 
 FUNCTION_CALL_EXPRESSION:
     IDENTIFIER LP RP {
-//    	$1->refer($1);
-	$$ = initFunctionCallExpression($1, NULL);
+	    $$ = initFunctionCallExpression($1, NULL);
     }
     |
     IDENTIFIER LP ARGUMENT_LIST RP {
-//    	$1->refer($1);
     	$$ = initFunctionCallExpression($1, $3);
     }
     ;

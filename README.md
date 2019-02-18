@@ -5,7 +5,7 @@ It is too simple and may exist many bugs.
 ```
 yacc -d hedgehog.y
 lex hedgehog.l
-gcc -o hedgehog *.c
+gcc -std=c99 -o hedgehog *.c
 ```
 
 ## Usage
@@ -22,17 +22,23 @@ func fibonacci(n) {
     } else {
         a = 0;
         b = 1;
-        func fn() {
+        for j=1;j<n;j=j+1 {
             t = a;
             a = b;
             b = t+b;
         }
-        for j=1;j<n;j=j+1 {fn();}
         return b;
     }
 }
 
-for i=0; i<10; i=i+1 {
-    print(fibonacci(i));
+print(fibonacci(20));
+
+func fibonacci(n) {
+    if n<0 {return -1;}
+    elsif n==0 {return 0;}
+    elsif n==1 {return 1;}
+    return fibonacci(n-1)+fibonacci(n-2);
 }
+
+print(fibonacci(20));
 ```

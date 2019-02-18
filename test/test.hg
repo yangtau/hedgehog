@@ -1,3 +1,4 @@
+
 func fibonacci(n) {
     if n < 0 {
         return -1;
@@ -7,16 +8,13 @@ func fibonacci(n) {
         a = 0;
         b = 1;
         for j=1;j<n;j=j+1 {
-            t = a;
-            a = b;
-            b = t+b;
+            a, b = b, a+b;
         }
         return b;
     }
 }
 
 print(fibonacci(20));
-
 
 func fibonac(n) {
     if n<0 {return -1;}
@@ -33,3 +31,19 @@ func sum(n) {
 }
 
 print(sum(5));
+
+func empty() {
+
+}
+
+empty();
+a=10;
+if a>5 {
+
+} else {
+    print("hello");
+}
+
+a, b= 10, 30;
+print(a);
+print(b);
