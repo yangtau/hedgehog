@@ -105,7 +105,7 @@ static Value evaluateBinaryExpression(void *_self,
         case LE_OPERATOR:
             return valueLessOrEqual(leftValue, rightValue);
         default:
-            panic("%s", "bad case...");
+            panic(("bad case..."));
     }
 }
 
@@ -175,7 +175,7 @@ static Value evaluateUnaryExpression(void *_self,
         case NOT_OPERATOR:
             return valueNot(value);
         default:
-            panic("%s", "bad case...");
+            panic(("bad case..."));
             break;
     }
 }
@@ -243,7 +243,7 @@ static Value evaluateFunctionExpression(void *_self, Environment *env) {
     on_self(self->id, refer);
     Variable *var = env->findVariable(env, self->id);
     if (var->v.type != FUNCTION_VALUE) {
-        panic("%s is not callable", var->id->str);
+        panic(("%s is not callable", var->id->str));
     }
     FunctionDefine *func = var->v.v.function;
     return func->call(func, self->args, env);
@@ -264,10 +264,6 @@ void *initFunctionCallExpression(String *id, ArgumentList *args) {
 
 
 
-/*
- * both argument list and parameter list insert node after head,
- * thus they can work properly.
- * */
 // argument list
 
 static ArgumentList *addToArgumentList(ArgumentList *list, void *exp) {

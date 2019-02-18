@@ -9,15 +9,14 @@ typedef struct EnvironmentTag Environment;
 typedef struct TrieNodeTag ObjectTrie;
 
 struct EnvironmentTag {
-    void (*addVariableToLocal)(Environment* self, Variable* var);
-    void (*addFather)(Environment* self, Environment* father);
+    // void (*addFather)(Environment* self, Environment* father);
     void (*addVariable)(Environment* self, Variable* var);
     Variable* (*findVariable)(Environment* self, String* id);
 
     void (*free)(Environment* self);
 
     ObjectTrie* trie;
-    Environment* father;
+    // Environment* father;
 };
 
 void* initEnvironment();

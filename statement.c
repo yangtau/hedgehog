@@ -3,62 +3,61 @@
 #include "statement.h"
 #include <stdlib.h>
 #include "debug.h"
-#include "oop.h"
 #include "function.h"
+#include "oop.h"
 #include "value.h"
 
 struct ElsIfStatementTag {
-    Expression *condition;
-    StatementList *block;
-    struct ElsIfStatementTag *next;
+    Expression* condition;
+    StatementList* block;
+    struct ElsIfStatementTag* next;
 };
 
 struct ForStatementTag {
     Statement base;
-    Expression *initial;  // assign
-    Expression *condition;
-    Expression *post;
-    StatementList *block;
+    Expression* initial;  // assign
+    Expression* condition;
+    Expression* post;
+    StatementList* block;
 };
-
 
 typedef struct ExpressionStatementTag {
     Statement base;
-    Expression *exp;
+    Expression* exp;
 } ExpressionStatement;
-
 
 typedef ExpressionStatement ReturnStatement;
 typedef struct FunctionDefineStatementTag {
     Statement base;
-    String *id;
-    ParameterList *paras;
-    StatementList *block;
+    String* id;
+    ParameterList* paras;
+    StatementList* block;
 } FunctionDefineStatement;
-
 
 /*expression statement*/
 
-static StatementResult executeExpressionStatement(void *_self, Environment *env) {
-//    log("execute %s", "start");
-    ExpressionStatement *self = _self;
+static StatementResult executeExpressionStatement(void* _self,
+                                                  Environment* env) {
+    //    log("execute %s", "start");
+    ExpressionStatement* self = _self;
     self->exp->evaluate(self->exp, env);
-    StatementResult result = {NORMAL_RESULT,};
+    StatementResult result = {
+        NORMAL_RESULT,
+    };
     return result;
 }
 
-static void freeExpressionStatement(void *_self) {
-    ExpressionStatement *self = _self;
+static void freeExpressionStatement(void* _self) {
+    ExpressionStatement* self = _self;
     del(self->exp);
     free(self);
 }
 
 const static Statement ExpressionStatementInterface = {
-        executeExpressionStatement, freeExpressionStatement
-};
+    executeExpressionStatement, freeExpressionStatement};
 
-void *initExpressionStatement(Expression *expression) {
-    ExpressionStatement *s = malloc(sizeof(ExpressionStatement));
+void* initExpressionStatement(Expression* expression) {
+    ExpressionStatement* s = malloc(sizeof(ExpressionStatement));
     s->base = ExpressionStatementInterface;
     s->exp = expression;
     return s;
@@ -66,14 +65,14 @@ void *initExpressionStatement(Expression *expression) {
 
 /*if else statement*/
 
-static void addElseToIf(IfStatement *ifS, StatementList *elseBlock) {
+static void addElseToIf(IfStatement* ifS, StatementList* elseBlock) {
     ifS->elseBlock = elseBlock;
 }
 
-static void addElsIfToIf(IfStatement *ifS,
-                         Expression *condition,
-                         StatementList *block) {
-    ElsIfStatement *elsIfS = malloc(sizeof(ElsIfStatement));
+static void addElsIfToIf(IfStatement* ifS,
+                         Expression* condition,
+                         StatementList* block) {
+    ElsIfStatement* elsIfS = malloc(sizeof(ElsIfStatement));
     elsIfS->block = block;
     elsIfS->condition = condition;
     elsIfS->next = NULL;
@@ -81,15 +80,16 @@ static void addElsIfToIf(IfStatement *ifS,
     ifS->elsIfTail = elsIfS;
 }
 
-static StatementResult executeElsIfStatement(void *_self,
-                                             Environment *env) {
-    ElsIfStatement *self = _self;
+static StatementResult executeElsIfStatement(void* _self, Environment* env) {
+    ElsIfStatement* self = _self;
     Value condition = self->condition->evaluate(self->condition, env);
     if (condition.type != BOOL_VALUE) {
-        panic("%s", "condition expression is supposed to yield boolean value");
+        panic(("condition expression is supposed to yield boolean value"));
         // TODO: error handler
     }
-    StatementResult res = {ELSE_IF_NE_RESULT,};
+    StatementResult res = {
+        ELSE_IF_NE_RESULT,
+    };
     if (condition.v.bool_value) {
         res = self->block->execute(self->block, env);
         if (res.type == BREAK_RESULT || res.type == CONTINUE_RESULT ||
@@ -102,16 +102,19 @@ static StatementResult executeElsIfStatement(void *_self,
     return res;
 }
 
-static StatementResult executeIfStatement(void *_self, Environment *env) {
-    IfStatement *self = _self;
-    Environment *localEnv = initEnvironment();
-    localEnv->addFather(localEnv, env);
+static StatementResult executeIfStatement(void* _self, Environment* env) {
+    IfStatement* self = _self;
+    Environment* localEnv = env;
+    // Environment* localEnv = initEnvironment();
+    // localEnv->addFather(localEnv, env);
     Value condition = self->condition->evaluate(self->condition, localEnv);
     if (condition.type != BOOL_VALUE) {
-        panic("%s", "condition expression is supposed to yield boolean value");
+        panic(("condition expression is supposed to yield boolean value"));
         // TODO: error handler
     }
-    StatementResult res = {ELSE_IF_NE_RESULT,};
+    StatementResult res = {
+        ELSE_IF_NE_RESULT,
+    };
     if (condition.v.bool_value) {
         res = self->block->execute(self->block, localEnv);
     } else {
@@ -119,27 +122,29 @@ static StatementResult executeIfStatement(void *_self, Environment *env) {
             res = executeElsIfStatement(self->elsIfHead->next, localEnv);
         }
         if (res.type == ELSE_IF_NE_RESULT && self->elseBlock != NULL)
-            res = self->elseBlock->execute(self->elseBlock, localEnv);;
+            res = self->elseBlock->execute(self->elseBlock, localEnv);
+        ;
     }
-    del(localEnv);
-    if (res.type == ELSE_IF_NE_RESULT) res.type = NORMAL_RESULT;
+    // del(localEnv);
+    if (res.type == ELSE_IF_NE_RESULT)
+        res.type = NORMAL_RESULT;
     return res;
 }
 
-static void freeElsifStatement(ElsIfStatement *elsifS) {
+static void freeElsifStatement(ElsIfStatement* elsifS) {
     del(elsifS->condition);
     del(elsifS->block);
 }
 
-static void freeIfStatement(void *_self) {
-    IfStatement *self = _self;
+static void freeIfStatement(void* _self) {
+    IfStatement* self = _self;
     del(self->condition);
     if (self->elseBlock != NULL)
         del(self->elseBlock);
     del(self->block);
-    ElsIfStatement *elsIfS = self->elsIfHead->next;
+    ElsIfStatement* elsIfS = self->elsIfHead->next;
     while (elsIfS != NULL) {
-        ElsIfStatement *p = elsIfS->next;
+        ElsIfStatement* p = elsIfS->next;
         freeElsifStatement(elsIfS);
         elsIfS = p;
     }
@@ -147,29 +152,26 @@ static void freeIfStatement(void *_self) {
     free(self);
 }
 
-const static Statement IfExpressionBase = {
-        executeIfStatement, freeIfStatement
-};
+const static Statement IfExpressionBase = {executeIfStatement, freeIfStatement};
 
-void *initIfStatement(Expression *condition, StatementList *block) {
-    IfStatement *ifS = (IfStatement *) malloc(sizeof(IfStatement));
+void* initIfStatement(Expression* condition, StatementList* block) {
+    IfStatement* ifS = (IfStatement*)malloc(sizeof(IfStatement));
     ifS->base = IfExpressionBase;
     ifS->condition = condition;
     ifS->block = block;
     ifS->elseBlock = NULL;
     ifS->elsIfHead = ifS->elsIfTail =
-            (ElsIfStatement *) malloc(sizeof(ElsIfStatement));
+        (ElsIfStatement*)malloc(sizeof(ElsIfStatement));
     ifS->elsIfHead->next = NULL;
     ifS->addElse = addElseToIf;
     ifS->addElsIf = addElsIfToIf;
     return ifS;
 }
 
-
 /*for statement */
 
-static void freeForStatement(void *_self) {
-    ForStatement *self = _self;
+static void freeForStatement(void* _self) {
+    ForStatement* self = _self;
     if (self->block != NULL)
         del(self->block);
     if (self->condition != NULL)
@@ -180,23 +182,25 @@ static void freeForStatement(void *_self) {
         del(self->post);
 }
 
-static StatementResult executeForStatement(void *_self,
-                                           Environment *env) {
-    ForStatement *self = _self;
-    Environment *localEnv = initEnvironment();
-    localEnv->addFather(localEnv, env);
+static StatementResult executeForStatement(void* _self, Environment* env) {
+    ForStatement* self = _self;
+    Environment* localEnv = env;
+    // Environment* localEnv = initEnvironment();
+    // localEnv->addFather(localEnv, env);
     if (self->initial != NULL) {
         self->initial->evaluate(self->initial, localEnv);
     }
-    StatementResult res = {NORMAL_RESULT,};
+    StatementResult res = {
+        NORMAL_RESULT,
+    };
     while (1) {
         if (self->condition != NULL) {
             Value v = self->condition->evaluate(self->condition, localEnv);
             if (v.type != BOOL_VALUE) {
                 panic(
-                        "Condition expression is supposed to yield boolean value. "
-                        "value type: %d",
-                        v.type);
+                    ("Condition expression is supposed to yield boolean value. "
+                     "value type: %d",
+                     v.type));
             }
             if (!v.v.bool_value)
                 break;
@@ -209,18 +213,20 @@ static StatementResult executeForStatement(void *_self,
         if (self->post != NULL)
             self->post->evaluate(self->post, localEnv);
     }
-    del(localEnv);
-    if (res.type != RETURN_RESULT) res.type = NORMAL_RESULT;
+    // del(localEnv);
+    if (res.type != RETURN_RESULT)
+        res.type = NORMAL_RESULT;
     return res;
 }
 
-const static Statement ForStatementBase = {
-        executeForStatement, freeForStatement
-};
+const static Statement ForStatementBase = {executeForStatement,
+                                           freeForStatement};
 
-void *initForStatement(Expression *initial, Expression *condition,  // not null
-                       Expression *post, StatementList *block) {
-    ForStatement *forS = (ForStatement *) malloc(sizeof(ForStatement));
+void* initForStatement(Expression* initial,
+                       Expression* condition,  // not null
+                       Expression* post,
+                       StatementList* block) {
+    ForStatement* forS = (ForStatement*)malloc(sizeof(ForStatement));
     forS->initial = initial;
     forS->block = block;
     forS->condition = condition;
@@ -229,72 +235,69 @@ void *initForStatement(Expression *initial, Expression *condition,  // not null
     return forS;
 }
 
-
 /* break continue */
 
-void freeNULL(void *_) {};
+void freeNULL(void* _){};
 
-static StatementResult executeBreakStatement(void *_, Environment *__) {
-    StatementResult res = {BREAK_RESULT,};
+static StatementResult executeBreakStatement(void* _, Environment* __) {
+    StatementResult res = {
+        BREAK_RESULT,
+    };
     return res;
 }
 
-static Statement BreakStatement = {
-        executeBreakStatement, freeNULL
-};
+static Statement BreakStatement = {executeBreakStatement, freeNULL};
 
-void *initBreakStatement() {
+void* initBreakStatement() {
     return &BreakStatement;
 }
 
-static StatementResult executeContinueStatement(void *_, Environment *__) {
-    StatementResult res = {CONTINUE_RESULT,};
+static StatementResult executeContinueStatement(void* _, Environment* __) {
+    StatementResult res = {
+        CONTINUE_RESULT,
+    };
     return res;
 }
 
-static Statement ContinueStatement = {
-        executeContinueStatement, freeNULL
-};
+static Statement ContinueStatement = {executeContinueStatement, freeNULL};
 
-void *initContinueStatement() {
+void* initContinueStatement() {
     return &ContinueStatement;
 }
 
-//return
+// return
 
-static void freeReturnStatement(void *_self) {
-    ReturnStatement *self = _self;
+static void freeReturnStatement(void* _self) {
+    ReturnStatement* self = _self;
     del(self->exp);
     free(self);
 }
 
-static StatementResult executeReturnStatement(void *_self, Environment *env) {
-    ReturnStatement *self = _self;
+static StatementResult executeReturnStatement(void* _self, Environment* env) {
+    ReturnStatement* self = _self;
     Value v;
     if (self->exp != NULL) {
         v = self->exp->evaluate(self->exp, env);
-    } else v.type = NULL_VALUE;
-    StatementResult res = {
-            RETURN_RESULT, v
-    };
+    } else
+        v.type = NULL_VALUE;
+    StatementResult res = {RETURN_RESULT, v};
     return res;
 };
 
-const static Statement ReturnStatementBase = {
-        executeReturnStatement, freeReturnStatement
-};
+const static Statement ReturnStatementBase = {executeReturnStatement,
+                                              freeReturnStatement};
 
-void *initReturnStatement(Expression *exp) {
-    ReturnStatement *s = malloc(sizeof(ReturnStatement));
+void* initReturnStatement(Expression* exp) {
+    ReturnStatement* s = malloc(sizeof(ReturnStatement));
     s->base = ReturnStatementBase;
     s->exp = exp;
     return s;
 }
 
-//function define statement
+// function define statement
 
-static void freeFunctionDefineStatement(void *_self) {
-    FunctionDefineStatement *self = _self;
+static void freeFunctionDefineStatement(void* _self) {
+    FunctionDefineStatement* self = _self;
     if (self->block != NULL)
         del(self->block);
     on_self(self->id, release);
@@ -303,8 +306,9 @@ static void freeFunctionDefineStatement(void *_self) {
     free(self);
 }
 
-static StatementResult executeFunctionDefineStatement(void *_self, Environment *env) {
-    FunctionDefineStatement *self = _self;
+static StatementResult executeFunctionDefineStatement(void* _self,
+                                                      Environment* env) {
+    FunctionDefineStatement* self = _self;
     Value v;
     v.type = FUNCTION_VALUE;
     v.v.function = initFunctionDefine(self->paras, self->block);
@@ -316,11 +320,12 @@ static StatementResult executeFunctionDefineStatement(void *_self, Environment *
 }
 
 const static Statement FunctionDefineStatementBase = {
-        executeFunctionDefineStatement, freeFunctionDefineStatement
-};
+    executeFunctionDefineStatement, freeFunctionDefineStatement};
 
-void *initFunctionDefineStatement(String *id, ParameterList *paras, StatementList *block) {
-    FunctionDefineStatement *s = malloc(sizeof(FunctionDefineStatement));
+void* initFunctionDefineStatement(String* id,
+                                  ParameterList* paras,
+                                  StatementList* block) {
+    FunctionDefineStatement* s = malloc(sizeof(FunctionDefineStatement));
     s->base = FunctionDefineStatementBase;
     s->id = id;
     s->paras = paras;
@@ -329,7 +334,7 @@ void *initFunctionDefineStatement(String *id, ParameterList *paras, StatementLis
 }
 
 /*statement list*/
-static StatementList *addStatementToList(StatementList *list, Statement *s) {
+static StatementList* addStatementToList(StatementList* list, Statement* s) {
     if (list->head == NULL) {
         list->head = list->tail = s;
         list->tail->next = NULL;
@@ -341,11 +346,13 @@ static StatementList *addStatementToList(StatementList *list, Statement *s) {
     return list;
 }
 
-static StatementResult executeStatementList(StatementList *list,
-                                            Environment *env) {
-//    log("execute statement list %s", "start");
-    Statement *p = list->head;
-    StatementResult res = {NORMAL_RESULT,};
+static StatementResult executeStatementList(StatementList* list,
+                                            Environment* env) {
+    //    log("execute statement list %s", "start");
+    Statement* p = list->head;
+    StatementResult res = {
+        NORMAL_RESULT,
+    };
     while (p != NULL) {
         res = p->execute(p, env);
         if (res.type == BREAK_RESULT || res.type == CONTINUE_RESULT ||
@@ -356,17 +363,17 @@ static StatementResult executeStatementList(StatementList *list,
     return res;
 }
 
-static void freeStatementList(StatementList *list) {
-    Statement *p = list->head;
+static void freeStatementList(StatementList* list) {
+    Statement* p = list->head;
     while (p != NULL) {
-        Statement *q = p->next;
+        Statement* q = p->next;
         del(p);
         p = q;
     }
 }
 
-StatementList *initStatementList() {
-    StatementList *list = (StatementList *) malloc(sizeof(StatementList));
+StatementList* initStatementList() {
+    StatementList* list = (StatementList*)malloc(sizeof(StatementList));
     list->tail = list->head = NULL;
     list->free = freeStatementList;
     list->add = addStatementToList;

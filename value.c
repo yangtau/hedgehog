@@ -51,7 +51,7 @@ void valuePrint(Value v) {
             printf("function");
             break;
         default:
-            panic("bad case..%s", "");
+            panic(("bad case.."));
             break;
     }
 }

@@ -6,21 +6,30 @@ func fibonacci(n) {
     } else {
         a = 0;
         b = 1;
-        func fn() {
+        for j=1;j<n;j=j+1 {
             t = a;
             a = b;
             b = t+b;
         }
-        for j=1;j<n;j=j+1 {fn();}
         return b;
     }
 }
 
 print(fibonacci(20));
 
+
+func fibonac(n) {
+    if n<0 {return -1;}
+    elsif n==0 {return 0;}
+    elsif n==1 {return 1;}
+    return fibonac(n-1)+fibonac(n-2);
+}
+
+print(fibonac(20));
+
 func sum(n) {
 	if n==1 {return 1;}
 	return sum(n-1)+n;
 }
-print(sum(5));
 
+print(sum(5));

@@ -14,9 +14,9 @@
 
 #define DEBUG_ON
 #ifdef DEBUG_ON
-#define panic(x, y) printf("%s: ",__FUNCTION__),printf(x, y),printf("\n"),exit(2)
+#define panic(x) printf("%s: ",__FUNCTION__),printf x,printf("\n"),exit(2)
 #else
-#define panic(x, y)
+#define panic(x)
 #endif
 
 
