@@ -101,7 +101,7 @@ gcc -std=c99 -o hedgehog *.c
 
 run test:
 
-	`./hedgehog test/tes.hg`
+`./hedgehog test/tes.hg`
 
 code examples:
 
