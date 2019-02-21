@@ -1,7 +1,11 @@
 # Hedgehog
+
 Hedgehog is a simple dynamic programming language made with yacc and lex.
 
+There is a simple blog about the detail of the implementation in Chinese: [自制简易解释器](https://withas.me/2019/02/making-a-simple-interpreter).
+
 ## Feature so far
+
 - Value
     ```
     a = 10;//int
@@ -86,6 +90,7 @@ Hedgehog is a simple dynamic programming language made with yacc and lex.
     ```
 
 ## Compile:
+
 ```
 yacc -d hedgehog.y
 lex hedgehog.l
@@ -93,9 +98,13 @@ gcc -std=c99 -o hedgehog *.c
 ```
 
 ## Usage
+
 run test:
+
 	`./hedgehog test/tes.hg`
+
 code examples:
+
 
 ```
 print("Hello world");
