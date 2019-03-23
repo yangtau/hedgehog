@@ -135,3 +135,9 @@ func fibonacci(n) {
 
 print(fibonacci(20));
 ```
+
+## TODO
+
+- [ ] Garbage collection
+- [ ] List
+- [ ] Map
