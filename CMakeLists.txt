@@ -3,11 +3,13 @@ project(HG C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(HG expression.h environment.h expression.c environment.c oop.h variable.h
-        function.c function.h
-        interpreter.c
-        statement.c
-        value.c
-        main.c variable.c
-        lex.yy.c
-        y.tab.c)
+add_executable(HG src/expression.h src/environment.h src/expression.c src/environment.c src/oop.h src/variable.h
+        src/function.c src/function.h
+        src/interpreter.c
+        src/statement.c
+        src/value.c
+        src/variable.c
+        src/lex.yy.c
+        src/y.tab.c
+        main.c
+        src/interface/editor.c src/interface/editor.h)
