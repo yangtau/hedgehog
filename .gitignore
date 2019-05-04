@@ -3,5 +3,9 @@ cmake-build-debug/
 .vscode/
 .idea/
 hedgehog
+HG
+*.o
+*.exe
+*.out
 CMakeLists.txt
 *.txt
