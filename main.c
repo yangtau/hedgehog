@@ -1,29 +1,50 @@
+/*
+ * @file main.c
+ * @author yangtao
+ * @email yangtaojay@gmail.com
+ *
+ * FIXME: exit free
+ *
+ */
+
 #include <stdlib.h>
-#include "hedgehog.h"
-#include "value.h"
+#include "src/hedgehog.h"
+#include "src/value.h"
+#include <string.h>
+#include "src/interface/editor.h"
 
+static Interpreter *interpreter;
 
-int yyerror(char const *str) {
-    extern char *yytext;
-    fprintf(stderr, "--ERROR:%s, near '%s'--\n", str, yytext);
-    return 0;
+void callback(char *str) {
+    interpreter->compileWithStr(interpreter, str);
+    interpreter->interpret(interpreter);
+    interpreter->clearStatement(interpreter);
+}
+
+void commandLine() {
+    interpreter = initInterpreter();
+    initEditor();
+    statementEnd(callback);
+    while (1)
+        processKeypress();
+//    interpreter->free(interpreter);
 }
 
 int main(int argc, char **argv) {
-    FILE *file = stdin;
-    if (argc == 2) {
-        file = fopen(argv[1], "r");
+    if (argc >= 2) {
+        FILE *file = fopen(argv[1], "r");
         if (file == NULL) {
             printf("file %s valueNot found", argv[1]);
             exit(1);
         }
+        Interpreter *interpreter = initInterpreter();
+        interpreter->compile(interpreter, file);
+        log(("compile done"));
+        interpreter->interpret(interpreter);
+        log(("interpret done"));
+        interpreter->free(interpreter);
+    } else {
+        commandLine();
     }
-//    file = fopen("test.hg", "r");//todo
-    Interpreter *interpreter = initInterpreter();
-    interpreter->compile(interpreter, file);
-    log(("compile done"));
-    interpreter->interpret(interpreter);
-    log(("interpret done"));
-    interpreter->free(interpreter);
     return 0;
 }
