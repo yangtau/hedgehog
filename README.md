@@ -2,11 +2,12 @@
 
 Hedgehog is a simple dynamic programming language made with yacc and lex.
 
-There is a simple blog about the detail of the implementation in Chinese: [自制简易解释器](https://withas.me/2019/02/making-a-simple-interpreter).
+There is a simple blog about the detail of the implementation in Chinese: [自制简易解释器](https://yangtau.me/simple-interpreter.html)
 
 ## Feature so far
 
 - Value
+
     ```
     a = 10;//int
     b = 3.14;//float
@@ -14,6 +15,7 @@ There is a simple blog about the detail of the implementation in Chinese: [自�
     d = null;//null
     s = "Hello, World!";//string
     ```
+
 - Control 
 
   There must be `{}` after `if`, `elsif` and `else`, even if there is only one statement in the block.
@@ -34,6 +36,7 @@ There is a simple blog about the detail of the implementation in Chinese: [自�
 - Loops
 
   There is no `while` loop, for `for` can replace it.
+
     ```
     for i=0; i<10; i=i+1 {
         print(i);
@@ -47,7 +50,8 @@ There is a simple blog about the detail of the implementation in Chinese: [自�
     ```
 - Function
 
-  A function is also treated as a value.
+  A function is treated as a value.
+
     ```
     func Hello() {
         print("Hello, world!");
@@ -74,7 +78,8 @@ There is a simple blog about the detail of the implementation in Chinese: [自�
   
     print(factorial(5));
     ```
-    And there is only one native function so far, `print`, which takes one value argument.
+    And there is only one built-in function so far, `print`, which takes one value argument.
+
 - Operator
   
   Most operator in hedgehog is the same with c. However, there is only one `&` for `logical and`, and one `|` for `logical or`.
@@ -138,6 +143,6 @@ print(fibonacci(20));
 
 ## TODO
 
-- [ ] Garbage collection
-- [ ] List
-- [ ] Map
+- [ ] Garbage collector
+- [ ] Lists
+- [ ] Maps
