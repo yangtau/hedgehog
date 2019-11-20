@@ -8,10 +8,10 @@
  */
 
 #include <stdlib.h>
-#include "src/hedgehog.h"
-#include "src/value.h"
 #include <string.h>
-#include "src/interface/editor.h"
+#include "hedgehog.h"
+#include "value.h"
+#include "interface/editor.h"
 
 static Interpreter *interpreter;
 
