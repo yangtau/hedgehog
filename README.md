@@ -9,11 +9,11 @@ There is a simple blog about the detail of the implementation in Chinese: [è‡ªåˆ
 - Value
 
     ```
-    a = 10;//int
-    b = 3.14;//float
-    c = true;//boolean
-    d = null;//null
-    s = "Hello, World!";//string
+    a = 10;              //int
+    b = 3.14;            //float
+    c = true;            //boolean
+    d = null;            //null
+    s = "Hello, World!"; //string
     ```
 
 - Control 
@@ -30,8 +30,6 @@ There is a simple blog about the detail of the implementation in Chinese: [è‡ªåˆ
         b = a-10;
     }
     print(b);
-    // block has no local environment, 
-    // so 'b' is a global variable.
     ```
 - Loops
 
@@ -49,8 +47,6 @@ There is a simple blog about the detail of the implementation in Chinese: [è‡ªåˆ
     }
     ```
 - Function
-
-  A function is treated as a value.
 
     ```
     func Hello() {
@@ -78,7 +74,6 @@ There is a simple blog about the detail of the implementation in Chinese: [è‡ªåˆ
   
     print(factorial(5));
     ```
-    And there is only one built-in function so far, `print`, which takes one value argument.
 
 - Operator
   
