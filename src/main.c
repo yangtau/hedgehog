@@ -11,7 +11,7 @@
 #include <string.h>
 #include "hedgehog.h"
 #include "value.h"
-#include "interface/editor.h"
+#include "editor.h"
 
 static Interpreter *interpreter;
 
