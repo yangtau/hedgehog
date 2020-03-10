@@ -9,7 +9,7 @@ objs := $(src:.c=.o)
 target = hegdgehog
 
 .PHONY: all
-all: $(objs)
+all: $(target)
 
 $(target):$(objs)
 	$(CC) $(CFLAGS) -o $(bin)/$(target) $(bin)/*.o

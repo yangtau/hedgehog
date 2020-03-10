@@ -92,14 +92,6 @@ void close_string_buf() {
     return NULL_V;
 }
 
-<INITIAL>\" {
-    start_string_buf();
-    BEGIN STRING_STATE;
-}
-<INITIAL>"//" {
-    BEGIN COMMENT_STATE;
-}
-
 <INITIAL>[0-9]+ {
     yylval.value.type = INT_VALUE;
     sscanf(yytext, "%" PRId32, &yylval.value.v.int_value);
@@ -115,7 +107,13 @@ void close_string_buf() {
     yylval.identifier = initString(yytext);
     return IDENTIFIER;
 }
+
 <INITIAL>[ \t];
+
+<INITIAL>\" {
+    start_string_buf();
+    BEGIN STRING_STATE;
+}
 
 <STRING_STATE>\" {
     yylval.value.type = STRING_VALUE;
@@ -129,6 +127,10 @@ void close_string_buf() {
 <STRING_STATE>\\n add_char_to_string_buf('\n');
 <STRING_STATE>\\t add_char_to_string_buf('\t');
 <STRING_STATE>. add_char_to_string_buf(yytext[0]);
+
+<INITIAL>"//" {
+    BEGIN COMMENT_STATE;
+}
 
 <COMMENT_STATE>\n BEGIN INITIAL;
 <COMMENT_STATE>. ;
