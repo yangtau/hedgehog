@@ -2,6 +2,7 @@
 #include "function.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "debug.h"
 #include "environment.h"
 #include "oop.h"
@@ -47,22 +48,28 @@ FunctionDefine *initFunctionDefine(ParameterList *paras, StatementList *block) {
     return func;
 }
 
+
+static void print_args(Expression *arg, Environment *env) {
+    if (arg) {
+        Value v = arg->evaluate(arg, env);
+        if (arg->pre) {
+            print_args(arg->pre, env);
+            printf(" ");
+        }
+        valuePrint(v);
+    }
+}
+
 static Value call_native_print(FunctionDefine *func,
                                ArgumentList *args,
                                Environment *env) {
+    Value v;
+
     if (args != NULL) {
         Expression *arg = args->last;
-        // while (arg != NULL) {
-        Value v = arg->evaluate(arg, env);
-        valuePrint(v);
-        arg = arg->pre;
-        if (arg) {
-            panic(("too many arguments in function call."));
-        }
+        print_args(arg, env);
     }
-    // del(localEnv);
     printf("\n");
-    Value v;
     v.type = NULL_VALUE;
     return v;
 }
@@ -76,7 +83,13 @@ static Value call_native_input(FunctionDefine *func, ArgumentList *args, Environ
     }
 
     fgets(buf, 1024, stdin);
+    buf[1023] = '\0';
 
+    int len = strlen(buf);
+    if (buf[len-1] == '\n') {
+        buf[len-1] = '\0';
+    }
+    
     res.type = STRING_VALUE;
     res.v.string_value = initString(buf);
    
@@ -92,7 +105,7 @@ void addNativeFunction(Environment *env) {
     Value v;
     v.type = FUNCTION_VALUE;
     v.v.function = &printFunction;
-    env->addVariable(env, initVariable(initString("print"), v));
+    env->addVariable(env, initVariable(initString("puts"), v));
 
     v.v.function = &inputFunction;
     env->addVariable(env, initVariable(initString("gets"), v));

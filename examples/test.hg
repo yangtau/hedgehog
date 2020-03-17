@@ -12,7 +12,7 @@ func fibonacci(n) {
     }
 }
 
-print(fibonacci(20))
+puts(fibonacci(20))
 
 func fibonacci(n) {
     if n<0 {return -1}
@@ -21,5 +21,5 @@ func fibonacci(n) {
     return fibonacci(n-1)+fibonacci(n-2)
 }
 
-print(fibonacci(20))
+puts(fibonacci(20))
 
