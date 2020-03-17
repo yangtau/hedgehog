@@ -1,0 +1,17 @@
+BasedOnStyle: Google
+IndentWidth: 4
+SpacesBeforeTrailingComments: 1
+PointerAlignment: Left
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: true
+AlignConsecutiveMacros: true
+AlignEscapedNewlines: Left
+AlignTrailingComments: true
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+UseTab: Never
+ReflowComments: false
+SpacesBeforeTrailingComments: 1
+IndentCaseLabels: false
