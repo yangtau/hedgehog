@@ -33,7 +33,7 @@
 
 %token LP RP LB RB
 
-%token IF ELSE_IF ELSE FOR BREAK CONTINUE RETURN AS WITH IN ON
+%token IF ELSE FOR BREAK CONTINUE RETURN AS WITH IN ON
 	SWITCH FUNC COMMA
 
 %token  CR TAB SEMIC
@@ -131,9 +131,9 @@ IF_STATEMENT:
     	$$ = initIfStatement($2, $3);
     }
     |
-    IF_STATEMENT ELSE_IF OR_EXPRESSION STATEMENT_BLOCK {
+    IF_STATEMENT ELSE IF OR_EXPRESSION STATEMENT_BLOCK {
         IfStatement* ifS = $1;
-    	ifS->addElsIf(ifS, $3, $4);
+    	ifS->addElsIf(ifS, $4, $5);
         $$=$1;
     }
     |
