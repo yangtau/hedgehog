@@ -1,20 +1,20 @@
-// integer
+# integer
 a = 10
 puts(a)
 
-// float
+# float
 b = 3.14
 puts(b)
 
-// boolean
+# boolean
 c = true
 puts(c)
 
-// null
+# null
 d = null
 puts(d)
 
-// string
-s = "Hello, World!"
+# string
+s = 'Hello, World!'
 puts(s)
 
