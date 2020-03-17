@@ -1,2 +1,2 @@
 s = gets()
-print(s)
+puts(s)

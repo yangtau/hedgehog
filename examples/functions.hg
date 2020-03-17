@@ -1,20 +1,22 @@
 // functions
 func hello() {
-    print("Hello, world!")
+    puts("Hello, world!")
 }
 hello()
 
 func fbi(n) {
     a, b = 0, 1
-    for a<n {
-        print(a)
+    for a < n {
         a, b = b, a+b
     }
+    return a
 }
-print("fbi(100)=", fbi(100))
+puts("fbi(100) =", fbi(100))
 
 func factorial(n) {
-    if n==0 {return 1}
-    return n*factorial(n-1)
+    if n==0 {
+        return 1
+    }
+    return n * factorial(n-1)
 }
-print("fact(5)", factorial(5))
+puts("fact(5) =", factorial(5))
