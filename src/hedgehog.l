@@ -109,25 +109,24 @@ void close_string_buf() {
 
 <INITIAL>[ \t];
 
-<INITIAL>\" {
+<INITIAL>\' {
     start_string_buf();
     BEGIN STRING_STATE;
 }
 
-<STRING_STATE>\" {
+<STRING_STATE>\' {
     yylval.value.type = STRING_VALUE;
     yylval.value.v.string_value = initString(string_buf);
     close_string_buf();
     BEGIN INITIAL;
     return STRING;
 }
-<STRING_STATE>\\\" add_char_to_string_buf('\"');
 <STRING_STATE>\\\\ add_char_to_string_buf('\\');
 <STRING_STATE>\\n add_char_to_string_buf('\n');
 <STRING_STATE>\\t add_char_to_string_buf('\t');
 <STRING_STATE>. add_char_to_string_buf(yytext[0]);
 
-<INITIAL>"//" {
+<INITIAL>"#" {
     BEGIN COMMENT_STATE;
 }
 

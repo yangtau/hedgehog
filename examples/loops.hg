@@ -1,4 +1,4 @@
-// loops
+# loops
 for i = 0; i < 10; i = i+1 {
     puts(i)
     if i>=4 {
@@ -10,7 +10,7 @@ i = 0
 for i < 10 {
     i = i+1
     if i < 5 {
-        puts("skip i < 5", i)
+        puts('skip i < 5, i =', i)
         continue
     }
     puts(i)
