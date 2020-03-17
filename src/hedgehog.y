@@ -85,7 +85,7 @@ STATEMENT_LIST:
     ;
 
 STATEMENT:
-    EXPRESSION SEMIC {
+    EXPRESSION {
    	$$ = initExpressionStatement($1);
     }
     |
@@ -95,19 +95,19 @@ STATEMENT:
     |
     FUNCTION_DEFINE_STATEMENT
     |
-    BREAK SEMIC{
+    BREAK {
     	$$ = initBreakStatement();
     }
     |
-    CONTINUE SEMIC{
+    CONTINUE {
    	$$ = initContinueStatement();
     }
     |
-    RETURN SEMIC {
+    RETURN {
     	$$ = initReturnStatement(NULL);
     }
     |
-    RETURN OR_EXPRESSION SEMIC {
+    RETURN OR_EXPRESSION {
     	$$ = initReturnStatement($2);
     }
     ;

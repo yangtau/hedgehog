@@ -1,5 +1,5 @@
 
-#line 3 "lex.yy.c"
+#line 2 "lex.yy.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -363,17 +363,17 @@ struct yy_trans_info
 static const flex_int16_t yy_accept[112] =
     {   0,
         0,    0,    0,    0,    0,    0,   55,   54,   54,   36,
-       10,   40,    5,    9,   17,   18,    3,    1,   34,    2,
-        4,   42,   33,   14,    7,   13,   44,   44,   44,   44,
-       44,   44,   44,   44,   44,   44,   44,   44,   44,   19,
-        8,   20,   53,   52,   51,   46,   51,   45,   12,    6,
-       41,    0,   42,   16,   11,   15,   44,   28,   44,   44,
-       44,   44,   44,   44,   21,   30,   44,   31,   44,   44,
-       44,   44,   47,   48,   49,   50,   43,   44,   44,   44,
-       44,   24,   44,   44,   44,   44,   44,   44,   44,   44,
-       22,   44,   44,   35,   39,   44,   44,   37,   29,   25,
+       10,   44,    5,    9,   17,   18,    3,    1,   34,    2,
+        4,   40,   33,   14,    7,   13,   42,   42,   42,   42,
+       42,   42,   42,   42,   42,   42,   42,   42,   42,   19,
+        8,   20,   53,   52,   50,   45,   50,   43,   12,    6,
+       51,    0,   40,   16,   11,   15,   42,   28,   42,   42,
+       42,   42,   42,   42,   21,   30,   42,   31,   42,   42,
+       42,   42,   46,   47,   48,   49,   41,   42,   42,   42,
+       42,   24,   42,   42,   42,   42,   42,   42,   42,   42,
+       22,   42,   42,   35,   39,   42,   42,   37,   29,   25,
 
-       44,   23,   38,   44,   44,   44,   27,   32,   44,   26,
+       42,   23,   38,   42,   42,   42,   27,   32,   42,   26,
         0
     } ;
 
@@ -545,9 +545,9 @@ void close_string_buf() {
     size=1024;
 }
 
-#line 549 "lex.yy.c"
+#line 548 "lex.yy.c"
 
-#line 551 "lex.yy.c"
+#line 550 "lex.yy.c"
 
 #define INITIAL 0
 #define COMMENT_STATE 1
@@ -768,7 +768,7 @@ YY_DECL
 	{
 #line 38 "hedgehog.l"
 
-#line 772 "lex.yy.c"
+#line 771 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1036,51 +1036,44 @@ case 40:
 YY_RULE_SETUP
 #line 95 "hedgehog.l"
 {
-    start_string_buf();
-    BEGIN STRING_STATE;
-}
-	YY_BREAK
-case 41:
-YY_RULE_SETUP
-#line 99 "hedgehog.l"
-{
-    BEGIN COMMENT_STATE;
-}
-	YY_BREAK
-case 42:
-YY_RULE_SETUP
-#line 103 "hedgehog.l"
-{
     yylval.value.type = INT_VALUE;
     sscanf(yytext, "%" PRId32, &yylval.value.v.int_value);
     return INT;
 }
 	YY_BREAK
-case 43:
+case 41:
 YY_RULE_SETUP
-#line 108 "hedgehog.l"
+#line 100 "hedgehog.l"
 {
     yylval.value.type = DOUBLE_VALUE;
     sscanf(yytext, "%lf" , &yylval.value.v.double_value);
     return DOUBLE;
 } 
 	YY_BREAK
-case 44:
+case 42:
 YY_RULE_SETUP
-#line 114 "hedgehog.l"
+#line 106 "hedgehog.l"
 {
     yylval.identifier = initString(yytext);
     return IDENTIFIER;
 }
 	YY_BREAK
+case 43:
+YY_RULE_SETUP
+#line 111 "hedgehog.l"
+
+	YY_BREAK
+case 44:
+YY_RULE_SETUP
+#line 113 "hedgehog.l"
+{
+    start_string_buf();
+    BEGIN STRING_STATE;
+}
+	YY_BREAK
 case 45:
 YY_RULE_SETUP
 #line 118 "hedgehog.l"
-
-	YY_BREAK
-case 46:
-YY_RULE_SETUP
-#line 120 "hedgehog.l"
 {
     yylval.value.type = STRING_VALUE;
     yylval.value.v.string_value = initString(string_buf);
@@ -1089,48 +1082,55 @@ YY_RULE_SETUP
     return STRING;
 }
 	YY_BREAK
+case 46:
+YY_RULE_SETUP
+#line 125 "hedgehog.l"
+add_char_to_string_buf('\"');
+	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 127 "hedgehog.l"
-add_char_to_string_buf('\"');
+#line 126 "hedgehog.l"
+add_char_to_string_buf('\\');
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 128 "hedgehog.l"
-add_char_to_string_buf('\\');
+#line 127 "hedgehog.l"
+add_char_to_string_buf('\n');
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 129 "hedgehog.l"
-add_char_to_string_buf('\n');
+#line 128 "hedgehog.l"
+add_char_to_string_buf('\t');
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 130 "hedgehog.l"
-add_char_to_string_buf('\t');
+#line 129 "hedgehog.l"
+add_char_to_string_buf(yytext[0]);
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
 #line 131 "hedgehog.l"
-add_char_to_string_buf(yytext[0]);
+{
+    BEGIN COMMENT_STATE;
+}
 	YY_BREAK
 case 52:
 /* rule 52 can match eol */
 YY_RULE_SETUP
-#line 133 "hedgehog.l"
+#line 135 "hedgehog.l"
 BEGIN INITIAL;
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 134 "hedgehog.l"
+#line 136 "hedgehog.l"
 ;
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 135 "hedgehog.l"
+#line 137 "hedgehog.l"
 ECHO;
 	YY_BREAK
-#line 1134 "lex.yy.c"
+#line 1133 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT_STATE):
 case YY_STATE_EOF(STRING_STATE):
@@ -2137,5 +2137,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 135 "hedgehog.l"
+#line 137 "hedgehog.l"
+
 
