@@ -6,7 +6,7 @@ There is a post about the implementation of this interpreter in Chinese: [写一
 
 ## Features so far
 
-- Value
+- Values
 
     ```
     a = 10              //int
@@ -16,7 +16,7 @@ There is a post about the implementation of this interpreter in Chinese: [写一
     s = "Hello, World!" //string
     ```
 
-- Control 
+- Controls
 
   There must be `{}` after `if`, `else if` and `else`, even if there is only one statement in the block.
 
@@ -46,7 +46,7 @@ There is a post about the implementation of this interpreter in Chinese: [写一
         puts(i)
     }
     ```
-- Function
+- Functions
 
     ```
     func Hello() {
@@ -75,7 +75,7 @@ There is a post about the implementation of this interpreter in Chinese: [写一
     puts(factorial(5))
     ```
 
-- Operator
+- Operators
   
   Most operator in hedgehog is the same with c. However, there is only one `&` for `logical and`, and one `|` for `logical or`.
     ```
@@ -92,9 +92,11 @@ There is a post about the implementation of this interpreter in Chinese: [写一
 
 ## Usage
 
-run test:
-
-`./hedgehog example/values.hg`
+Get start:
+```
+make
+./bin/hedgehog example/values.hg
+```
 
 code examples:
 
