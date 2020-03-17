@@ -1,6 +1,7 @@
 /* Created by Tau on 10/02/2019 */
 #include "function.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include "debug.h"
 #include "environment.h"
 #include "oop.h"
@@ -66,13 +67,33 @@ static Value call_native_print(FunctionDefine *func,
     return v;
 }
 
+static Value call_native_input(FunctionDefine *func, ArgumentList *args, Environment *env) {
+    Value res;
+    char buf[1024];
+
+    if (args != NULL) {
+        panic(("too many arguments"));
+    }
+
+    fgets(buf, 1024, stdin);
+
+    res.type = STRING_VALUE;
+    res.v.string_value = initString(buf);
+   
+    return res;
+}
+
 static void freeNULL(FunctionDefine *_) {}
 
 static FunctionDefine printFunction = {NULL, NULL, call_native_print, freeNULL};
+static FunctionDefine inputFunction = {NULL, NULL, call_native_input, freeNULL};
 
 void addNativeFunction(Environment *env) {
     Value v;
     v.type = FUNCTION_VALUE;
     v.v.function = &printFunction;
     env->addVariable(env, initVariable(initString("print"), v));
+
+    v.v.function = &inputFunction;
+    env->addVariable(env, initVariable(initString("gets"), v));
 }
