@@ -24,7 +24,7 @@ There is a post about the implementation of this interpreter in Chinese: [写一
     a = 10
     if a > 10 { // `()` is not necessary.
         b = a+20
-    } else if a==10 {
+    } else if a == 10 {
         b = a+10
     } else {
         b = a-10
@@ -64,7 +64,7 @@ There is a post about the implementation of this interpreter in Chinese: [写一
         }
     }
   
-    fbi(100)
+    puts("fib(100) =", fbi(100))
     ```
     ```
     func factorial(n) {
@@ -89,26 +89,19 @@ There is a post about the implementation of this interpreter in Chinese: [写一
     }
     ```
 
-## Compile:
-
-```
-yacc -d hedgehog.y
-lex hedgehog.l
-gcc -std=c99 -o hedgehog *.c
-```
 
 ## Usage
 
 run test:
 
-`./hedgehog test/tes.hg`
+`./hedgehog example/values.hg`
 
 code examples:
-
 
 ```
 puts("Hello world")
 ```
+
 ```
 func fibonacci(n) {
     if n < 0 {
