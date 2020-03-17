@@ -63,7 +63,6 @@ void close_string_buf() {
 
 <INITIAL>"if" return IF;
 <INITIAL>"else" return ELSE;
-<INITIAL>"elsif" return ELSE_IF;
 <INITIAL>"for" return FOR;
 <INITIAL>"break" return BREAK;
 <INITIAL>"continue" return CONTINUE;
