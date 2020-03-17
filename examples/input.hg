@@ -1,0 +1,2 @@
+s = gets()
+print(s)
