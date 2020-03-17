@@ -2,18 +2,18 @@
 
 Hedgehog is a simple dynamic programming language made with yacc and lex.
 
-There is a post about the implementation of this interpreter in Chinese: [写一个简单解释器](https://yangtau.me/programming-languages/simple-interpreter.html)
+There is a post about the implementation of this interpreter in Chinese: [写一个简单解释器](https:#yangtau.me/programming-languages/simple-interpreter.html)
 
 ## Features so far
 
 - Values
 
     ```
-    a = 10              //int
-    b = 3.14            //float
-    c = true            //boolean
-    d = null            //null
-    s = "Hello, World!" //string
+    a = 10              #int
+    b = 3.14            #float
+    c = true            #boolean
+    d = null            #null
+    s = 'Hello, World!' #string
     ```
 
 - Controls
@@ -22,7 +22,7 @@ There is a post about the implementation of this interpreter in Chinese: [写一
 
     ```
     a = 10
-    if a > 10 { // `()` is not necessary.
+    if a > 10 { # `()` is not necessary.
         b = a+20
     } else if a == 10 {
         b = a+10
@@ -50,7 +50,7 @@ There is a post about the implementation of this interpreter in Chinese: [写一
 
     ```
     func Hello() {
-        puts("Hello, world!")
+        puts('Hello, world!')
     }
   
     Hello()
@@ -64,7 +64,7 @@ There is a post about the implementation of this interpreter in Chinese: [写一
         }
     }
   
-    puts("fib(100) =", fbi(100))
+    puts('fib(100) =', fbi(100))
     ```
     ```
     func factorial(n) {
@@ -82,10 +82,10 @@ There is a post about the implementation of this interpreter in Chinese: [写一
     b = 2
     a = 10
     if a>20 & b<10 {
-        puts("`b` is less than 10 and `a` is greater than 20")
+        puts('`b` is less than 10 and `a` is greater than 20')
     }
     if a>20 | b<10 {
-        puts("`b` is less than 10 or `a` is greater than 20")
+        puts('`b` is less than 10 or `a` is greater than 20')
     }
     ```
 
@@ -101,7 +101,7 @@ make
 code examples:
 
 ```
-puts("Hello world")
+puts('Hello world')
 ```
 
 ```
