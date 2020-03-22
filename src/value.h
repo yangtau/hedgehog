@@ -23,10 +23,11 @@ typedef struct StringTag {
     void (*refer)(struct StringTag *);
 
     void (*release)(struct StringTag *);
+
+    void (*concat)(struct StringTag *s, const char *t);
 } String;
 
 String *initString(char *s);
-
 
 typedef struct {
     ValueType type;
@@ -34,11 +35,10 @@ typedef struct {
         Bool bool_value;
         int32_t int_value;
         double double_value;
-        String* string_value;
+        String *string_value;
         FunctionDefine *function;
     } v;
 } Value;
-
 
 void valuePrint(Value v);
 

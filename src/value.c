@@ -1,17 +1,19 @@
 /* Created by Tau on 06/02/2019 */
 #include "value.h"
+
 #include <stdio.h>
+
 #include "debug.h"
 #include "string.h"
 
 void refer(String *s) {
     s->cnt++;
-   log(("%s: %d", s->str, s->cnt));
+    log(("%s: %d", s->str, s->cnt));
 }
 
 void release(String *s) {
     s->cnt--;
-   log(("%s: %d", s->str, s->cnt));
+    log(("%s: %d", s->str, s->cnt));
     if (s->cnt == 0) {
         log(("string free: %s", s->str));
         free(s->str);
@@ -19,60 +21,77 @@ void release(String *s) {
     }
 }
 
+static void string_concat(String *s, const char *t) {
+    int len = strlen(s->str) + strlen(t) + 1;
+
+    char* tmp = calloc(len, sizeof(len));
+    strcpy(tmp, s->str);
+    strcat(tmp, t);
+
+    free(s->str);
+    s->str = tmp;
+}
+
 String *initString(char *s) {
-    String *str = (String *) malloc(sizeof(String));
-    str->str = (char *) calloc(strlen(s) + 1, sizeof(char));
+    String *str = (String *)malloc(sizeof(String));
+    str->str    = (char *)calloc(strlen(s) + 1, sizeof(char));
     strcpy(str->str, s);
-    str->cnt = 1;
-    str->refer = refer;
+    str->cnt     = 1;
+    str->refer   = refer;
     str->release = release;
+    str->concat  = string_concat;
     log(("string:%s", s));
     return str;
 }
 
 void valuePrint(Value v) {
     switch (v.type) {
-        case INT_VALUE:
-            printf("%" PRId32, v.v.int_value);
-            break;
-        case DOUBLE_VALUE:
-            printf("%lf", v.v.double_value);
-            break;
-        case NULL_VALUE:
-            printf("null");
-            break;
-        case BOOL_VALUE:
-            printf("%s", (v.v.bool_value == 0 ? "false" : "true"));
-            break;
-        case STRING_VALUE:
-            printf("%s", v.v.string_value->str);
-            break;
-        case FUNCTION_VALUE:
-            printf("function");
-            break;
-        default:
-            panic(("bad case.."));
-            break;
+    case INT_VALUE:
+        printf("%" PRId32, v.v.int_value);
+        break;
+    case DOUBLE_VALUE:
+        printf("%lf", v.v.double_value);
+        break;
+    case NULL_VALUE:
+        printf("null");
+        break;
+    case BOOL_VALUE:
+        printf("%s", (v.v.bool_value == 0 ? "false" : "true"));
+        break;
+    case STRING_VALUE:
+        printf("%s", v.v.string_value->str);
+        break;
+    case FUNCTION_VALUE:
+        printf("function");
+        break;
+    default:
+        panic(("bad case.."));
+        break;
     }
 }
 
 Value valueAdd(Value a, Value b) {
     Value v;
     if (a.type == INT_VALUE && b.type == INT_VALUE) {
-        v.type = INT_VALUE;
+        v.type        = INT_VALUE;
         v.v.int_value = a.v.int_value + b.v.int_value;
     } else if (a.type == DOUBLE_VALUE && b.type == DOUBLE_VALUE) {
-        v.type = DOUBLE_VALUE;
+        v.type           = DOUBLE_VALUE;
         v.v.double_value = a.v.double_value + b.v.double_value;
     } else if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-        v.type = DOUBLE_VALUE;
+        v.type           = DOUBLE_VALUE;
         v.v.double_value = a.v.double_value + b.v.int_value;
     } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-        v.type = DOUBLE_VALUE;
+        v.type           = DOUBLE_VALUE;
         v.v.double_value = a.v.int_value + b.v.double_value;
+    } else if (a.type == STRING_VALUE && b.type == STRING_VALUE){
+        v.type = STRING_VALUE;
+        v.v.string_value = a.v.string_value;
+        refer(v.v.string_value);
+        v.v.string_value->concat(v.v.string_value, b.v.string_value->str);
     } else {
         v.type = NULL_VALUE;
-        // TODO: error
+        panic(("add value: not support"));
     }
     return v;
 }
@@ -80,16 +99,16 @@ Value valueAdd(Value a, Value b) {
 Value valueSubtract(Value a, Value b) {
     Value v;
     if (a.type == INT_VALUE && b.type == INT_VALUE) {
-        v.type = INT_VALUE;
+        v.type        = INT_VALUE;
         v.v.int_value = a.v.int_value - b.v.int_value;
     } else if (a.type == DOUBLE_VALUE && b.type == DOUBLE_VALUE) {
-        v.type = DOUBLE_VALUE;
+        v.type           = DOUBLE_VALUE;
         v.v.double_value = a.v.double_value - b.v.double_value;
     } else if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-        v.type = DOUBLE_VALUE;
+        v.type           = DOUBLE_VALUE;
         v.v.double_value = a.v.double_value - b.v.int_value;
     } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-        v.type = DOUBLE_VALUE;
+        v.type           = DOUBLE_VALUE;
         v.v.double_value = a.v.int_value - b.v.double_value;
     } else {
         v.type = NULL_VALUE;
@@ -101,16 +120,16 @@ Value valueSubtract(Value a, Value b) {
 Value valueMultiply(Value a, Value b) {
     Value v;
     if (a.type == INT_VALUE && b.type == INT_VALUE) {
-        v.type = INT_VALUE;
+        v.type        = INT_VALUE;
         v.v.int_value = a.v.int_value * b.v.int_value;
     } else if (a.type == DOUBLE_VALUE && b.type == DOUBLE_VALUE) {
-        v.type = DOUBLE_VALUE;
+        v.type           = DOUBLE_VALUE;
         v.v.double_value = a.v.double_value * b.v.double_value;
     } else if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-        v.type = DOUBLE_VALUE;
+        v.type           = DOUBLE_VALUE;
         v.v.double_value = a.v.double_value * b.v.int_value;
     } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-        v.type = DOUBLE_VALUE;
+        v.type           = DOUBLE_VALUE;
         v.v.double_value = a.v.int_value * b.v.double_value;
     } else {
         v.type = NULL_VALUE;
@@ -128,10 +147,10 @@ Value valueDivide(Value a, Value b) {
             return v;
         }
         if (a.type == INT_VALUE) {
-            v.type = INT_VALUE;
+            v.type        = INT_VALUE;
             v.v.int_value = a.v.int_value / b.v.int_value;
         } else if (a.type == DOUBLE_VALUE) {
-            v.type = DOUBLE_VALUE;
+            v.type           = DOUBLE_VALUE;
             v.v.double_value = a.v.double_value / b.v.int_value;
         }
     } else if (b.type == DOUBLE_VALUE) {
@@ -140,10 +159,10 @@ Value valueDivide(Value a, Value b) {
             return v;
         }
         if (a.type == DOUBLE_VALUE) {
-            v.type = DOUBLE_VALUE;
+            v.type           = DOUBLE_VALUE;
             v.v.double_value = a.v.double_value / b.v.double_value;
         } else if (a.type == INT_VALUE) {
-            v.type = DOUBLE_VALUE;
+            v.type           = DOUBLE_VALUE;
             v.v.double_value = a.v.int_value / b.v.double_value;
         }
     } else {
@@ -155,7 +174,7 @@ Value valueDivide(Value a, Value b) {
 Value valueModule(Value a, Value b) {
     Value v;
     if (a.type == INT_VALUE && b.type == INT_VALUE) {
-        v.type = INT_VALUE;
+        v.type        = INT_VALUE;
         v.v.int_value = a.v.int_value % b.v.int_value;
     } else {
         v.type = NULL_VALUE;
@@ -183,7 +202,7 @@ Value valueNot(Value v) {
 Value valueAnd(Value a, Value b) {
     Value v;
     if (a.type == BOOL_VALUE && b.type == BOOL_VALUE) {
-        v.type = BOOL_VALUE;
+        v.type         = BOOL_VALUE;
         v.v.bool_value = (a.v.bool_value && b.v.bool_value);
     } else {
         // TODO: error
@@ -195,7 +214,7 @@ Value valueAnd(Value a, Value b) {
 Value valueOr(Value a, Value b) {
     Value v;
     if (a.type == BOOL_VALUE && b.type == BOOL_VALUE) {
-        v.type = BOOL_VALUE;
+        v.type         = BOOL_VALUE;
         v.v.bool_value = (a.v.bool_value || b.v.bool_value);
     } else {
         // TODO: error
@@ -206,15 +225,15 @@ Value valueOr(Value a, Value b) {
 
 Value valueMinus(Value v) {
     switch (v.type) {
-        case INT_VALUE:
-            v.v.int_value = -v.v.int_value;
-            break;
-        case DOUBLE_VALUE:
-            v.v.double_value = -v.v.double_value;
-            break;
-        default:  // TODO: error
-            v.type = NULL_VALUE;
-            break;
+    case INT_VALUE:
+        v.v.int_value = -v.v.int_value;
+        break;
+    case DOUBLE_VALUE:
+        v.v.double_value = -v.v.double_value;
+        break;
+    default: // TODO: error
+        v.type = NULL_VALUE;
+        break;
     }
     return v;
 }
@@ -226,25 +245,25 @@ Value valueEqual(Value a, Value b) {
         v.v.bool_value = 0;
     } else {
         switch (a.type) {
-            case NULL_VALUE:
-                v.v.bool_value = 1;
-                break;
-            case BOOL_VALUE:
-                v.v.bool_value = a.v.bool_value == b.v.bool_value;
-                break;
-            case INT_VALUE:
-                v.v.bool_value = a.v.int_value == b.v.int_value;
-                break;
-            case DOUBLE_VALUE:
-                v.v.bool_value = a.v.double_value == b.v.double_value;
-                break;
-            case STRING_VALUE:
+        case NULL_VALUE:
+            v.v.bool_value = 1;
+            break;
+        case BOOL_VALUE:
+            v.v.bool_value = a.v.bool_value == b.v.bool_value;
+            break;
+        case INT_VALUE:
+            v.v.bool_value = a.v.int_value == b.v.int_value;
+            break;
+        case DOUBLE_VALUE:
+            v.v.bool_value = a.v.double_value == b.v.double_value;
+            break;
+        case STRING_VALUE:
 
-                //                TODO: :(
-            default:
-                v.type = NULL_VALUE;
-                // TODO: error
-                break;
+            //                TODO: :(
+        default:
+            v.type = NULL_VALUE;
+            // TODO: error
+            break;
         }
     }
     return v;
@@ -257,22 +276,22 @@ Value valueNotEqual(Value a, Value b) {
         v.v.bool_value = 1;
     } else {
         switch (a.type) {
-            case BOOL_VALUE:
-                v.v.bool_value = a.v.bool_value != b.v.bool_value;
-                break;
-            case INT_VALUE:
-                v.v.bool_value = a.v.int_value != b.v.int_value;
-                break;
-            case DOUBLE_VALUE:
-                v.v.bool_value = a.v.double_value != b.v.double_value;
-                break;
-            case STRING_VALUE:
-                break;
-                //                TODO: :(
-            default:
-                v.type = NULL_VALUE;
-                // TODO: error
-                break;
+        case BOOL_VALUE:
+            v.v.bool_value = a.v.bool_value != b.v.bool_value;
+            break;
+        case INT_VALUE:
+            v.v.bool_value = a.v.int_value != b.v.int_value;
+            break;
+        case DOUBLE_VALUE:
+            v.v.bool_value = a.v.double_value != b.v.double_value;
+            break;
+        case STRING_VALUE:
+            break;
+            //                TODO: :(
+        default:
+            v.type = NULL_VALUE;
+            // TODO: error
+            break;
         }
     }
     return v;
@@ -292,19 +311,19 @@ Value valueGreater(Value a, Value b) {
         }
     } else {
         switch (a.type) {
-            case INT_VALUE:
-                v.v.bool_value = (a.v.int_value > b.v.int_value);
-                break;
-            case DOUBLE_VALUE:
-                v.v.bool_value = (a.v.double_value > b.v.double_value);
-                break;
-            case STRING_VALUE:
-                break;
-                //                TODO: :(
-            default:
-                v.type = NULL_VALUE;
-                // TODO: error
-                break;
+        case INT_VALUE:
+            v.v.bool_value = (a.v.int_value > b.v.int_value);
+            break;
+        case DOUBLE_VALUE:
+            v.v.bool_value = (a.v.double_value > b.v.double_value);
+            break;
+        case STRING_VALUE:
+            break;
+            //                TODO: :(
+        default:
+            v.type = NULL_VALUE;
+            // TODO: error
+            break;
         }
     }
     return v;
@@ -324,19 +343,19 @@ Value valueLess(Value a, Value b) {
         }
     } else {
         switch (a.type) {
-            case INT_VALUE:
-                v.v.bool_value = a.v.int_value < b.v.int_value;
-                break;
-            case DOUBLE_VALUE:
-                v.v.bool_value = a.v.double_value < b.v.double_value;
-                break;
-            case STRING_VALUE:
-                break;
-                //                TODO: :(
-            default:
-                v.type = NULL_VALUE;
-                // TODO: error
-                break;
+        case INT_VALUE:
+            v.v.bool_value = a.v.int_value < b.v.int_value;
+            break;
+        case DOUBLE_VALUE:
+            v.v.bool_value = a.v.double_value < b.v.double_value;
+            break;
+        case STRING_VALUE:
+            break;
+            //                TODO: :(
+        default:
+            v.type = NULL_VALUE;
+            // TODO: error
+            break;
         }
     }
     return v;
@@ -356,19 +375,19 @@ Value valueGreaterOrEqual(Value a, Value b) {
         }
     } else {
         switch (a.type) {
-            case INT_VALUE:
-                v.v.bool_value = a.v.int_value >= b.v.int_value;
-                break;
-            case DOUBLE_VALUE:
-                v.v.bool_value = a.v.double_value >= b.v.double_value;
-                break;
-            case STRING_VALUE:
-                break;
-                //                TODO: :(
-            default:
-                v.type = NULL_VALUE;
-                // TODO: error
-                break;
+        case INT_VALUE:
+            v.v.bool_value = a.v.int_value >= b.v.int_value;
+            break;
+        case DOUBLE_VALUE:
+            v.v.bool_value = a.v.double_value >= b.v.double_value;
+            break;
+        case STRING_VALUE:
+            break;
+            //                TODO: :(
+        default:
+            v.type = NULL_VALUE;
+            // TODO: error
+            break;
         }
     }
     return v;
@@ -382,19 +401,19 @@ Value valueLessOrEqual(Value a, Value b) {
         v.type = NULL_VALUE;
     } else {
         switch (a.type) {
-            case INT_VALUE:
-                v.v.bool_value = a.v.int_value <= b.v.int_value;
-                break;
-            case DOUBLE_VALUE:
-                v.v.bool_value = a.v.double_value <= b.v.double_value;
-                break;
-            case STRING_VALUE:
-                break;
-                //                TODO: :(
-            default:
-                v.type = NULL_VALUE;
-                // TODO: error
-                break;
+        case INT_VALUE:
+            v.v.bool_value = a.v.int_value <= b.v.int_value;
+            break;
+        case DOUBLE_VALUE:
+            v.v.bool_value = a.v.double_value <= b.v.double_value;
+            break;
+        case STRING_VALUE:
+            break;
+            //                TODO: :(
+        default:
+            v.type = NULL_VALUE;
+            // TODO: error
+            break;
         }
     }
     return v;
