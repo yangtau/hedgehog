@@ -1,0 +1,9 @@
+func times_hello(a) {
+    s = 'hello'
+    for i=0; i<a; i=i+1 {
+        s = s + s 
+    }
+    return s
+}
+
+puts(times_hello(3))
