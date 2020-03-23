@@ -1,9 +1,9 @@
 func times_hello(a) {
-    s = 'hello'
+    res = ''
     for i=0; i<a; i=i+1 {
-        s = s + s 
+        res = res + 'hello' 
     }
-    return s
+    return res
 }
 
 puts(times_hello(3))
