@@ -13,7 +13,7 @@ target = hedgehog
 .PHONY: all
 all: $(target)
 
-$(target):$(objs) $(bin)/lex.yy.o $(bin)/y.tab.o
+$(target):$(objs) $(bin)/y.tab.o $(bin)/lex.yy.o
 	$(CC) $(CFLAGS) -o $(bin)/$(target) $(bin)/*.o
 
 $(objs):%.o: %.c
