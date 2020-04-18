@@ -29,6 +29,8 @@ typedef struct StringTag {
 
 String *initString(char *s);
 
+String *initStringWithLength(char *s, int len);
+
 typedef struct {
     ValueType type;
     union {
