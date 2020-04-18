@@ -10,5 +10,14 @@
 #include "statement.h"
 #include "value.h"
 
+typedef struct parser_state {
+  int nerr;
+  void *lval;
+  const char *fname;
+  int lineno;
+  int tline;
+} parser_state;
+
+
 
 #endif /*_HG_HEDGEHOG_H_*/

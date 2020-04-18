@@ -36,7 +36,7 @@
 %token IF ELSE FOR BREAK CONTINUE RETURN AS WITH IN ON
 	SWITCH FUNC COMMA
 
-%token  CR TAB SEMIC
+%token  CR TAB SEMIC NEW_LINE
 
 %token <identifier> IDENTIFIER
 %token <value> DOUBLE INT BOOL NULL_V STRING
@@ -48,20 +48,28 @@
 %type <argument_list> ARGUMENT_LIST
 %type <parameter_list> PARAMETER_LIST
 %type <statement> STATEMENT IF_STATEMENT FOR_STATEMENT FUNCTION_DEFINE_STATEMENT
-%type <statement_list>  GLOBAL_LIST STATEMENT_LIST STATEMENT_BLOCK
+%type <statement_list>  STATEMENT_LIST STATEMENT_BLOCK program
 
 %%
 
-GLOBAL_LIST:
-    STATEMENT {
-    	StatementList* list = getCurrentInterpreter()->list;
-    	$$ = list->add(list, $1);
-    }
-    |
-    GLOBAL_LIST STATEMENT {
-    	$$ = $1->add($1, $2);
-    }
-    ;
+program:
+       STATEMENT_LIST {
+            StatementList* list = getCurrentInterpreter()->list;
+            $$ = list->add(list, $1);
+       }
+       ;
+
+// GLOBAL_LIST:
+//     STATEMENT {
+//     	StatementList* list = getCurrentInterpreter()->list;
+//     	$$ = list->add(list, $1);
+//     }
+//     |
+//     GLOBAL_LIST SEP STATEMENT {
+//     	$$ = $1->add($1, $3);
+//     }
+//     ;
+// 
 
 STATEMENT_BLOCK:
     LB STATEMENT_LIST RB {
@@ -79,8 +87,8 @@ STATEMENT_LIST:
     	$$->add($$, $1);
     }
     |
-    STATEMENT_LIST STATEMENT {
-        $$ = $1->add($1, $2);
+    STATEMENT_LIST SEP STATEMENT {
+        $$ = $1->add($1, $3);
     }
     ;
 
@@ -322,5 +330,11 @@ FUNCTION_CALL_EXPRESSION:
     	$$ = initFunctionCallExpression($1, $3);
     }
     ;
+
+SEP: 
+   NEW_LINE
+   |
+   SEMIC
+   ;
 
 %%

@@ -1,6 +1,15 @@
 %{
 #include "hedgehog.h"
+
+#define YYDEBUG 1
+#define YYERROR_VERBOSE 1
+
 %}
+
+%define api.pure
+%parse-param {parser_state *p}
+%lex-param {p}
+
 %union {
     String* id;
     Value value;
@@ -10,10 +19,17 @@
     ArgumentList *argument_list;
     ParameterList *parameter_list;
 }
+ 
+%{
+int yylex(YYSTYPE *lval, parser_state *p);
+static void yyerror(parser_state *p, const char *s);
+%}
+
+
 
 %right op_assign
-%left kw_and kw_or
-%right kw_not
+%left op_and op_or
+%right op_not
 %left op_neq op_eq op_ge op_le op_gt op_ls
 %left op_add op_sub
 %left op_mul op_div op_mod
@@ -107,7 +123,7 @@ stat:
     	$$ = initReturnStatement(NULL);
     }
     |
-    kw_return expression {
+    kw_return expr {
     	$$ = initReturnStatement($2);
     }
     ;
@@ -116,8 +132,9 @@ if_else_stat:
     if_stat
     |
     if_stat kw_else block {
-        $1->addElse($1, $3);
-        $$ = $1;
+        IfStatement* ifS = $1;
+        ifS->addElse($1, $3);
+        $$ = ifS;
     };
 
 if_stat:
@@ -126,8 +143,9 @@ if_stat:
     }
     |
     if_stat kw_else kw_if expr block {
-        $1->addElsIf($1, $4, $5);
-        $$ = $1;
+        IfStatement* ifS = $1;
+        ifS->addElsIf($1, $4, $5);
+        $$ = ifS;
     };
 
 for_stat:
@@ -173,7 +191,7 @@ func_call_expr:
 
 args:
     expr {
-        $$ = initParameterList($1);
+        $$ = initArgumentList($1);
     }
     |
     args sep_comma expr {
@@ -186,15 +204,15 @@ expr:
 and_expr:
     cmp_expr
     |
-    kw_not cmp_expr {
+    op_not cmp_expr {
         $$ = initUnaryExpression(NOT_OPERATOR, $2); 
     }
     |
-    and_expr kw_and cmp_expr {
+    and_expr op_and cmp_expr {
         $$ = initBinaryExpression(AND_OPERATOR, $1, $3);
     }
     |
-    and_expr kw_or cmp_expr {
+    and_expr op_or cmp_expr {
         $$ = initBinaryExpression(OR_OPERATOR, $1, $3);
     } 
     ;
@@ -282,3 +300,14 @@ factor:
       |
       lit_float;
 %%
+
+#include "lex.hedgehog.c"
+
+static void yyerror(parser_state *p, const char *s) {
+    p->nerr++;
+    if (p->fname) {
+        fprintf(stderr, "%s:%d:%s\n", p->fname, p->lineno, s);
+    } else {
+        fprintf(stderr, "%s\n", s);
+    }
+}
