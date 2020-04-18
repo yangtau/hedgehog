@@ -2,7 +2,7 @@
 
 Hedgehog is a simple dynamic programming language made with yacc and lex.
 
-There is a post about the implementation of this interpreter in Chinese: [写一个简单解释器](https:#yangtau.me/programming-languages/simple-interpreter.html)
+There is a post about the implementation of this interpreter in Chinese: [写一个简单解释器](https://yangtau.me/programming-languages/simple-interpreter.html)
 
 ## Features so far
 
