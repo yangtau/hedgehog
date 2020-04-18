@@ -26,10 +26,10 @@ $(bin)/lex.yy.o: src/hedgehog.l
 
 
 $(bin)/y.tab.o: src/hedgehog.y
-	$(YACC) src/hedgehog.y -o src/y.tab.c
+	$(YACC) -v src/hedgehog.y -o src/y.tab.c
 	$(CC) $(CFLAGS) -c src/y.tab.c -o $(bin)/y.tab.o
 
 .PHONY: clean
 clean:
 	rm -rf $(bin)/*
-	rm -f src/lex.yy.c src/y.tab.c
+	rm -f src/lex.yy.c src/y.tab.c src/y.tab.h src/y.output

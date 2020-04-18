@@ -8,6 +8,7 @@
 #include "y.tab.h"
 int yywrap(void) { return 1; }
 
+int line_num = 0;
 char *string_buf;
 int cnt = 0;
 int size = 256;
@@ -75,7 +76,10 @@ void close_string_buf() {
 <INITIAL>";" return SEMIC;
 <INITIAL>"," return COMMA;
 <INITIAL>"func" return FUNC;
-<INITIAL>\n ;
+<INITIAL>\n {
+    line_num++;
+    return NEW_LINE;
+}
 <INITIAL>"true" {
     yylval.value.type = BOOL_VALUE;
     yylval.value.v.bool_value = 1;
@@ -88,8 +92,7 @@ void close_string_buf() {
 }
 <INITIAL>"null" {
     yylval.value.type = NULL_VALUE;
-    return NULL_V;
-}
+    return NULL_V; }
 
 <INITIAL>[0-9]+ {
     yylval.value.type = INT_VALUE;
@@ -130,6 +133,11 @@ void close_string_buf() {
     BEGIN COMMENT_STATE;
 }
 
-<COMMENT_STATE>\n BEGIN INITIAL;
+<COMMENT_STATE>\n {
+    BEGIN INITIAL;
+    line_num++;
+    return NEW_LINE;
+}
+
 <COMMENT_STATE>. ;
 %%
