@@ -24,7 +24,7 @@ void release(String *s) {
 static void string_concat(String *s, const char *t) {
     int len = strlen(s->str) + strlen(t) + 1;
 
-    char* tmp = calloc(len, sizeof(len));
+    char *tmp = calloc(len, sizeof(len));
     strcpy(tmp, s->str);
     strcat(tmp, t);
 
@@ -32,16 +32,24 @@ static void string_concat(String *s, const char *t) {
     s->str = tmp;
 }
 
-String *initString(char *s) {
+String *initStringWithLength(char *s, int len) {
     String *str = (String *)malloc(sizeof(String));
-    str->str    = (char *)calloc(strlen(s) + 1, sizeof(char));
-    strcpy(str->str, s);
-    str->cnt     = 1;
-    str->refer   = refer;
-    str->release = release;
-    str->concat  = string_concat;
+    str->str    = (char *)calloc(len + 1, sizeof(char));
+
+    strncpy(str->str, s, len);
+
+    str->str[len] = '\0';
+    str->cnt      = 1;
+    str->refer    = refer;
+    str->release  = release;
+    str->concat   = string_concat;
+
     log(("string:%s", s));
     return str;
+}
+
+String *initString(char *s) {
+    return initStringWithLength(s, strlen(s));
 }
 
 void valuePrint(Value v) {
@@ -84,8 +92,8 @@ Value valueAdd(Value a, Value b) {
     } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
         v.type           = DOUBLE_VALUE;
         v.v.double_value = a.v.int_value + b.v.double_value;
-    } else if (a.type == STRING_VALUE && b.type == STRING_VALUE){
-        v.type = STRING_VALUE;
+    } else if (a.type == STRING_VALUE && b.type == STRING_VALUE) {
+        v.type           = STRING_VALUE;
         v.v.string_value = a.v.string_value;
         refer(v.v.string_value);
         v.v.string_value->concat(v.v.string_value, b.v.string_value->str);
