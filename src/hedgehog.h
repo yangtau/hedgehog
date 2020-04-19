@@ -1,23 +1,21 @@
-/* Created by Tau on 05/02/2019 */
 #ifndef _HG_HEDGEHOG_H_
 #define _HG_HEDGEHOG_H_
 
-#include "debug.h"
-#include "environment.h"
-#include "expression.h"
-#include "function.h"
-#include "interpreter.h"
-#include "statement.h"
-#include "value.h"
+struct hg_value {
+    enum {
+        HG_VALUE_INT,
+        HG_VALUE_FLOAT,
+        HG_VALUE_STRING,
+        HG_VALUE_BOOL,
+        HG_VALUE_NIL,
+        HG_VALUE_OBJECT,
+    } type;
+    union {
+        int b;
+        int i;
+        double f;
+        void *p;
+    } v;
+};
 
-typedef struct parser_state {
-  int nerr;
-  void *lval;
-  const char *fname;
-  int lineno;
-  int tline;
-} parser_state;
-
-
-
-#endif /*_HG_HEDGEHOG_H_*/
+#endif // _HG_HEDGEHOG_H_
