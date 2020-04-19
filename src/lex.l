@@ -1,13 +1,6 @@
-/*
-** lex.l - streem lexer
-**
-** See Copyright Notice in LICENSE file.
-*/
-
 %{
 #include <string.h>
-#include "hedgehog.h"
-#include "yy.hedgehog.h"
+#include "yy.tab.h"
 
 #define YY_DECL int yylex(YYSTYPE *lval, parser_state *p)
 
@@ -58,40 +51,28 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "func"{TRAIL}     LEX_RETURN(kw_func);
 
 "nil"{TRAIL} {
-    lval->value.type = NULL_VALUE;
     LEX_RETURN(lit_null);
 }
 "true"{TRAIL} {
-    lval->value.type = BOOL_VALUE;
-    lval->value.v.bool_value = 1;
     LEX_RETURN(lit_bool);
 }
 "false"{TRAIL} {
-    lval->value.type = BOOL_VALUE;
-    lval->value.v.bool_value = 0;
     LEX_RETURN(lit_bool);
 }
 
 [A-Za-z_][A-Za-z0-9_]* {
-    lval->id = initString(yytext);
     LEX_RETURN(lit_id);
 };
 
 (([1-9][0-9]*)|0) {
-    lval->value.type = INT_VALUE;
-    sscanf(yytext, "%" PRId32, &lval->value.v.int_value);
     LEX_RETURN(lit_int);
 }
 
 (([1-9][0-9]*)|0)(\.[0-9]*) {
-    lval->value.type = DOUBLE_VALUE;
-    sscanf(yytext, "%lf" , &lval->value.v.double_value);
     LEX_RETURN(lit_float);
 };
 
 \"([^\\\"]|\\.)*\"      {
-    lval->value.type = STRING_VALUE;
-    lval->value.v.string_value = initStringWithLength(yytext+1, strlen(yytext)-2);
     LEX_RETURN(lit_string);
 };
 
