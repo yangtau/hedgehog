@@ -9,6 +9,7 @@ struct hg_value {
         HG_VALUE_BOOL,
         HG_VALUE_NIL,
         HG_VALUE_OBJECT,
+        HG_VALUE_ID,
     } type;
     union {
         int b;

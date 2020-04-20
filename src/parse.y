@@ -8,16 +8,16 @@
 %}
 
 %define api.pure
-%parse-param {struct parser_state *p}
+%parse-param {struct parser_state* p}
 %lex-param {p}
 
 %union {
-    struct ast_node *node;
+    struct ast_node* node;
 }
  
 %{
-int yylex(YYSTYPE *lval, struct parser_state *p);
-static void yyerror(struct parser_state *p, const char *s);
+int yylex(YYSTYPE* lval, struct parser_state* p);
+static void yyerror(struct parser_state* p, const char* s);
 %}
 
 // precedence table
@@ -47,7 +47,7 @@ static void yyerror(struct parser_state *p, const char *s);
 
 program:
     comp_stat {
-
+        p->lval = $1;
     };
 
 comp_stat:
@@ -55,6 +55,10 @@ comp_stat:
     };
 
 block:
+    sep_lp sep_rp {
+        $$ = NULL; 
+    }
+    |
     sep_lp comp_stat sep_rp {
         $$ = $2; 
     };
@@ -272,7 +276,7 @@ primary:
 
 #include "lex.hedgehog.c"
 
-static void yyerror(struct parser_state *p, const char *s) {
+static void yyerror(struct parser_state* p, const char* s) {
     p->nerr++;
     if (p->fname) {
         fprintf(stderr, "%s:%d:%s\n", p->fname, p->lineno, s);

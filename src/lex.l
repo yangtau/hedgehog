@@ -3,9 +3,9 @@
 #include "ast_node.h"
 #include "yy.hedgehog.h"
 
-#define YY_DECL int yylex(YYSTYPE *lval, struct parser_state *p)
+#define YY_DECL int yylex(YYSTYPE* lval, struct parser_state* p)
 
-static int lex_return(struct parser_state *p, int c) {
+static int lex_return(struct parser_state* p, int c) {
     p->lineno = p->tline;
     p->tline = yylineno;
     return c;

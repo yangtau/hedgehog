@@ -4,3 +4,5 @@ bin/
 src/y.tab.*
 src/lex.yy.c
 compile_commands.json
+yy.hedgehog.*
+lex.hedgehog.*
