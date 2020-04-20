@@ -1,11 +1,6 @@
 #ifndef _HG_AST_NODE_H_
 #define _HG_AST_NODE_H_
-
-struct parser_state {
-    const char *fname;
-    int lineno;
-    int tline;
-};
+#include <stddef.h> /* size_t */
 
 enum ast_node_type {
     AST_NODE_ASSIN,
@@ -135,4 +130,13 @@ struct ast_node *ast_node_for_new(struct ast_node *init, struct ast_node *cond,
  * @type: AST_NODE_BREAK or AST_NODE_CONTINUE
  */
 struct ast_node *ast_node_loopctrl_new(enum ast_node_type type);
+
+// ast_node_value:
+struct ast_node *ast_node_int_new(int v);
+struct ast_node *ast_node_float_new(double v);
+struct ast_node *ast_node_str_new(char *s);
+struct ast_node *ast_node_str_len_new(char *s, size_t len);
+struct ast_node *ast_node_bool_new(int v);
+struct ast_node *ast_node_id_new(char *s);
+struct ast_node *ast_node_nil_new();
 #endif // _HG_AST_NODE_H_
