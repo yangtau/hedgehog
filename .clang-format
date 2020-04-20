@@ -15,3 +15,5 @@ UseTab: Never
 ReflowComments: false
 SpacesBeforeTrailingComments: 1
 IndentCaseLabels: false
+DerivePointerAlignment: false
+PointerAlignment: Left
