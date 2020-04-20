@@ -1,10 +1,11 @@
 %{
 #include <string.h>
-#include "yy.tab.h"
+#include "ast_node.h"
+#include "yy.hedgehog.h"
 
-#define YY_DECL int yylex(YYSTYPE *lval, parser_state *p)
+#define YY_DECL int yylex(YYSTYPE *lval, struct parser_state *p)
 
-static int lex_return(parser_state *p, int c) {
+static int lex_return(struct parser_state *p, int c) {
     p->lineno = p->tline;
     p->tline = yylineno;
     return c;
@@ -39,8 +40,8 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 ")"         LEX_RETURN(sep_rb);
 ","{TRAIL}  LEX_RETURN(sep_comma);
 ";"{TRAIL}  LEX_RETURN(sep_semic);
-"\n"          LEX_RETURN('\n');
-"#"[^\n]*"\n" LEX_RETURN('\n');
+"\n"          LEX_RETURN(sep_nl);
+"#"[^\n]*"\n" LEX_RETURN(sep_nl);
 
 "if"{TRAIL}       LEX_RETURN(kw_if);
 "else"{TRAIL}     LEX_RETURN(kw_else);
@@ -51,28 +52,39 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "func"{TRAIL}     LEX_RETURN(kw_func);
 
 "nil"{TRAIL} {
+    lval->node = ast_node_nil_new();
     LEX_RETURN(lit_null);
 }
 "true"{TRAIL} {
+    lval->node = ast_node_bool_new(1);
     LEX_RETURN(lit_bool);
 }
 "false"{TRAIL} {
+    lval->node = ast_node_bool_new(0);
     LEX_RETURN(lit_bool);
 }
 
 [A-Za-z_][A-Za-z0-9_]* {
+    lval->node = ast_node_id_new(yytext);
     LEX_RETURN(lit_id);
 };
 
 (([1-9][0-9]*)|0) {
+    int t;
+    sscanf(yytext, "%d", &t);
+    lval->node = ast_node_int_new(t);
     LEX_RETURN(lit_int);
 }
 
 (([1-9][0-9]*)|0)(\.[0-9]*) {
+    double t;
+    sscanf(yytext, "%lf", &t);
+    lval->node = ast_node_float_new(t);
     LEX_RETURN(lit_float);
 };
 
-\"([^\\\"]|\\.)*\"      {
+\"([^\\\"]|\\.)*\" {
+    lval->node = ast_node_str_len_new(yytext+1, strlen(yytext)-2);
     LEX_RETURN(lit_string);
 };
 
