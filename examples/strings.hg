@@ -1,9 +1,0 @@
-func times_hello(a) {
-    res = ''
-    for i=0; i<a; i=i+1 {
-        res = res + 'hello' 
-    }
-    return res
-}
-
-puts(times_hello(3))
