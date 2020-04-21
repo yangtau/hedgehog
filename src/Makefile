@@ -11,13 +11,9 @@ all: hg
 hg: parser.o $(OBJS)
 	$(CC) -o hg parser.o $(OBJS)
 
-yy.hedgehog.c: parse.y
+parser.o: parse.y lex.l
 	$(YACC) -v -d -o yy.hedgehog.c parse.y
-
-lex.hedgehog.c: lex.l yy.hedgehog.h
 	$(LEX) -o lex.hedgehog.c lex.l
-
-parser.o: yy.hedgehog.c lex.hedgehog.c
 	$(CC) $(CFLAGS) -c yy.hedgehog.c -o parser.o
 
 $(OBJS):%.o: %.c

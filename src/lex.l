@@ -34,32 +34,37 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "||"{TRAIL} LEX_RETURN(op_or);
 "!"{TRAIL}  LEX_RETURN(op_not);
 "="{TRAIL}  LEX_RETURN(op_assign);
-"{"{TRAIL}  LEX_RETURN(sep_lp);
+".."{TRAIL} LEX_RETURN(op_ddot);
+
+"["{TRAIL}  LEX_RETURN(sep_ls);
+"]"{TRAIL}  LEX_RETURN(sep_rs);
 "("{TRAIL}  LEX_RETURN(sep_lb);
-"}"         LEX_RETURN(sep_rp);
 ")"         LEX_RETURN(sep_rb);
-","{TRAIL}  LEX_RETURN(sep_comma);
-";"{TRAIL}  LEX_RETURN(sep_semic);
+"}"         LEX_RETURN(sep_rp);
+{TRAIL}"{"{TRAIL}  LEX_RETURN(sep_lp);
+{TRAIL}","{TRAIL}  LEX_RETURN(sep_comma);
+{TRAIL}";"{TRAIL}  LEX_RETURN(sep_semic);
 "\n"          LEX_RETURN(sep_nl);
 "#"[^\n]*"\n" LEX_RETURN(sep_nl);
 
+"in"{TRAIL}       LEX_RETURN(kw_in);
 "if"{TRAIL}       LEX_RETURN(kw_if);
 "else"{TRAIL}     LEX_RETURN(kw_else);
 "break"{TRAIL}    LEX_RETURN(kw_break);
 "continue"{TRAIL} LEX_RETURN(kw_continue);
 "return"{TRAIL}   LEX_RETURN(kw_return);
 "for"{TRAIL}      LEX_RETURN(kw_for);
-"func"{TRAIL}     LEX_RETURN(kw_func);
+"def"{TRAIL}      LEX_RETURN(kw_func);
 
-"nil"{TRAIL} {
+"nil" {
     lval->node = ast_node_nil_new();
     LEX_RETURN(lit_null);
 }
-"true"{TRAIL} {
+"true" {
     lval->node = ast_node_bool_new(1);
     LEX_RETURN(lit_bool);
 }
-"false"{TRAIL} {
+"false" {
     lval->node = ast_node_bool_new(0);
     LEX_RETURN(lit_bool);
 }
@@ -91,7 +96,7 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 [ \t] ; 
 
 . { 
-    fprintf(stderr, "lexical error ('%s').\n", yytext); 
+    fprintf(stderr, "lexical error:%s:%d:\n (`%s`)\n", p->fname, p->lineno, yytext); 
     exit(1); 
 };
 %% 

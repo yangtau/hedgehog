@@ -69,7 +69,7 @@ struct ast_node* ast_node_if_new(struct ast_node* cond, struct ast_node* stats,
     if (cond != NULL)
         assert_expr(cond);
 
-    struct ast_node* node       = ast_node_new(AST_NODE_OP);
+    struct ast_node* node       = ast_node_new(AST_NODE_IF);
     struct ast_node_if* node_if = hg_malloc(sizeof(struct ast_node_if));
 
     node_if->cond     = cond;
@@ -82,7 +82,8 @@ struct ast_node* ast_node_if_new(struct ast_node* cond, struct ast_node* stats,
 
 struct ast_node* ast_node_call_new(struct ast_node* id, struct ast_node* args) {
     assert(id->type == AST_NODE_VALUE);
-    assert(args->type == AST_NODE_ARGS);
+    if (args != NULL)
+        assert(args->type == AST_NODE_ARGS);
 
     struct ast_node* node           = ast_node_new(AST_NODE_CALL);
     struct ast_node_call* node_call = hg_malloc(sizeof(struct ast_node_call));

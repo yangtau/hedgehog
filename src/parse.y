@@ -21,6 +21,7 @@ static void yyerror(struct parser_state* p, const char* s);
 %}
 
 // precedence table
+%right op_ddot
 %right op_assign
 %left op_or
 %left op_and 
@@ -29,19 +30,17 @@ static void yyerror(struct parser_state* p, const char* s);
 %left op_add op_sub
 %left op_mul op_div op_mod
 
-%token sep_lp // {
-       sep_rp // }
-       sep_lb // (
-       sep_rb // )
-       sep_nl // \n
-       sep_semic // ;
-       sep_comma // ,
+%token sep_lp sep_rp // {}
+       sep_ls sep_rs // []
+       sep_lb sep_rb // ()
+       sep_nl sep_semic sep_comma // \n;,
        kw_if kw_else kw_for kw_break kw_continue kw_return
-       kw_func
+       kw_func kw_in kw_while
 
 %token <node> lit_float lit_int lit_bool lit_null lit_string lit_id
-%type <node>  primary expr func_call_expr args vars stat if_stat opt_elsif_stat
-              for_stat func_def stats block program comp_stat
+%type <node>  primary expr func_call args vars stat if_stat opt_elsif_stat
+              for_stat func_def stats block program comp_stat while_stat
+              list tuple 
 
 %%
 
@@ -51,7 +50,8 @@ program:
     };
 
 comp_stat:
-    stats opt_sep {
+    opt_sep stats opt_sep {
+        $$ = $2;
     };
 
 block:
@@ -97,6 +97,8 @@ stat:
     |
     for_stat
     |
+    while_stat
+    |
     if_stat
     |
     expr
@@ -139,17 +141,14 @@ opt_elsif_stat:
         $$ = ast_node_if_new($3, $4, $5);
     };
 
+while_stat:
+    kw_while expr block {
+        $$ = ast_node_while_new($2, $3);      
+    }
+
 for_stat:
-    kw_for expr sep_semic expr sep_semic expr block {
-        $$ = ast_node_for_new($2, $4, $6, $7);
-    }
-    |
-    kw_for expr block {
-        $$ = ast_node_for_new(NULL, $2, NULL, $3);
-    }
-    |
-    kw_for block {
-        $$ = ast_node_for_new(NULL, NULL, NULL, $2);
+    kw_for vars kw_in expr block {
+        $$ = ast_node_for_new($2, $4, $5);
     };
 
 func_def:
@@ -171,16 +170,16 @@ vars:
         $$ = $1;
     };
 
-func_call_expr:
-    lit_id sep_lb sep_rb { /* fn() */
-        $$ = ast_node_call_new($1, NULL);
-    }
-    |
+func_call:
     lit_id sep_lb args sep_rb { /* fn(a, b) */
         $$ = ast_node_call_new($1, $3);
     };
 
 args:
+    /* none */ {
+        $$ = NULL;
+    }
+    |
     expr {
         $$ = ast_node_array_new(AST_NODE_ARGS, $1);
     }
@@ -188,6 +187,16 @@ args:
     args sep_comma expr {
         ast_node_array_add($$, $3);
         $$ = $1;
+    };
+
+list:
+    sep_ls args sep_ls {
+        $$ = ast_node_list_new($2);
+    };
+
+tuple:
+    sep_lb args sep_rb {
+        $$ = ast_node_list_new($2);
     };
 
 expr:
@@ -266,7 +275,11 @@ primary:
     |
     lit_id 
     |
-    func_call_expr
+    func_call
+    |
+    list
+    |
+    tuple
     |
     sep_lb expr sep_rb {
         $$ = $2;
