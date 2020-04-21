@@ -8,6 +8,9 @@ struct hg_value {
         HG_VALUE_STRING,
         HG_VALUE_BOOL,
         HG_VALUE_NIL,
+        HG_VALUE_LIST,
+        HG_VALUE_TUPLE,
+        HG_VALUE_DICT,
         HG_VALUE_OBJECT,
         HG_VALUE_ID,
     } type;

@@ -71,6 +71,7 @@ struct ast_node_while {
 struct ast_node_for {
     struct ast_node* vars;
     struct ast_node* iterator;
+    struct ast_node* stats;
 };
 
 struct ast_node_call {
