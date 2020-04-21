@@ -10,11 +10,20 @@ puts(b)
 c = true
 puts(c)
 
-# null
-d = null
+# nil
+d = nil
 puts(d)
 
 # string
-s = 'Hello, World!'
+s = "Hello, World!"
 puts(s)
 
+# tuple
+t = (a, b, c, d, s)
+puts(t)
+
+# list
+xs = [1..100]
+puts(xs)
+xs = [1, 1, 3, 4, 5]
+puts(xs)
