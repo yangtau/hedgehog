@@ -190,11 +190,11 @@ args:
     };
 
 list:
-    sep_ls args sep_comma sep_ls {
+    sep_ls args sep_comma sep_rs {
         $$ = ast_node_list_new($2);
     }
     |
-    sep_ls args sep_ls {
+    sep_ls args sep_rs {
         $$ = ast_node_list_new($2);
     };
 

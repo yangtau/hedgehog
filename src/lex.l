@@ -19,6 +19,7 @@ static int lex_return(struct parser_state* p, int c) {
 
 TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 %%
+\.\.{TRAIL} LEX_RETURN(op_ddot);
 "+"{TRAIL}  LEX_RETURN(op_add);
 "-"{TRAIL}  LEX_RETURN(op_sub);
 "*"{TRAIL}  LEX_RETURN(op_mul);
@@ -34,16 +35,15 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "||"{TRAIL} LEX_RETURN(op_or);
 "!"{TRAIL}  LEX_RETURN(op_not);
 "="{TRAIL}  LEX_RETURN(op_assign);
-".."{TRAIL} LEX_RETURN(op_ddot);
 
-"["{TRAIL}  LEX_RETURN(sep_ls);
-"]"{TRAIL}  LEX_RETURN(sep_rs);
-"("{TRAIL}  LEX_RETURN(sep_lb);
-")"         LEX_RETURN(sep_rb);
-"}"         LEX_RETURN(sep_rp);
-{TRAIL}"{"{TRAIL}  LEX_RETURN(sep_lp);
-{TRAIL}","{TRAIL}  LEX_RETURN(sep_comma);
-{TRAIL}";"{TRAIL}  LEX_RETURN(sep_semic);
+"["{TRAIL} LEX_RETURN(sep_ls);
+"]"        LEX_RETURN(sep_rs);
+"("{TRAIL} LEX_RETURN(sep_lb);
+")"        LEX_RETURN(sep_rb);
+"}"        LEX_RETURN(sep_rp);
+{TRAIL}"{"{TRAIL} LEX_RETURN(sep_lp);
+{TRAIL}","{TRAIL} LEX_RETURN(sep_comma);
+{TRAIL}";"{TRAIL} LEX_RETURN(sep_semic);
 "\n"          LEX_RETURN(sep_nl);
 "#"[^\n]*"\n" LEX_RETURN(sep_nl);
 
@@ -55,6 +55,7 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "return"{TRAIL}   LEX_RETURN(kw_return);
 "for"{TRAIL}      LEX_RETURN(kw_for);
 "def"{TRAIL}      LEX_RETURN(kw_func);
+"while"{TRAIL}    LEX_RETURN(kw_while);
 
 "nil" {
     lval->node = ast_node_nil_new();
@@ -81,7 +82,7 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
     LEX_RETURN(lit_int);
 }
 
-(([1-9][0-9]*)|0)(\.[0-9]*) {
+(([1-9][0-9]*)|0)(\.[0-9]+) {
     double t;
     sscanf(yytext, "%lf", &t);
     lval->node = ast_node_float_new(t);

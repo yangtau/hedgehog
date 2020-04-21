@@ -48,7 +48,10 @@ static inline struct ast_node* ast_node_new(enum ast_node_type type) {
 struct ast_node* ast_node_op_new(enum ast_node_op_type type,
                                  struct ast_node* left,
                                  struct ast_node* right) {
-    assert_expr(left);
+    if (left == NULL)
+        assert(type == AST_NODE_OP_SUB);
+    else
+        assert_expr(left);
     assert_expr(right);
 
     struct ast_node* node       = ast_node_new(AST_NODE_OP);
@@ -291,7 +294,7 @@ struct ast_node* ast_node_id_new(const char* s) {
 
 struct ast_node* ast_node_list_new(struct ast_node* args) {
     if (args != NULL)
-        assert(args->type = AST_NODE_ARGS);
+        assert(args->type == AST_NODE_ARGS);
 
     struct ast_node* node  = ast_node_new(AST_NODE_VALUE);
     struct hg_value* value = hg_malloc(sizeof(struct hg_value));
@@ -305,7 +308,7 @@ struct ast_node* ast_node_list_new(struct ast_node* args) {
 
 struct ast_node* ast_node_tuple_new(struct ast_node* args) {
     if (args != NULL)
-        assert(args->type = AST_NODE_ARGS);
+        assert(args->type == AST_NODE_ARGS);
 
     struct ast_node* node  = ast_node_new(AST_NODE_VALUE);
     struct hg_value* value = hg_malloc(sizeof(struct hg_value));
