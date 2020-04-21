@@ -190,6 +190,10 @@ args:
     };
 
 list:
+    sep_ls args sep_comma sep_ls {
+        $$ = ast_node_list_new($2);
+    }
+    |
     sep_ls args sep_ls {
         $$ = ast_node_list_new($2);
     };
@@ -208,6 +212,10 @@ expr:
     |
     op_not expr {
         $$ = ast_node_op_new(AST_NODE_OP_NOT, NULL, $2);
+    }
+    |
+    expr op_ddot expr { // 1..2
+        $$ = ast_node_op_new(AST_NODE_OP_DDOT, $1, $3);
     }
     |
     expr op_and expr {
