@@ -1,4 +1,8 @@
 # functions
+def fn() {
+
+}
+
 def hello() {
     puts("Hello, world!")
 }
