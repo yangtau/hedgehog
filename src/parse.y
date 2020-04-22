@@ -35,12 +35,12 @@ static void yyerror(struct parser_state* p, const char* s);
        sep_lb sep_rb // ()
        sep_nl sep_semic sep_comma // \n;,
        kw_if kw_else kw_for kw_break kw_continue kw_return
-       kw_func kw_in kw_while
+       kw_def kw_in kw_while
 
-%token <node> lit_float lit_int lit_bool lit_null lit_string lit_id
+%token <node> lit_float lit_int lit_bool lit_nil lit_string lit_id
 %type <node>  primary expr func_call args vars stat if_stat opt_elsif_stat
               for_stat func_def stats block program comp_stat while_stat
-              list tuple 
+              list tuple
 
 %%
 
@@ -71,6 +71,10 @@ stats:
     stats seps stat {
         $$ = $1;
         ast_node_array_add($$, $3);
+    }
+    |
+    error stat {
+
     };
 
 opt_sep:
@@ -152,11 +156,11 @@ for_stat:
     };
 
 func_def:
-    kw_func lit_id sep_lb sep_rb block {
+    kw_def lit_id sep_lb sep_rb block {
         $$ = ast_node_func_new($2, NULL, $5);
     }
     |
-    kw_func lit_id sep_lb vars sep_rb block {
+    kw_def lit_id sep_lb vars sep_rb block {
         $$ = ast_node_func_new($2, $4, $6);
     };
 
@@ -200,7 +204,7 @@ list:
 
 tuple:
     sep_lb args sep_rb {
-        $$ = ast_node_list_new($2);
+        $$ = ast_node_tuple_new($2);
     };
 
 expr:
@@ -273,7 +277,7 @@ expr:
 primary:
     lit_string
     |
-    lit_null
+    lit_nil
     |
     lit_bool
     |
@@ -287,11 +291,7 @@ primary:
     |
     list
     |
-    tuple
-    |
-    sep_lb expr sep_rb {
-        $$ = $2;
-    };
+    tuple;
 
 %%
 
