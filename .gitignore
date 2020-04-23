@@ -6,3 +6,4 @@ src/lex.yy.c
 compile_commands.json
 yy.hedgehog.*
 lex.hedgehog.*
+compile_commands.json
