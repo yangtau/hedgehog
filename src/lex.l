@@ -8,7 +8,7 @@
 static int lex_return(struct parser_state* p, int c) {
     p->lineno = p->tline;
     p->tline = yylineno;
-#define LEX_DEBUG
+// #define LEX_DEBUG
 #ifdef LEX_DEBUG
     switch (c) {
         case op_ddot: printf(".."); break;

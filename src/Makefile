@@ -3,7 +3,7 @@ LEX  = flex
 CC   = gcc
 CFLAGS = -std=gnu99 -g -Wall
 
-SRC := $(wildcard *.c)
+SRC := $(filter-out yy.hedgehog.c lex.hedgehog.c, $(wildcard *.c))
 OBJS := $(SRC:.c=.o)
 
 all: hg
