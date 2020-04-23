@@ -21,7 +21,6 @@ void ast_node_dup(struct ast_node* node, int indent) {
     case AST_NODE_STATS: {
         struct ast_node_array* arr = node->node;
         for (int i = 0; i < arr->len; i++) {
-            printf("%s", buf);
             ast_node_dup(arr->arr[i], indent);
             printf("\n");
         }
@@ -38,9 +37,9 @@ void ast_node_dup(struct ast_node* node, int indent) {
     } break;
     case AST_NODE_WHILE: {
         struct ast_node_while* whl = node->node;
-        printf("%swhile (", buf);
+        printf("%swhile ", buf);
         ast_node_dup(whl->cond, 0);
-        printf(") {\n");
+        printf(" {\n");
         ast_node_dup(whl->stats, indent + 1);
         printf("%s}", buf);
     } break;
@@ -101,10 +100,10 @@ void ast_node_dup(struct ast_node* node, int indent) {
             printf(" else ");
             if (elif->cond) {
                 printf("if ");
-                ast_node_dup(nif->cond, 0);
+                ast_node_dup(elif->cond, 0);
             }
             printf(" {\n");
-            ast_node_dup(nif->stats, indent + 1);
+            ast_node_dup(elif->stats, indent + 1);
             printf("%s}", buf);
             next = elif->opt_else;
         }
@@ -113,7 +112,55 @@ void ast_node_dup(struct ast_node* node, int indent) {
         struct ast_node_op* op = node->node;
         printf("%s", buf);
         ast_node_dup(op->left, 0);
-        printf(" $ ");
+        switch (op->op) {
+        case AST_NODE_OP_AND:
+            printf(" && ");
+            break;
+        case AST_NODE_OP_OR:
+            printf(" || ");
+            break;
+        case AST_NODE_OP_NOT:
+            printf(" ! ");
+            break;
+        case AST_NODE_OP_NEQ:
+            printf(" != ");
+            break;
+        case AST_NODE_OP_EQ:
+            printf(" == ");
+            break;
+        case AST_NODE_OP_GE:
+            printf(" >= ");
+            break;
+        case AST_NODE_OP_LE:
+            printf(" <= ");
+            break;
+        case AST_NODE_OP_GT:
+            printf(" > ");
+            break;
+        case AST_NODE_OP_LS:
+            printf(" < ");
+            break;
+        case AST_NODE_OP_ADD:
+            printf(" + ");
+            break;
+        case AST_NODE_OP_SUB:
+            printf(" - ");
+            break;
+        case AST_NODE_OP_MUL:
+            printf(" * ");
+            break;
+        case AST_NODE_OP_DIV:
+            printf(" / ");
+            break;
+        case AST_NODE_OP_MOD:
+            printf(" %% ");
+            break;
+        case AST_NODE_OP_DDOT:
+            printf(" .. ");
+            break;
+        default:
+            printf(" ERROR ");
+        }
         ast_node_dup(op->right, 0);
     } break;
 
