@@ -140,9 +140,7 @@ void ast_node_dup(struct ast_node* node, int indent) {
     case AST_NODE_CALL: {
         struct ast_node_call* call = node->node;
         ast_node_dup(call->id, indent);
-        printf("(");
-        ast_node_dup(call->args, 0);
-        printf(")");
+        ast_node_dup(call->tuple, 0);
     } break;
     case AST_NODE_BREAK:
         printf("%sbreak", buf);

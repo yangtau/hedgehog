@@ -76,7 +76,7 @@ struct ast_node_for {
 
 struct ast_node_call {
     struct ast_node* id;
-    struct ast_node* args;
+    struct ast_node* tuple; // tuple contains args
 };
 
 struct ast_node_assign {
@@ -105,9 +105,10 @@ struct ast_node* ast_node_op_new(enum ast_node_op_type type,
  */
 struct ast_node* ast_node_if_new(struct ast_node* cond, struct ast_node* stats,
                                  struct ast_node* opt_else);
-/** ast_node_call_new: create a *call* node, `args` can be `NULL`
+/** ast_node_call_new: create a *call* node
+ * @tuple: contains args
  */
-struct ast_node* ast_node_call_new(struct ast_node* id, struct ast_node* args);
+struct ast_node* ast_node_call_new(struct ast_node* id, struct ast_node* tuple);
 /** ast_node_func_new: create a *func* node, `vars` can be `NULL`
  */
 struct ast_node* ast_node_func_new(struct ast_node* id, struct ast_node* vars,
@@ -139,12 +140,10 @@ struct ast_node* ast_node_while_new(struct ast_node* cond,
 struct ast_node* ast_node_for_new(struct ast_node* vars,
                                   struct ast_node* iterator,
                                   struct ast_node* stats);
-
 /** ast_node_loopctrl_new:
  * @type: AST_NODE_BREAK or AST_NODE_CONTINUE
  */
 struct ast_node* ast_node_loopctrl_new(enum ast_node_type type);
-
 // ast_node_value:
 struct ast_node* ast_node_int_new(int v);
 struct ast_node* ast_node_float_new(double v);

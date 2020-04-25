@@ -22,3 +22,11 @@ def add(a, b) {
 }
 puts(add(3, 4))
 
+def add_x(x) {
+    def add(y) {
+        return x + y
+    }
+    return x + y
+}
+
+puts(add_x(3)(4))
