@@ -174,9 +174,18 @@ vars:
         $$ = $1;
     };
 
-func_call:
-    lit_id sep_lb args sep_rb { /* fn(a, b) */
-        $$ = ast_node_call_new($1, $3);
+list:
+    sep_ls args sep_comma sep_rs {
+        $$ = ast_node_list_new($2);
+    }
+    |
+    sep_ls args sep_rs {
+        $$ = ast_node_list_new($2);
+    };
+
+tuple:
+    sep_lb args sep_rb {
+        $$ = ast_node_tuple_new($2);
     };
 
 args:
@@ -191,20 +200,6 @@ args:
     args sep_comma expr {
         ast_node_array_add($$, $3);
         $$ = $1;
-    };
-
-list:
-    sep_ls args sep_comma sep_rs {
-        $$ = ast_node_list_new($2);
-    }
-    |
-    sep_ls args sep_rs {
-        $$ = ast_node_list_new($2);
-    };
-
-tuple:
-    sep_lb args sep_rb {
-        $$ = ast_node_tuple_new($2);
     };
 
 expr:
@@ -272,6 +267,15 @@ expr:
     |
     expr op_mul expr {
         $$ = ast_node_op_new(AST_NODE_OP_MUL, $1, $3);
+    };
+
+func_call:
+    lit_id tuple { /* fn(a, b) */
+        $$ = ast_node_call_new($1, $2);
+    }
+    |
+    func_call tuple { /* add_x(5)(6) */
+        $$ = ast_node_call_new($1, $2);
     };
 
 primary:

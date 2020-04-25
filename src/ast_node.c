@@ -83,16 +83,16 @@ struct ast_node* ast_node_if_new(struct ast_node* cond, struct ast_node* stats,
     return node;
 }
 
-struct ast_node* ast_node_call_new(struct ast_node* id, struct ast_node* args) {
-    assert(id->type == AST_NODE_VALUE);
-    if (args != NULL)
-        assert(args->type == AST_NODE_ARGS);
+struct ast_node* ast_node_call_new(struct ast_node* id,
+                                   struct ast_node* tuple) {
+    assert(id->type == AST_NODE_VALUE || id->type == AST_NODE_CALL);
+    assert(tuple->type == AST_NODE_VALUE);
 
     struct ast_node* node           = ast_node_new(AST_NODE_CALL);
     struct ast_node_call* node_call = hg_malloc(sizeof(struct ast_node_call));
 
-    node_call->id   = id;
-    node_call->args = args;
+    node_call->id    = id;
+    node_call->tuple = tuple;
 
     node->node = node_call;
     return node;
