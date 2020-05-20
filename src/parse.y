@@ -73,9 +73,9 @@ stats:
         ast_node_array_add($$, $3);
     }
     |
-    error stat {
-
-    };
+    stats error {
+    }
+    | error;
 
 opt_sep:
     /* none */
@@ -304,8 +304,8 @@ primary:
 static void yyerror(struct parser_state* p, const char* s) {
     p->nerr++;
     if (p->fname) {
-        fprintf(stderr, "%s:%d:%s\n", p->fname, p->lineno, s);
+        fprintf(stderr, "%s:%d:%s:\n`%s`\n", p->fname, p->lineno, s, yytext);
     } else {
-        fprintf(stderr, "%s\n", s);
+        fprintf(stderr, "%d:%s:\n`%s`\n", p->lineno, s, yytext);
     }
 }
