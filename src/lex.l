@@ -145,7 +145,7 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 [ \t] ; 
 
 . { 
-    fprintf(stderr, "lexical error:%s:%d:\n (`%s`)\n", p->fname, p->lineno, yytext); 
-    exit(1); 
+    fprintf(stderr, "%s:%d:lexical error:\n `%s`\n", p->fname, p->lineno, yytext); 
+    exit(1);
 };
 %% 

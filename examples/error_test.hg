@@ -1,0 +1,24 @@
+a = 10
+if a > 10 {
+    puts("a is greater than 10")
+} else if a == 10 { 
+    puts("a equals to 10")
+} else { 
+    puts("a is less than 10")
+} else if a > 01 {
+}
+
+b = 0;
+else if b == 0 {
+    puts(b)
+}
+
+def
+hello() {
+    puts("Hello)
+}
+
+dfe hello() {
+    puts(
+        a))
+}
