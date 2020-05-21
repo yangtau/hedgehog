@@ -120,7 +120,7 @@ void ast_node_dup(struct ast_node* node, int indent) {
             printf(" || ");
             break;
         case AST_NODE_OP_NOT:
-            printf(" ! ");
+            printf(" !");
             break;
         case AST_NODE_OP_NEQ:
             printf(" != ");
@@ -141,22 +141,22 @@ void ast_node_dup(struct ast_node* node, int indent) {
             printf(" < ");
             break;
         case AST_NODE_OP_ADD:
-            printf(" + ");
+            printf("+");
             break;
         case AST_NODE_OP_SUB:
-            printf(" - ");
+            printf("-");
             break;
         case AST_NODE_OP_MUL:
-            printf(" * ");
+            printf("*");
             break;
         case AST_NODE_OP_DIV:
-            printf(" / ");
+            printf("/");
             break;
         case AST_NODE_OP_MOD:
-            printf(" %% ");
+            printf("%%");
             break;
         case AST_NODE_OP_DDOT:
-            printf(" .. ");
+            printf("..");
             break;
         default:
             printf(" ERROR ");
