@@ -35,7 +35,7 @@
                type == AST_NODE_CALL);                          \
     }
 
-/** ast_node_new: malloc a new ast_node and set its type
+/* ast_node_new: malloc a new ast_node and set its type
  */
 static inline struct ast_node* ast_node_new(enum ast_node_type type) {
     struct ast_node* node = hg_malloc(sizeof(struct ast_node));
