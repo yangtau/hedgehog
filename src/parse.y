@@ -75,7 +75,10 @@ stats:
     |
     stats error {
     }
-    | error;
+    |
+    error {
+        $$ = NULL;
+    };
 
 opt_sep:
     /* none */
