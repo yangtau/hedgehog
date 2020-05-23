@@ -1,6 +1,4 @@
-#include <assert.h>
-#include <stdio.h>
-
+#include "common.h"
 #include "ast_node.h"
 #include "hedgehog.h"
 
@@ -46,36 +44,30 @@ void ast_node_dup(struct ast_node* node, int indent) {
     case AST_NODE_VALUE: {
         struct hg_value* val = node->node;
         switch (val->type) {
-        case HG_VALUE_ID: {
-            printf("%s%s", buf, VAL_AS_ID(*val));
-        } break;
-        case HG_VALUE_STRING: {
-            printf("%s\"%s\"", buf, VAL_AS_STR(*val));
-        } break;
+        case HG_VALUE_ID:
         case HG_VALUE_INT:
-            printf("%s%ld", buf, VAL_AS_INT(*val));
-            break;
+        case HG_VALUE_BOOL:
+        case HG_VALUE_NIL:
         case HG_VALUE_FLOAT:
-            printf("%s%lf", buf, VAL_AS_FLOAT(*val));
+            hg_value_write(*val, stdout);
             break;
-        case HG_VALUE_LIST: {
+        case HG_VALUE_STRING:
+            printf("\"");
+            hg_value_write(*val, stdout);
+            printf("\"");
+            break;
+        case HG_VALUE_LIST:
             printf("%s[", buf);
             ast_node_dup(VAL_AS_PTR(*val), 0);
             printf("]");
-        } break;
-        case HG_VALUE_NIL:
-            printf("%snil", buf);
             break;
-        case HG_VALUE_BOOL:
-            printf("%s%s", buf, VAL_AS_BOOL(*val) ? "true" : "false");
-            break;
-        case HG_VALUE_TUPLE: {
+        case HG_VALUE_TUPLE:
             printf("%s(", buf);
             ast_node_dup(VAL_AS_PTR(*val), 0);
             printf(")");
-        } break;
+            break;
         default:
-            printf("Error: not implemented");
+            unimplemented("print hg_value type: %x", val->type);
         }
     } break;
     case AST_NODE_ASSIGN: {
@@ -157,7 +149,7 @@ void ast_node_dup(struct ast_node* node, int indent) {
             printf("..");
             break;
         default:
-            printf(" ERROR ");
+            unimplemented("ast node op:%x", op->op);
         }
         ast_node_dup(op->right, 0);
     } break;

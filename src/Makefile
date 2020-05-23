@@ -20,4 +20,4 @@ $(OBJS):%.o: %.c
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f yy.hedgehog.* lex.hedgehog.* *.o hg tag
+	rm -f yy.hedgehog.* lex.hedgehog.* *.o hg tags
