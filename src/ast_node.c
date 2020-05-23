@@ -220,7 +220,7 @@ struct ast_node* ast_node_int_new(int64_t v) {
     struct ast_node* node        = ast_node_new(AST_NODE_VALUE);
     struct ast_node_value* value = hg_malloc(sizeof(struct ast_node_value));
 
-    value->val = HG_INT_VAL(v);
+    value->val = VAL_INT(v);
 
     node->node = value;
     return node;
@@ -230,7 +230,7 @@ struct ast_node* ast_node_float_new(double v) {
     struct ast_node* node        = ast_node_new(AST_NODE_VALUE);
     struct ast_node_value* value = hg_malloc(sizeof(struct ast_node_value));
 
-    value->val = HG_FLOAT_VAL(v);
+    value->val = VAL_FLOAT(v);
 
     node->node = value;
     return node;
@@ -240,7 +240,7 @@ struct ast_node* ast_node_bool_new(bool v) {
     struct ast_node* node        = ast_node_new(AST_NODE_VALUE);
     struct ast_node_value* value = hg_malloc(sizeof(struct ast_node_value));
 
-    value->val = HG_BOOL_VAL(v);
+    value->val = VAL_BOOL(v);
 
     node->node = value;
     return node;
@@ -250,7 +250,7 @@ struct ast_node* ast_node_nil_new() {
     struct ast_node* node        = ast_node_new(AST_NODE_VALUE);
     struct ast_node_value* value = hg_malloc(sizeof(struct ast_node_value));
 
-    value->val = HG_NIL_VAL;
+    value->val = VAL_NIL;
 
     node->node = value;
     return node;
@@ -264,7 +264,7 @@ struct ast_node* ast_node_str_len_new(const char* s, size_t len) {
     struct ast_node* node        = ast_node_new(AST_NODE_VALUE);
     struct ast_node_value* value = hg_malloc(sizeof(struct ast_node_value));
 
-    value->val = HG_STR_LEN_VAL(s, len);
+    value->val = VAL_STR_LEN(s, len);
 
     node->node = value;
     return node;
@@ -274,7 +274,7 @@ struct ast_node* ast_node_id_new(const char* s) {
     struct ast_node* node        = ast_node_new(AST_NODE_VALUE);
     struct ast_node_value* value = hg_malloc(sizeof(struct ast_node_value));
 
-    value->val = HG_ID_VAL(s);
+    value->val = VAL_ID(s);
 
     node->node = value;
     return node;
@@ -287,7 +287,7 @@ struct ast_node* ast_node_list_new(struct ast_node* args) {
     struct ast_node* node        = ast_node_new(AST_NODE_VALUE);
     struct ast_node_value* value = hg_malloc(sizeof(struct ast_node_value));
 
-    value->val = HG_LIST_VAL(args);
+    value->val = VAL_LIST(args);
 
     node->node = value;
     return node;
@@ -300,7 +300,7 @@ struct ast_node* ast_node_tuple_new(struct ast_node* args) {
     struct ast_node* node        = ast_node_new(AST_NODE_VALUE);
     struct ast_node_value* value = hg_malloc(sizeof(struct ast_node_value));
 
-    value->val = HG_TUPLE_VAL(args);
+    value->val = VAL_TUPLE(args);
 
     node->node = value;
     return node;
