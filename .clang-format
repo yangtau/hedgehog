@@ -17,3 +17,4 @@ SpacesBeforeTrailingComments: 1
 IndentCaseLabels: false
 DerivePointerAlignment: false
 PointerAlignment: Left
+SortIncludes: false

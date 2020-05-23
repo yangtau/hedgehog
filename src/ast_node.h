@@ -1,8 +1,6 @@
 #ifndef _HG_AST_NODE_H_
 #define _HG_AST_NODE_H_
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#include "common.h"
 #include "value.h"
 
 enum ast_node_type {

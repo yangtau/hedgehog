@@ -250,7 +250,7 @@ struct ast_node* ast_node_nil_new() {
     struct ast_node* node        = ast_node_new(AST_NODE_VALUE);
     struct ast_node_value* value = hg_malloc(sizeof(struct ast_node_value));
 
-    value->val = VAL_NIL;
+    value->val = VAL_NIL();
 
     node->node = value;
     return node;
