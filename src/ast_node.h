@@ -1,6 +1,9 @@
 #ifndef _HG_AST_NODE_H_
 #define _HG_AST_NODE_H_
+#include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
+#include "value.h"
 
 enum ast_node_type {
     AST_NODE_ASSIGN,
@@ -94,6 +97,10 @@ struct ast_node_array {
     size_t capacity;
 };
 
+struct ast_node_value {
+    struct hg_value val;
+};
+
 /* ast_node_op_new: create a binary or unary expression, 
  * @left: `NULL` for unary expression
  */
@@ -142,12 +149,14 @@ struct ast_node* ast_node_for_new(struct ast_node* vars,
  * @type: AST_NODE_BREAK or AST_NODE_CONTINUE
  */
 struct ast_node* ast_node_loopctrl_new(enum ast_node_type type);
-// ast_node_value:
-struct ast_node* ast_node_int_new(int v);
+
+/* ast_node_value:
+ */
+struct ast_node* ast_node_int_new(int64_t v);
 struct ast_node* ast_node_float_new(double v);
 struct ast_node* ast_node_str_new(const char* s);
 struct ast_node* ast_node_str_len_new(const char* s, size_t len);
-struct ast_node* ast_node_bool_new(int v);
+struct ast_node* ast_node_bool_new(bool v);
 struct ast_node* ast_node_id_new(const char* s);
 struct ast_node* ast_node_nil_new();
 struct ast_node* ast_node_list_new(struct ast_node* args);

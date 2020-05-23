@@ -47,33 +47,31 @@ void ast_node_dup(struct ast_node* node, int indent) {
         struct hg_value* val = node->node;
         switch (val->type) {
         case HG_VALUE_ID: {
-            char* s = val->v.p;
-            printf("%s%s", buf, s);
+            printf("%s%s", buf, VAL_AS_ID(*val));
         } break;
         case HG_VALUE_STRING: {
-            char* s = val->v.p;
-            printf("%s\"%s\"", buf, s);
+            printf("%s\"%s\"", buf, VAL_AS_STR(*val));
         } break;
         case HG_VALUE_INT:
-            printf("%s%d", buf, val->v.i);
+            printf("%s%ld", buf, VAL_AS_INT(*val));
             break;
         case HG_VALUE_FLOAT:
-            printf("%s%lf", buf, val->v.f);
+            printf("%s%lf", buf, VAL_AS_FLOAT(*val));
             break;
         case HG_VALUE_LIST: {
             printf("%s[", buf);
-            ast_node_dup(val->v.p, 0);
+            ast_node_dup(VAL_AS_PTR(*val), 0);
             printf("]");
         } break;
         case HG_VALUE_NIL:
             printf("%snil", buf);
             break;
         case HG_VALUE_BOOL:
-            printf("%s%s", buf, val->v.b ? "true" : "false");
+            printf("%s%s", buf, VAL_AS_BOOL(*val) ? "true" : "false");
             break;
         case HG_VALUE_TUPLE: {
             printf("%s(", buf);
-            ast_node_dup(val->v.p, 0);
+            ast_node_dup(VAL_AS_PTR(*val), 0);
             printf(")");
         } break;
         default:

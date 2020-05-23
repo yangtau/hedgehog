@@ -110,11 +110,11 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
     LEX_RETURN(lit_nil);
 }
 "true" {
-    lval->node = ast_node_bool_new(1);
+    lval->node = ast_node_bool_new(true);
     LEX_RETURN(lit_bool);
 }
 "false" {
-    lval->node = ast_node_bool_new(0);
+    lval->node = ast_node_bool_new(false);
     LEX_RETURN(lit_bool);
 }
 
@@ -124,8 +124,8 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 };
 
 (([1-9][0-9]*)|0) {
-    int t;
-    sscanf(yytext, "%d", &t);
+    int64_t t;
+    sscanf(yytext, "%ld", &t);
     lval->node = ast_node_int_new(t);
     LEX_RETURN(lit_int);
 }
