@@ -1,420 +1,86 @@
-/* Created by Tau on 06/02/2019 */
+#include <stdlib.h>
 #include "value.h"
 
-#include <stdio.h>
-
-#include "debug.h"
-#include "string.h"
-
-void refer(String *s) {
-    s->cnt++;
-    log(("%s: %d", s->str, s->cnt));
-}
-
-void release(String *s) {
-    s->cnt--;
-    log(("%s: %d", s->str, s->cnt));
-    if (s->cnt == 0) {
-        log(("string free: %s", s->str));
-        free(s->str);
-        free(s);
-    }
-}
-
-static void string_concat(String *s, const char *t) {
-    int len = strlen(s->str) + strlen(t) + 1;
-
-    char* tmp = calloc(len, sizeof(len));
-    strcpy(tmp, s->str);
-    strcat(tmp, t);
-
-    free(s->str);
-    s->str = tmp;
-}
-
-String *initString(char *s) {
-    String *str = (String *)malloc(sizeof(String));
-    str->str    = (char *)calloc(strlen(s) + 1, sizeof(char));
-    strcpy(str->str, s);
-    str->cnt     = 1;
-    str->refer   = refer;
-    str->release = release;
-    str->concat  = string_concat;
-    log(("string:%s", s));
-    return str;
-}
-
-void valuePrint(Value v) {
-    switch (v.type) {
-    case INT_VALUE:
-        printf("%" PRId32, v.v.int_value);
+void hg_value_write(struct hg_value a, FILE* fp) {
+    switch (a.type) {
+    case HG_VALUE_INT:
+        fprintf(fp, "%ld", VAL_AS_INT(a));
         break;
-    case DOUBLE_VALUE:
-        printf("%lf", v.v.double_value);
+    case HG_VALUE_FLOAT:
+        fprintf(fp, "%lf", VAL_AS_FLOAT(a));
         break;
-    case NULL_VALUE:
-        printf("null");
+    case HG_VALUE_BOOL:
+        fprintf(fp, "%s", VAL_AS_BOOL(a) ? "true" : "false");
         break;
-    case BOOL_VALUE:
-        printf("%s", (v.v.bool_value == 0 ? "false" : "true"));
+    case HG_VALUE_NIL:
+        fprintf(fp, "nil");
         break;
-    case STRING_VALUE:
-        printf("%s", v.v.string_value->str);
+    case HG_VALUE_STRING:
+        fprintf(fp, "%s", VAL_AS_STR(a));
         break;
-    case FUNCTION_VALUE:
-        printf("function");
+    case HG_VALUE_ID:
+        fprintf(fp, "%s", VAL_AS_ID(a));
+        break;
+    case HG_VALUE_LIST:
+        break;
+    case HG_VALUE_TUPLE:
+        break;
+    case HG_VALUE_DICT:
+        break;
+    case HG_VALUE_OBJECT:
         break;
     default:
-        panic(("bad case.."));
-        break;
+        unimplemented("type :%x", a.type);
     }
 }
 
-Value valueAdd(Value a, Value b) {
-    Value v;
-    if (a.type == INT_VALUE && b.type == INT_VALUE) {
-        v.type        = INT_VALUE;
-        v.v.int_value = a.v.int_value + b.v.int_value;
-    } else if (a.type == DOUBLE_VALUE && b.type == DOUBLE_VALUE) {
-        v.type           = DOUBLE_VALUE;
-        v.v.double_value = a.v.double_value + b.v.double_value;
-    } else if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-        v.type           = DOUBLE_VALUE;
-        v.v.double_value = a.v.double_value + b.v.int_value;
-    } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-        v.type           = DOUBLE_VALUE;
-        v.v.double_value = a.v.int_value + b.v.double_value;
-    } else if (a.type == STRING_VALUE && b.type == STRING_VALUE){
-        v.type = STRING_VALUE;
-        v.v.string_value = a.v.string_value;
-        refer(v.v.string_value);
-        v.v.string_value->concat(v.v.string_value, b.v.string_value->str);
-    } else {
-        v.type = NULL_VALUE;
-        panic(("add value: not support"));
+bool hg_value_equal(struct hg_value a, struct hg_value b) {
+#define equal_as(type) (VAL_AS_##type(a) == VAL_AS_##type(b))
+
+    if (a.type != b.type) { // TODO: how about comparing `int` with `float`
+        return false;
     }
-    return v;
+
+    switch (a.type) {
+    case HG_VALUE_INT:
+        return equal_as(INT);
+    case HG_VALUE_FLOAT:
+        return equal_as(FLOAT);
+    case HG_VALUE_BOOL:
+        return equal_as(BOOL);
+    case HG_VALUE_NIL:
+        return true;
+    case HG_VALUE_ID: {
+        const char* t = VAL_AS_ID(b);
+        const char* s = VAL_AS_ID(a);
+        return strcmp(t, s) == 0;
+    }
+    case HG_VALUE_STRING: {
+        const char* t = VAL_AS_STR(b);
+        const char* s = VAL_AS_STR(a);
+        return strcmp(t, s) == 0;
+    }
+    default:
+        unimplemented("type :%x", a.type);
+    }
+    return false;
+#undef equal_as
 }
 
-Value valueSubtract(Value a, Value b) {
-    Value v;
-    if (a.type == INT_VALUE && b.type == INT_VALUE) {
-        v.type        = INT_VALUE;
-        v.v.int_value = a.v.int_value - b.v.int_value;
-    } else if (a.type == DOUBLE_VALUE && b.type == DOUBLE_VALUE) {
-        v.type           = DOUBLE_VALUE;
-        v.v.double_value = a.v.double_value - b.v.double_value;
-    } else if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-        v.type           = DOUBLE_VALUE;
-        v.v.double_value = a.v.double_value - b.v.int_value;
-    } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-        v.type           = DOUBLE_VALUE;
-        v.v.double_value = a.v.int_value - b.v.double_value;
-    } else {
-        v.type = NULL_VALUE;
-        // TODO: error
-    }
-    return v;
+struct hg_value hg_value_str_len_new(const char* s, size_t len) {
+    struct hg_value val;
+    val.type = HG_VALUE_STRING;
+
+    char* t = malloc(sizeof(char) * (len + 1));
+    stpncpy(t, s, len);
+    t[len] = '\0';
+
+    val.as._str = t;
+    return val;
 }
 
-Value valueMultiply(Value a, Value b) {
-    Value v;
-    if (a.type == INT_VALUE && b.type == INT_VALUE) {
-        v.type        = INT_VALUE;
-        v.v.int_value = a.v.int_value * b.v.int_value;
-    } else if (a.type == DOUBLE_VALUE && b.type == DOUBLE_VALUE) {
-        v.type           = DOUBLE_VALUE;
-        v.v.double_value = a.v.double_value * b.v.double_value;
-    } else if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-        v.type           = DOUBLE_VALUE;
-        v.v.double_value = a.v.double_value * b.v.int_value;
-    } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-        v.type           = DOUBLE_VALUE;
-        v.v.double_value = a.v.int_value * b.v.double_value;
-    } else {
-        v.type = NULL_VALUE;
-        // TODO: error
-    }
-    return v;
-}
-
-Value valueDivide(Value a, Value b) {
-    Value v;
-    v.type = NULL_VALUE;
-    if (b.type == INT_VALUE) {
-        if (v.v.int_value == 0) {
-            //            TODO: error divided by 0
-            return v;
-        }
-        if (a.type == INT_VALUE) {
-            v.type        = INT_VALUE;
-            v.v.int_value = a.v.int_value / b.v.int_value;
-        } else if (a.type == DOUBLE_VALUE) {
-            v.type           = DOUBLE_VALUE;
-            v.v.double_value = a.v.double_value / b.v.int_value;
-        }
-    } else if (b.type == DOUBLE_VALUE) {
-        if (v.v.double_value == 0.0) {
-            //            TODO: error divided by 0
-            return v;
-        }
-        if (a.type == DOUBLE_VALUE) {
-            v.type           = DOUBLE_VALUE;
-            v.v.double_value = a.v.double_value / b.v.double_value;
-        } else if (a.type == INT_VALUE) {
-            v.type           = DOUBLE_VALUE;
-            v.v.double_value = a.v.int_value / b.v.double_value;
-        }
-    } else {
-        // TODO: error
-    }
-    return v;
-}
-
-Value valueModule(Value a, Value b) {
-    Value v;
-    if (a.type == INT_VALUE && b.type == INT_VALUE) {
-        v.type        = INT_VALUE;
-        v.v.int_value = a.v.int_value % b.v.int_value;
-    } else {
-        v.type = NULL_VALUE;
-        // TODO: error
-    }
-    return v;
-}
-
-Value valuePower(Value a, Value b) {
-    Value v;
-    // TODO:
-    return v;
-}
-
-Value valueNot(Value v) {
-    if (v.type == BOOL_VALUE) {
-        v.v.bool_value = !v.v.bool_value;
-    } else {
-        // TODO:error
-        v.type = NULL_VALUE;
-    }
-    return v;
-}
-
-Value valueAnd(Value a, Value b) {
-    Value v;
-    if (a.type == BOOL_VALUE && b.type == BOOL_VALUE) {
-        v.type         = BOOL_VALUE;
-        v.v.bool_value = (a.v.bool_value && b.v.bool_value);
-    } else {
-        // TODO: error
-        v.type = NULL_VALUE;
-    }
-    return v;
-}
-
-Value valueOr(Value a, Value b) {
-    Value v;
-    if (a.type == BOOL_VALUE && b.type == BOOL_VALUE) {
-        v.type         = BOOL_VALUE;
-        v.v.bool_value = (a.v.bool_value || b.v.bool_value);
-    } else {
-        // TODO: error
-        v.type = NULL_VALUE;
-    }
-    return v;
-}
-
-Value valueMinus(Value v) {
-    switch (v.type) {
-    case INT_VALUE:
-        v.v.int_value = -v.v.int_value;
-        break;
-    case DOUBLE_VALUE:
-        v.v.double_value = -v.v.double_value;
-        break;
-    default: // TODO: error
-        v.type = NULL_VALUE;
-        break;
-    }
-    return v;
-}
-
-Value valueEqual(Value a, Value b) {
-    Value v;
-    v.type = BOOL_VALUE;
-    if (a.type != b.type) {
-        v.v.bool_value = 0;
-    } else {
-        switch (a.type) {
-        case NULL_VALUE:
-            v.v.bool_value = 1;
-            break;
-        case BOOL_VALUE:
-            v.v.bool_value = a.v.bool_value == b.v.bool_value;
-            break;
-        case INT_VALUE:
-            v.v.bool_value = a.v.int_value == b.v.int_value;
-            break;
-        case DOUBLE_VALUE:
-            v.v.bool_value = a.v.double_value == b.v.double_value;
-            break;
-        case STRING_VALUE:
-
-            //                TODO: :(
-        default:
-            v.type = NULL_VALUE;
-            // TODO: error
-            break;
-        }
-    }
-    return v;
-}
-
-Value valueNotEqual(Value a, Value b) {
-    Value v;
-    v.type = BOOL_VALUE;
-    if (a.type != b.type) {
-        v.v.bool_value = 1;
-    } else {
-        switch (a.type) {
-        case BOOL_VALUE:
-            v.v.bool_value = a.v.bool_value != b.v.bool_value;
-            break;
-        case INT_VALUE:
-            v.v.bool_value = a.v.int_value != b.v.int_value;
-            break;
-        case DOUBLE_VALUE:
-            v.v.bool_value = a.v.double_value != b.v.double_value;
-            break;
-        case STRING_VALUE:
-            break;
-            //                TODO: :(
-        default:
-            v.type = NULL_VALUE;
-            // TODO: error
-            break;
-        }
-    }
-    return v;
-}
-
-Value valueGreater(Value a, Value b) {
-    Value v;
-    v.type = BOOL_VALUE;
-    if (a.type != b.type) {
-        if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-            v.v.bool_value = a.v.double_value > b.v.int_value;
-        } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-            v.v.bool_value = a.v.int_value > b.v.double_value;
-        } else {
-            v.type = NULL_VALUE;
-            // TODO: error
-        }
-    } else {
-        switch (a.type) {
-        case INT_VALUE:
-            v.v.bool_value = (a.v.int_value > b.v.int_value);
-            break;
-        case DOUBLE_VALUE:
-            v.v.bool_value = (a.v.double_value > b.v.double_value);
-            break;
-        case STRING_VALUE:
-            break;
-            //                TODO: :(
-        default:
-            v.type = NULL_VALUE;
-            // TODO: error
-            break;
-        }
-    }
-    return v;
-}
-
-Value valueLess(Value a, Value b) {
-    Value v;
-    v.type = BOOL_VALUE;
-    if (a.type != b.type) {
-        if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-            v.v.bool_value = a.v.double_value < b.v.int_value;
-        } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-            v.v.bool_value = a.v.int_value < b.v.double_value;
-        } else {
-            v.type = NULL_VALUE;
-            // TODO: error
-        }
-    } else {
-        switch (a.type) {
-        case INT_VALUE:
-            v.v.bool_value = a.v.int_value < b.v.int_value;
-            break;
-        case DOUBLE_VALUE:
-            v.v.bool_value = a.v.double_value < b.v.double_value;
-            break;
-        case STRING_VALUE:
-            break;
-            //                TODO: :(
-        default:
-            v.type = NULL_VALUE;
-            // TODO: error
-            break;
-        }
-    }
-    return v;
-}
-
-Value valueGreaterOrEqual(Value a, Value b) {
-    Value v;
-    v.type = BOOL_VALUE;
-    if (a.type != b.type) {
-        if (a.type == DOUBLE_VALUE && b.type == INT_VALUE) {
-            v.v.bool_value = a.v.double_value >= b.v.int_value;
-        } else if (a.type == INT_VALUE && b.type == DOUBLE_VALUE) {
-            v.v.bool_value = a.v.int_value >= b.v.double_value;
-        } else {
-            v.type = NULL_VALUE;
-            // TODO: error
-        }
-    } else {
-        switch (a.type) {
-        case INT_VALUE:
-            v.v.bool_value = a.v.int_value >= b.v.int_value;
-            break;
-        case DOUBLE_VALUE:
-            v.v.bool_value = a.v.double_value >= b.v.double_value;
-            break;
-        case STRING_VALUE:
-            break;
-            //                TODO: :(
-        default:
-            v.type = NULL_VALUE;
-            // TODO: error
-            break;
-        }
-    }
-    return v;
-}
-
-Value valueLessOrEqual(Value a, Value b) {
-    Value v;
-    v.type = BOOL_VALUE;
-    if (a.type != b.type) {
-        // TODO: error
-        v.type = NULL_VALUE;
-    } else {
-        switch (a.type) {
-        case INT_VALUE:
-            v.v.bool_value = a.v.int_value <= b.v.int_value;
-            break;
-        case DOUBLE_VALUE:
-            v.v.bool_value = a.v.double_value <= b.v.double_value;
-            break;
-        case STRING_VALUE:
-            break;
-            //                TODO: :(
-        default:
-            v.type = NULL_VALUE;
-            // TODO: error
-            break;
-        }
-    }
-    return v;
+struct hg_value hg_value_id_new(const char* id) {
+    struct hg_value val = hg_value_str_len_new(id, strlen(id));
+    val.type            = HG_VALUE_ID;
+    return val;
 }

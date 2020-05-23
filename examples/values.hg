@@ -1,20 +1,36 @@
 # integer
 a = 10
+a = -20
+a = 0
 puts(a)
 
 # float
 b = 3.14
+a = -1.0
 puts(b)
 
 # boolean
 c = true
+c = false
 puts(c)
 
-# null
-d = null
+# nil
+d = nil
 puts(d)
 
 # string
-s = 'Hello, World!'
+s = "Hello, World!"
+s = ""
 puts(s)
 
+# tuple
+t = (a, b, c, d, s)
+t = ("hello", 1, 1.3, (4, 4, ("world")))
+puts(t)
+
+# list
+xs = [1..100]
+puts(xs)
+xs = [1, 1, 3, 4, 5]
+puts(xs)
+xs = [[1], [2], [[3]]]

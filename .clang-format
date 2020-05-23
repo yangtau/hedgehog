@@ -1,4 +1,4 @@
-BasedOnStyle: Google
+BasedOnStyle: LLVM
 IndentWidth: 4
 SpacesBeforeTrailingComments: 1
 PointerAlignment: Left
@@ -15,3 +15,6 @@ UseTab: Never
 ReflowComments: false
 SpacesBeforeTrailingComments: 1
 IndentCaseLabels: false
+DerivePointerAlignment: false
+PointerAlignment: Left
+SortIncludes: false
