@@ -35,18 +35,18 @@ struct hg_value hg_value_id_new(const char* id);
 #define VAL_AS_BOOL(value)  ((value).as._bool)
 #define VAL_AS_PTR(value)   ((value).as._ptr)
 
-#define HG_BOOL_VAL(val)         ((struct hg_value){HG_VALUE_BOOL, {._bool = (val)}})
-#define HG_NIL_VAL               ((struct hg_value){HG_VALUE_NIL, {._int = 0}})
-#define HG_INT_VAL(val)          ((struct hg_value){HG_VALUE_INT, {._int = (val)}})
-#define HG_FLOAT_VAL(val)        ((struct hg_value){HG_VALUE_FLOAT, {._float = (val)}})
-#define HG_STR_LEN_VAL(val, len) hg_value_str_len_new(val, len)
-#define HG_STR_VAL(val)          hg_value_str_len_new(val, strlen(val))
-#define HG_ID_VAL(val)           hg_value_id_new(val)
-#define HG_LIST_VAL(val)                                          \
+#define VAL_BOOL(val)         ((struct hg_value){HG_VALUE_BOOL, {._bool = (val)}})
+#define VAL_NIL ((struct hg_value){HG_VALUE_NIL, {._int = 0}})
+#define VAL_INT(val)          ((struct hg_value){HG_VALUE_INT, {._int = (val)}})
+#define VAL_FLOAT(val)        ((struct hg_value){HG_VALUE_FLOAT, {._float = (val)}})
+#define VAL_STR_LEN(val, len) hg_value_str_len_new(val, len)
+#define VAL_STR(val)          hg_value_str_len_new(val, strlen(val))
+#define VAL_ID(val)           hg_value_id_new(val)
+#define VAL_LIST(val)                                          \
     ({ /*const char* _val = (val);*/                              \
        ((struct hg_value){.type = HG_VALUE_LIST, {._ptr = val}}); \
     })
-#define HG_TUPLE_VAL(val)                                          \
+#define VAL_TUPLE(val)                                          \
     ({ /*const char* _val = (val);*/                               \
        ((struct hg_value){.type = HG_VALUE_TUPLE, {._ptr = val}}); \
     })
