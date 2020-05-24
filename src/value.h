@@ -8,14 +8,17 @@ enum hg_value_type {
     HG_VALUE_FLOAT,
     HG_VALUE_BOOL,
     HG_VALUE_NIL,
-    // str:
-    HG_VALUE_STRING,
-    HG_VALUE_ID,
-    // ptr:
-    HG_VALUE_LIST,
-    HG_VALUE_TUPLE,
-    HG_VALUE_DICT,
     HG_VALUE_OBJECT,
+};
+
+struct hg_object_funcs {
+    void (*free)(void*);
+    void* (*new)(void*);
+};
+
+struct hg_object {
+    struct hg_object_funcs* funcs;
+    void* ptr;
 };
 
 struct hg_value {
@@ -24,12 +27,11 @@ struct hg_value {
         bool _bool;
         int64_t _int;
         double _float;
-        const char* _str;
-        void* _ptr;
+        const struct hg_object* _obj;
     } as;
 };
 
-void hg_value_write(struct hg_value a, FILE *fp);
+void hg_value_write(struct hg_value a, FILE* fp);
 bool hg_value_equal(struct hg_value a, struct hg_value b);
 
 struct hg_value hg_value_str_len_new(const char* s, size_t len);
@@ -40,15 +42,8 @@ struct hg_value hg_value_id_new(const char* id);
 #define VAL_IS_NIL(val)   ((val).type == HG_VALUE_NIL)
 #define VAL_IS_INT(val)   ((val).type == HG_VALUE_INT)
 #define VAL_IS_FLOAT(val) ((val).type == HG_VALUE_FLOAT)
-#define VAL_IS_STR(val)   ((val).type == HG_VALUE_STRING)
-#define VAL_IS_ID(val)    ((val).type == HG_VALUE_ID)
 #define VAL_IS_BOOL(val)  ((val).type == HG_VALUE_BOOL)
-#define VAL_IS_PTR(val)                                      \
-    ({                                                       \
-        enum hg_value_type type = (val).type;                \
-        type == HG_VALUE_LIST || type == HG_VALUE_OBJECT ||  \
-            type == HG_VALUE_TUPLE || type == HG_VALUE_DICT; \
-    })
+#define VAL_IS_OBJ(val)   ((val).type == HG_VALUE_OBJECT)
 
 /* VAL_AS_TYPE(val): hg_value_to_type(val)
  */
@@ -62,25 +57,15 @@ struct hg_value hg_value_id_new(const char* id);
         assert(VAL_IS_FLOAT(value)); \
         (value).as._float;           \
     })
-#define VAL_AS_STR(value)          \
-    ({                             \
-        assert(VAL_IS_STR(value)); \
-        (value).as._str;           \
-    })
-#define VAL_AS_ID(value)          \
-    ({                            \
-        assert(VAL_IS_ID(value)); \
-        (value).as._str;          \
-    })
 #define VAL_AS_BOOL(value)          \
     ({                              \
         assert(VAL_IS_BOOL(value)); \
         (value).as._bool;           \
     })
-#define VAL_AS_PTR(value)          \
+#define VAL_AS_OBJ(value)          \
     ({                             \
-        assert(VAL_IS_PTR(value)); \
-        (value).as._ptr;           \
+        assert(VAL_IS_OBJ(value)); \
+        (value).as._obj;           \
     })
 
 /* VAL_TYPE(v): type_to_hg_value(v)
@@ -92,13 +77,6 @@ struct hg_value hg_value_id_new(const char* id);
 #define VAL_STR_LEN(val, len) hg_value_str_len_new(val, len)
 #define VAL_STR(val)          hg_value_str_len_new(val, strlen(val))
 #define VAL_ID(val)           hg_value_id_new(val)
-#define VAL_LIST(val)                                     \
-    ({ /*const char* _val = (val);*/                      \
-       ((struct hg_value){HG_VALUE_LIST, {._ptr = val}}); \
-    })
-#define VAL_TUPLE(val)                                     \
-    ({ /*const char* _val = (val);*/                       \
-       ((struct hg_value){HG_VALUE_TUPLE, {._ptr = val}}); \
-    })
-
+#define VAL_LIST(val)         hg_value_list_new(val)
+#define VAL_TUPLE(val)        hg_value_tuple_new(val)
 #endif // _HG_VALUE_H_
