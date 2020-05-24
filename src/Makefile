@@ -1,6 +1,6 @@
 YACC = yacc
 LEX  = flex
-CC   = clang # gcc
+CC   = gcc
 CFLAGS = -std=gnu99 -g -Wall
 
 SRC := $(filter-out yy.hedgehog.c lex.hedgehog.c, $(wildcard *.c))
