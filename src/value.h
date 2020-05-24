@@ -29,7 +29,7 @@ struct hg_value {
     } as;
 };
 
-void hg_value_write(struct hg_value a, FILE *fp);
+void hg_value_write(struct hg_value a, FILE* fp);
 bool hg_value_equal(struct hg_value a, struct hg_value b);
 
 struct hg_value hg_value_str_len_new(const char* s, size_t len);
@@ -52,35 +52,41 @@ struct hg_value hg_value_id_new(const char* id);
 
 /* VAL_AS_TYPE(val): hg_value_to_type(val)
  */
-#define VAL_AS_INT(value)          \
-    ({                             \
-        assert(VAL_IS_INT(value)); \
-        (value).as._int;           \
+#define VAL_AS_INT(value)                 \
+    ({                                    \
+        struct hg_value _value = (value); \
+        assert(VAL_IS_INT(_value));       \
+        (_value).as._int;                 \
     })
-#define VAL_AS_FLOAT(value)          \
-    ({                               \
-        assert(VAL_IS_FLOAT(value)); \
-        (value).as._float;           \
+#define VAL_AS_FLOAT(value)               \
+    ({                                    \
+        struct hg_value _value = (value); \
+        assert(VAL_IS_FLOAT(_value));     \
+        (_value).as._float;               \
     })
-#define VAL_AS_STR(value)          \
-    ({                             \
-        assert(VAL_IS_STR(value)); \
-        (value).as._str;           \
+#define VAL_AS_STR(value)                 \
+    ({                                    \
+        struct hg_value _value = (value); \
+        assert(VAL_IS_STR(_value));       \
+        (_value).as._str;                 \
     })
-#define VAL_AS_ID(value)          \
-    ({                            \
-        assert(VAL_IS_ID(value)); \
-        (value).as._str;          \
+#define VAL_AS_ID(value)                  \
+    ({                                    \
+        struct hg_value _value = (value); \
+        assert(VAL_IS_ID(_value));        \
+        (_value).as._str;                 \
     })
-#define VAL_AS_BOOL(value)          \
-    ({                              \
-        assert(VAL_IS_BOOL(value)); \
-        (value).as._bool;           \
+#define VAL_AS_BOOL(value)                \
+    ({                                    \
+        struct hg_value _value = (value); \
+        assert(VAL_IS_BOOL(_value));      \
+        (_value).as._bool;                \
     })
-#define VAL_AS_PTR(value)          \
-    ({                             \
-        assert(VAL_IS_PTR(value)); \
-        (value).as._ptr;           \
+#define VAL_AS_PTR(value)                 \
+    ({                                    \
+        struct hg_value _value = (value); \
+        assert(VAL_IS_PTR(_value));       \
+        (_value).as._ptr;                 \
     })
 
 /* VAL_TYPE(v): type_to_hg_value(v)
