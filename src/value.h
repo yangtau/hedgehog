@@ -107,4 +107,15 @@ struct hg_value hg_value_id_new(const char* id);
        ((struct hg_value){HG_VALUE_TUPLE, {._ptr = val}}); \
     })
 
+#define INITIAL_VALUE_ARRAY_LEN 4
+
+struct value_array {
+    size_t len;
+    size_t capacity;
+    struct hg_value values[];
+};
+
+struct value_array* value_array_new();
+struct value_array* value_array_resize(struct value_array* arr, size_t new_len);
+void valu_array_free(struct value_array* arr);
 #endif // _HG_VALUE_H_
