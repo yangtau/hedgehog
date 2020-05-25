@@ -1,6 +1,13 @@
 #include <stdlib.h>
 #include "value.h"
 
+void hg_value_free(struct hg_value value) {
+    if (value.type == HG_VALUE_OBJECT) {
+        struct hg_object* obj = VAL_AS_OBJ(value);
+        obj->funcs->free(obj);
+    }
+}
+
 void hg_value_write(struct hg_value a, FILE* fp) {
     switch (a.type) {
     case HG_VALUE_INT:
@@ -15,20 +22,10 @@ void hg_value_write(struct hg_value a, FILE* fp) {
     case HG_VALUE_NIL:
         fprintf(fp, "nil");
         break;
-    case HG_VALUE_STRING:
-        fprintf(fp, "%s", VAL_AS_STR(a));
-        break;
-    case HG_VALUE_ID:
-        fprintf(fp, "%s", VAL_AS_ID(a));
-        break;
-    case HG_VALUE_LIST:
-        break;
-    case HG_VALUE_TUPLE:
-        break;
-    case HG_VALUE_DICT:
-        break;
-    case HG_VALUE_OBJECT:
-        break;
+    case HG_VALUE_OBJECT: {
+        struct hg_object* obj = VAL_AS_OBJ(a);
+        obj->funcs->write(obj, fp);
+    } break;
     default:
         unimplemented("type :%x", a.type);
     }
@@ -50,37 +47,14 @@ bool hg_value_equal(struct hg_value a, struct hg_value b) {
         return equal_as(BOOL);
     case HG_VALUE_NIL:
         return true;
-    case HG_VALUE_ID: {
-        const char* t = VAL_AS_ID(b);
-        const char* s = VAL_AS_ID(a);
-        return strcmp(t, s) == 0;
-    }
-    case HG_VALUE_STRING: {
-        const char* t = VAL_AS_STR(b);
-        const char* s = VAL_AS_STR(a);
-        return strcmp(t, s) == 0;
+    case HG_VALUE_OBJECT: {
+        struct hg_object* obj_a = VAL_AS_OBJ(a);
+        struct hg_object* obj_b = VAL_AS_OBJ(a);
+        return obj_a->funcs->equal(obj_a, obj_b);
     }
     default:
         unimplemented("type :%x", a.type);
     }
     return false;
 #undef equal_as
-}
-
-struct hg_value hg_value_str_len_new(const char* s, size_t len) {
-    struct hg_value val;
-    val.type = HG_VALUE_STRING;
-
-    char* t = malloc(sizeof(char) * (len + 1));
-    stpncpy(t, s, len);
-    t[len] = '\0';
-
-    val.as._str = t;
-    return val;
-}
-
-struct hg_value hg_value_id_new(const char* id) {
-    struct hg_value val = hg_value_str_len_new(id, strlen(id));
-    val.type            = HG_VALUE_ID;
-    return val;
 }

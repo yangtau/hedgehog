@@ -65,7 +65,8 @@ block:
 
 stats:
     stat {
-        $$ = ast_node_array_new(AST_NODE_STATS, $1);
+        $$ = ast_node_array_new(AST_NODE_STATS);
+        ast_node_array_add($$, $1);
     }
     |
     stats seps stat {
@@ -169,7 +170,8 @@ func_def:
 
 vars:
     lit_id {
-        $$ = ast_node_array_new(AST_NODE_VARS, $1);
+        $$ = ast_node_array_new(AST_NODE_VARS);
+        ast_node_array_add($$, $1);
     }
     |
     vars sep_comma lit_id {
@@ -197,7 +199,8 @@ args:
     }
     |
     expr {
-        $$ = ast_node_array_new(AST_NODE_ARGS, $1);
+        $$ = ast_node_array_new(AST_NODE_ARGS);
+        ast_node_array_add($$, $1);
     }
     |
     args sep_comma expr {
