@@ -27,7 +27,7 @@ void hg_value_write(struct hg_value a, FILE* fp) {
         obj->funcs->write(obj, fp);
     } break;
     default:
-        unimplemented_("type :%x", a.type);
+        unimplemented_("type :%x\n", a.type);
     }
 }
 
@@ -53,7 +53,7 @@ bool hg_value_equal(struct hg_value a, struct hg_value b) {
         return obj_a->funcs->equal(obj_a, obj_b);
     }
     default:
-        unimplemented_("type :%x", a.type);
+        unimplemented_("type :%x\n", a.type);
     }
 #undef equal_as
 }
@@ -74,6 +74,6 @@ uint32_t hg_value_hash(struct hg_value a) {
         return obj->hash;
     }
     default:
-        unimplemented_("type :%x", a.type);
+        unimplemented_("type :%x\n", a.type);
     }
 }

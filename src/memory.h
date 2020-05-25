@@ -67,4 +67,6 @@
 
 void* hg_realloc(void* ptr, size_t old_size, size_t new_size);
 //< hg_alloc
+
+size_t hg_memory_usage();
 #endif // _HG_MEMORY_H_

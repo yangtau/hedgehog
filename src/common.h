@@ -10,14 +10,14 @@
 
 #define unimplemented_(...)                                         \
     do {                                                            \
-        fprintf(stderr, "unimplemented in function %s:", __func__); \
+        fprintf(stderr, "unimplemented in function %s:\n", __func__); \
         fprintf(stderr, __VA_ARGS__);                               \
         exit(-1);                                                   \
     } while (0)
 
 #define unreachable_()                                                  \
     do {                                                                \
-        fprintf(stderr, "reach unreachable in function %s:", __func__); \
+        fprintf(stderr, "reach unreachable in function %s\n", __func__); \
         exit(-1);                                                       \
     } while (0)
 
