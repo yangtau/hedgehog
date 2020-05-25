@@ -2,8 +2,7 @@
 #define _HG_OBJECT_H_
 #include "common.h"
 
-struct hg_object_funcs;
-
+//> hg_object
 enum hg_object_type {
     HG_OBJ_STRING,
     HG_OBJ_ID,
@@ -11,6 +10,8 @@ enum hg_object_type {
     HG_OBJ_LIST,
     HG_OBJ_TUPLE
 };
+
+struct hg_object_funcs;
 
 struct hg_object {
     enum hg_object_type type;
@@ -24,7 +25,9 @@ struct hg_object_funcs {
     int (*write)(struct hg_object*, FILE*);
     bool (*equal)(struct hg_object*, struct hg_object*);
 };
+//< hg_object
 
+//> hg_string
 struct hg_string {
     struct hg_object obj;
     size_t len;
@@ -33,5 +36,5 @@ struct hg_string {
 // hg_string_copy: copy `s` to create a new hg_string
 struct hg_string* hg_string_copy(const char* s, size_t len);
 struct hg_string* hg_id_copy(const char* s, size_t len);
-
+//< hg_string
 #endif

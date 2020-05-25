@@ -27,7 +27,7 @@ void hg_value_write(struct hg_value a, FILE* fp) {
         obj->funcs->write(obj, fp);
     } break;
     default:
-        unimplemented("type :%x", a.type);
+        unimplemented_("type :%x", a.type);
     }
 }
 
@@ -53,8 +53,27 @@ bool hg_value_equal(struct hg_value a, struct hg_value b) {
         return obj_a->funcs->equal(obj_a, obj_b);
     }
     default:
-        unimplemented("type :%x", a.type);
+        unimplemented_("type :%x", a.type);
     }
-    return false;
 #undef equal_as
+}
+
+uint32_t hg_value_hash(struct hg_value a) {
+    switch (a.type) {
+    case HG_VALUE_INT:
+    case HG_VALUE_FLOAT:
+        return VAL_AS_INT(a) % UINT32_MAX;
+    case HG_VALUE_BOOL:
+        return VAL_AS_BOOL(a) ? 1u : 0u;
+    case HG_VALUE_NIL:
+        return 2u;
+    case HG_VALUE_OBJECT: {
+        struct hg_object* obj = VAL_AS_OBJ(a);
+        if (obj->hash == 0u)
+            obj->hash = obj->funcs->hash(obj);
+        return obj->hash;
+    }
+    default:
+        unimplemented_("type :%x", a.type);
+    }
 }
