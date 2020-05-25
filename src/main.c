@@ -1,6 +1,7 @@
 #include "common.h"
 #include "ast_node.h"
 #include "hedgehog.h"
+#include "memory.h"
 
 extern int yyparse(struct parser_state* p);
 
@@ -27,5 +28,6 @@ int main(int argc, char** argv) {
         ;
     ast_node_dump(p.lval, 0, stdout);
     ast_node_free(p.lval);
+    assert(hg_memory_usage() == 0u);
     return 0;
 }

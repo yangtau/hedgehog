@@ -314,7 +314,7 @@ void ast_node_free(struct ast_node* node) {
         struct ast_node_if* node_if = node->node;
         ast_node_free(node_if->cond);
         ast_node_free(node_if->stats);
-        ast_node_free(node_if->stats);
+        ast_node_free(node_if->opt_else);
         hg_free_(struct ast_node_if, node_if);
     } break;
     case AST_NODE_FOR: {
@@ -370,7 +370,7 @@ void ast_node_free(struct ast_node* node) {
                        node_arr->capacity);
     } break;
     default:
-        unimplemented_("type %x", node->type);
+        unimplemented_("type %x\n", node->type);
     }
     hg_free_(struct ast_node, node);
 }
@@ -513,7 +513,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
             fprintf(fp, "..");
             break;
         default:
-            unimplemented_("ast node op:%x", op->op);
+            unimplemented_("ast node op:%x\n", op->op);
         }
         ast_node_dump(op->right, 0, fp);
     } break;
@@ -574,11 +574,11 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
 
         } break;
         default:
-            unimplemented_("hg_value type: %x", val->type);
+            unimplemented_("hg_value type: %x\n", val->type);
         }
     } break;
     default:
-        unimplemented_("type: %x", node->type);
+        unimplemented_("type: %x\b", node->type);
     }
 }
 //< ast_node_dump
