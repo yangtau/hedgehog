@@ -81,11 +81,19 @@ static struct hash_map_entry* hash_map_find(struct hash_map* map,
                                             struct hg_value key) {
     assert(!VAL_IS_UNDEF(key));
     uint32_t hash = hg_value_hash(key) % map->capacity;
+
+    // the first tombstone in the probe list
+    struct hash_map_entry* tombstone = NULL;
     while (1) {
         struct hash_map_entry* entry = &map->entries[hash];
-        if (hg_value_equal(entry->key, key)
+
+        if (is_tombstone(entry)) {
+            if (tombstone != NULL)
+                tombstone = entry;
+        } else if (is_empty(entry)) {
+            return tombstone != NULL ? tombstone : entry;
+        } else if (hg_value_equal(entry->key, key)) {
             // key is not UNDEF, so there is no need to check if entry->key is valid
-            || is_empty(entry)) {
             return entry;
         }
         hash = (hash + 1) % map->capacity;
@@ -98,34 +106,39 @@ void hash_map_put(struct hash_map** map, struct hash_map_entry entry) {
     *map = hash_map_adjust(*map);
 
     struct hash_map_entry* ptr = hash_map_find(*map, entry.key);
-    assert(!is_tombstone(ptr));
+
     if (is_empty(ptr))
         (*map)->len++;
+    if (is_tombstone(ptr))
+        (*map)->tomb_cnt--;
+
     *ptr = entry;
 }
 
 bool hash_map_contain(struct hash_map* map, struct hg_value key) {
-    struct hash_map_entry* ptr = hash_map_find(map, key);
-    assert(!is_tombstone(ptr));
-    return is_valid(ptr);
+    return is_valid(hash_map_find(map, key));
 }
 
 struct hg_value hash_map_get(struct hash_map* map, struct hg_value key) {
     struct hash_map_entry* ptr = hash_map_find(map, key);
-    assert(!is_tombstone(ptr));
-    return ptr->value; // return UNDEF if is_empty
+
+    // return UNDEF if !is_valid
+    return is_valid(ptr) ? ptr->value : VAL_UNDEF();
 }
 
 struct hg_value hash_map_remove(struct hash_map* map, struct hg_value key) {
     struct hash_map_entry* ptr = hash_map_find(map, key);
-    assert(!is_tombstone(ptr));
-    struct hg_value value = ptr->value;
 
-    // make tombstone
-    map->tomb_cnt += 1;
-    ptr->value = VAL_NIL();
-    ptr->key   = VAL_UNDEF();
+    struct hg_value t = VAL_UNDEF();
 
-    return value; // return UNDEF if is_empty
+    if (is_valid(ptr)) {
+        t = ptr->value;
+        // make tombstone
+        map->tomb_cnt += 1;
+        ptr->key   = VAL_UNDEF();
+        ptr->value = VAL_NIL();
+    }
+
+    return t; // return UNDEF if !is_valid
 }
 //< hash_map
