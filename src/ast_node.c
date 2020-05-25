@@ -23,7 +23,7 @@ struct ast_node* ast_node_op_new(enum ast_node_op_type type,
                                  struct ast_node* left,
                                  struct ast_node* right) {
     if (left == NULL)
-        assert(type == AST_NODE_OP_SUB);
+        assert(type == AST_NODE_OP_SUB || type == AST_NODE_OP_NOT);
     else
         assert_expr(left);
     assert_expr(right);
