@@ -4,7 +4,9 @@
 #include "object.h"
 #include <string.h>
 
+//> hg_value
 enum hg_value_type {
+    HG_VALUE_UNDEF = 0, // used only for the language implementation
     HG_VALUE_INT,
     HG_VALUE_FLOAT,
     HG_VALUE_BOOL,
@@ -26,18 +28,23 @@ struct hg_value {
  * free when `value` is hg_object
  */
 void hg_value_free(struct hg_value value);
-
 void hg_value_write(struct hg_value a, FILE* fp);
 bool hg_value_equal(struct hg_value a, struct hg_value b);
+uint32_t hg_value_hash(struct hg_value a);
+//< hg_value
 
+//> VAL_IS_TYPE
 /* VAL_IS_TYPE(val): val.type == TYPE
  */
+#define VAL_IS_UNDEF(val) ((val).type == HG_VALUE_UNDEF)
 #define VAL_IS_NIL(val)   ((val).type == HG_VALUE_NIL)
 #define VAL_IS_INT(val)   ((val).type == HG_VALUE_INT)
 #define VAL_IS_FLOAT(val) ((val).type == HG_VALUE_FLOAT)
 #define VAL_IS_BOOL(val)  ((val).type == HG_VALUE_BOOL)
 #define VAL_IS_OBJ(val)   ((val).type == HG_VALUE_OBJECT)
+//< VAL_IS_TYPE
 
+//> VAL_AS_TYPE
 /* VAL_AS_TYPE(val): hg_value_to_type(val)
  */
 #define VAL_AS_INT(value)                 \
@@ -64,11 +71,14 @@ bool hg_value_equal(struct hg_value a, struct hg_value b);
         assert(VAL_IS_OBJ(_value));       \
         (_value).as._obj;                 \
     })
+//< VAL_AS_TYPE
 
+//> VAL_TYPE
 /* VAL_TYPE(v): type_to_hg_value(v)
  */
 #define VAL_BOOL(val)  ((struct hg_value){HG_VALUE_BOOL, {._bool = (val)}})
 #define VAL_NIL()      ((struct hg_value){HG_VALUE_NIL, {._int = 0}})
+#define VAL_UNDEF()    ((struct hg_value){HG_VALUE_UNDEF, {._int = 0}})
 #define VAL_INT(val)   ((struct hg_value){HG_VALUE_INT, {._int = (val)}})
 #define VAL_FLOAT(val) ((struct hg_value){HG_VALUE_FLOAT, {._float = (val)}})
 #define VAL_STR_LEN(val, len)           \
@@ -79,16 +89,16 @@ bool hg_value_equal(struct hg_value a, struct hg_value b);
         const char* _s = (val);      \
         VAL_STR_LEN(_s, strlen(_s)); \
     })
-#define VAL_ID(val)                                                  \
-    ({                                                               \
-        const char* _s = (val);                                      \
-        (struct hg_value){                                           \
-            HG_VALUE_OBJECT,                                         \
+#define VAL_ID(val)                                                   \
+    ({                                                                \
+        const char* _s = (val);                                       \
+        (struct hg_value){                                            \
+            HG_VALUE_OBJECT,                                          \
             {._obj = (struct hg_object*)hg_id_copy(_s, strlen(_s))}}; \
     })
+//< VAL_TYPE
 
-
-// value_array:
+//> value_array
 #define INITIAL_VALUE_ARRAY_LEN 4
 struct value_array {
     size_t len;
@@ -99,4 +109,5 @@ struct value_array {
 struct value_array* value_array_new();
 struct value_array* value_array_resize(struct value_array* arr, size_t new_len);
 void valu_array_free(struct value_array* arr);
+//< value_array
 #endif // _HG_VALUE_H_

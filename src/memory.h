@@ -2,6 +2,7 @@
 #define _HG_MEMORY_H_
 #include "common.h"
 
+//> flexible
 /* flexible struct:
  * struct flex {
  *     size_t len;
@@ -18,6 +19,13 @@
         size_t _size = flexible_size_(st, type, len); \
         (st*)hg_realloc(NULL, 0, _size);              \
     })
+#define flexible_alloc_init_(st, type, len, init)     \
+    ({                                                \
+        size_t _size = flexible_size_(st, type, len); \
+        void* _ptr   = hg_realloc(NULL, 0, _size);    \
+        memset(_ptr, init, _size);                    \
+        (st*)_ptr;                                    \
+    })
 #define flexible_realloc_(ptr, st, type, old_len, new_len)    \
     ({                                                        \
         size_t _old_size = flexible_size_(st, type, old_len); \
@@ -29,9 +37,9 @@
         size_t _size = flexible_size_(st, type, len); \
         hg_realloc(ptr, _size, 0);                    \
     } while (0)
+//< flexible
 
-/* array:
- */
+//> array
 #define array_alloc_(type, len)                          \
     ({                                                   \
         size_t _len = (len);                             \
@@ -48,7 +56,9 @@
         size_t _len = (len);                     \
         hg_realloc(ptr, sizeof(type) * _len, 0); \
     } while (0)
+//< array
 
+//> hg_alloc
 #define hg_alloc_(type) ((type*)hg_realloc(NULL, 0, sizeof(type)))
 #define hg_free_(type, ptr)               \
     do {                                  \
@@ -56,5 +66,5 @@
     } while (0)
 
 void* hg_realloc(void* ptr, size_t old_size, size_t new_size);
-
+//< hg_alloc
 #endif // _HG_MEMORY_H_

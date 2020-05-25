@@ -26,5 +26,6 @@ int main(int argc, char** argv) {
     while (yyparse(&p))
         ;
     ast_node_dump(p.lval, 0, stdout);
+    ast_node_free(p.lval);
     return 0;
 }

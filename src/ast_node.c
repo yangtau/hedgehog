@@ -9,6 +9,7 @@
                type == AST_NODE_CALL || type == AST_NODE_LIST); \
     }
 
+//> ast_node
 /* ast_node_new: malloc a new ast_node and set its type
  */
 static inline struct ast_node* ast_node_new(enum ast_node_type type) {
@@ -18,7 +19,9 @@ static inline struct ast_node* ast_node_new(enum ast_node_type type) {
     node->type = type;
     return node;
 }
+//< ast_node
 
+//> ast_node_op
 struct ast_node* ast_node_op_new(enum ast_node_op_type type,
                                  struct ast_node* left,
                                  struct ast_node* right) {
@@ -38,7 +41,9 @@ struct ast_node* ast_node_op_new(enum ast_node_op_type type,
     node->node = node_op;
     return node;
 }
+//< ast_node_op
 
+//> ast_node_if
 struct ast_node* ast_node_if_new(struct ast_node* cond, struct ast_node* stats,
                                  struct ast_node* opt_else) {
     if (opt_else != NULL)
@@ -56,7 +61,9 @@ struct ast_node* ast_node_if_new(struct ast_node* cond, struct ast_node* stats,
     node->node = node_if;
     return node;
 }
+//< ast_node_if
 
+//> ast_node_call
 struct ast_node* ast_node_call_new(struct ast_node* id,
                                    struct ast_node* tuple) {
     assert(id->type == AST_NODE_VALUE || id->type == AST_NODE_CALL);
@@ -71,7 +78,9 @@ struct ast_node* ast_node_call_new(struct ast_node* id,
     node->node = node_call;
     return node;
 }
+//< ast_node_call
 
+//> ast_node_func
 struct ast_node* ast_node_func_new(struct ast_node* id, struct ast_node* vars,
                                    struct ast_node* stats) {
     assert(id->type == AST_NODE_VALUE);
@@ -90,7 +99,9 @@ struct ast_node* ast_node_func_new(struct ast_node* id, struct ast_node* vars,
     node->node = node_func;
     return node;
 }
+//< ast_node_func
 
+//> ast_node_array
 struct ast_node* ast_node_array_new(enum ast_node_type type) {
     struct ast_node* node = ast_node_new(type);
     struct ast_node_array* arr =
@@ -139,7 +150,9 @@ struct ast_node* ast_node_tuple_new(struct ast_node* args) {
     args->type = AST_NODE_TUPLE;
     return args;
 }
+//< ast_node_array
 
+//> ast_node_assign
 struct ast_node* ast_node_assign_new(struct ast_node* vars,
                                      struct ast_node* args) {
     assert(vars->type == AST_NODE_VARS);
@@ -154,7 +167,9 @@ struct ast_node* ast_node_assign_new(struct ast_node* vars,
     node->node = node_assign;
     return node;
 }
+//< ast_node_assign
 
+//> ast_node_return
 struct ast_node* ast_node_return_new(struct ast_node* expr) {
     if (expr != NULL)
         assert_expr(expr);
@@ -164,7 +179,9 @@ struct ast_node* ast_node_return_new(struct ast_node* expr) {
     node->node = expr;
     return node;
 }
+//< ast_node_return
 
+//> ast_node_while
 struct ast_node* ast_node_while_new(struct ast_node* cond,
                                     struct ast_node* stats) {
     assert_expr(cond);
@@ -180,7 +197,9 @@ struct ast_node* ast_node_while_new(struct ast_node* cond,
     node->node = node_while;
     return node;
 }
+//< ast_node_while
 
+//> ast_node_for
 struct ast_node* ast_node_for_new(struct ast_node* vars,
                                   struct ast_node* iterator,
                                   struct ast_node* stats) {
@@ -198,14 +217,17 @@ struct ast_node* ast_node_for_new(struct ast_node* vars,
     node->node = node_for;
     return node;
 }
+//< ast_node_for
 
+//> ast_node_loopctrl
 struct ast_node* ast_node_loopctrl_new(enum ast_node_type type) {
     assert(type == AST_NODE_CONTINUE || type == AST_NODE_BREAK);
 
     return ast_node_new(type);
 }
+//< ast_node_loopctrl
 
-// ast_node_value:
+//> ast_node_value
 struct ast_node* ast_node_int_new(int64_t v) {
     struct ast_node* node  = ast_node_new(AST_NODE_VALUE);
     struct hg_value* value = hg_alloc_(struct hg_value);
@@ -269,7 +291,9 @@ struct ast_node* ast_node_id_new(const char* s) {
     node->node = value;
     return node;
 }
+//< ast_node_value
 
+//> ast_node_free
 void ast_node_free(struct ast_node* node) {
     if (node == NULL)
         return;
@@ -346,11 +370,13 @@ void ast_node_free(struct ast_node* node) {
                        node_arr->capacity);
     } break;
     default:
-        unimplemented("type %x", node->type);
+        unimplemented_("type %x", node->type);
     }
     hg_free_(struct ast_node, node);
 }
+//< ast_node_free
 
+//> ast_node_dump
 void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
     if (node == NULL)
         return;
@@ -487,7 +513,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
             fprintf(fp, "..");
             break;
         default:
-            unimplemented("ast node op:%x", op->op);
+            unimplemented_("ast node op:%x", op->op);
         }
         ast_node_dump(op->right, 0, fp);
     } break;
@@ -548,12 +574,12 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
 
         } break;
         default:
-            unimplemented("hg_value type: %x", val->type);
+            unimplemented_("hg_value type: %x", val->type);
         }
     } break;
     default:
-        unimplemented("type: %x", node->type);
+        unimplemented_("type: %x", node->type);
     }
 }
-
+//< ast_node_dump
 #undef assert_expr

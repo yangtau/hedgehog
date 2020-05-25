@@ -2,6 +2,7 @@
 #include "object.h"
 #include "memory.h"
 
+//> hg_string
 static void hg_string_free(struct hg_object*);
 static bool hg_string_equal(struct hg_object*, struct hg_object*);
 static uint32_t hg_string_hash(struct hg_object*);
@@ -13,8 +14,8 @@ static struct hg_object_funcs hg_string_funcs = {.free  = hg_string_free,
 struct hg_string* hg_string_copy(const char* s, size_t len) {
     struct hg_string* str = flexible_alloc_(struct hg_string, char, len + 1);
 
-    str->obj.funcs = &hg_string_funcs;
-    str->obj.type  = HG_OBJ_STRING;
+    str->obj = (struct hg_object){
+        .funcs = &hg_string_funcs, .type = HG_OBJ_STRING, .hash = 0u};
 
     strncpy(str->str, s, len);
     str->str[len] = '\0';
@@ -43,3 +44,4 @@ static bool hg_string_equal(struct hg_object* _a, struct hg_object* _b) {
 static uint32_t hg_string_hash(struct hg_object* _string) {
     return 0u;
 }
+//< hg_string
