@@ -14,8 +14,7 @@ static inline bool is_valid(struct hash_map_entry* entry) {
 //< hash_map_entry
 
 //> hash_map
-int hash_map_write(struct hg_object* _map, FILE* fp) {
-    struct hash_map* map = (struct hash_map*)_map;
+int hash_map_write(struct hash_map* map, FILE* fp) {
     fprintf(fp, "{");
     for (size_t i = 0, flag = 0; i < map->capacity; i++) {
         if (flag) {
@@ -33,29 +32,28 @@ int hash_map_write(struct hg_object* _map, FILE* fp) {
     return 1;
 }
 
-static inline struct hash_map* hash_map_new_with_capacity(size_t capacity) {
-    // initialize all value in entries to be HG_VALUE_UNDEF
-    struct hash_map* map = flexible_alloc_init_(
-        struct hash_map, struct hash_map_entry, capacity, 0);
-
+static inline void hash_map_init_with_capacity(struct hash_map* map,
+                                               size_t capacity) {
     map->len      = 0;
     map->tomb_cnt = 0;
     map->capacity = capacity;
-    return map;
+
+    // initialize all value in entries to be HG_VALUE_UNDEF
+    map->entries = array_alloc_init_(struct hash_map_entry, capacity, 0);
 }
 
-struct hash_map* hash_map_new() {
-    return hash_map_new_with_capacity(HASH_INITIAL_SIZE);
+void hash_map_init(struct hash_map* map) {
+    hash_map_init_with_capacity(map, HASH_INITIAL_SIZE);
 }
 
 void hash_map_free(struct hash_map* map) {
     // TODO: free object-value in entries? Or GC?
-    flexible_free_(map, struct hash_map, struct hash_map_entry, map->capacity);
+    array_free_(map->entries, struct hash_map_entry, map->capacity);
 }
 
-static struct hash_map* hash_map_resize(struct hash_map* map,
-                                        size_t new_capacity) {
-    struct hash_map* new_map = hash_map_new_with_capacity(new_capacity);
+static void hash_map_resize(struct hash_map* map, size_t new_capacity) {
+    struct hash_map new_map;
+    hash_map_init_with_capacity(&new_map, new_capacity);
 
     for (size_t i = 0; i < map->capacity; i++) {
         struct hash_map_entry* entry = &map->entries[i];
@@ -63,18 +61,17 @@ static struct hash_map* hash_map_resize(struct hash_map* map,
             hash_map_put(&new_map, *entry);
         }
     }
-
     hash_map_free(map);
-    return new_map;
+
+    *map = new_map;
 }
 
-inline static struct hash_map* hash_map_adjust(struct hash_map* map) {
+inline static void hash_map_adjust(struct hash_map* map) {
     if (map->capacity * HASH_TOMB_FACTOR < map->tomb_cnt) {
-        return hash_map_resize(map, map->capacity);
+        hash_map_resize(map, map->capacity);
     } else if (map->capacity * HASH_LOAD_FACTOR < map->len) {
-        return hash_map_resize(map, map->capacity * 2);
+        hash_map_resize(map, map->capacity * 2);
     }
-    return map;
 }
 
 static struct hash_map_entry* hash_map_find(struct hash_map* map,
@@ -102,15 +99,15 @@ static struct hash_map_entry* hash_map_find(struct hash_map* map,
     //return NULL; // make gcc happy
 }
 
-void hash_map_put(struct hash_map** map, struct hash_map_entry entry) {
-    *map = hash_map_adjust(*map);
+void hash_map_put(struct hash_map* map, struct hash_map_entry entry) {
+    hash_map_adjust(map);
 
-    struct hash_map_entry* ptr = hash_map_find(*map, entry.key);
+    struct hash_map_entry* ptr = hash_map_find(map, entry.key);
 
     if (is_empty(ptr))
-        (*map)->len++;
+        map->len++;
     if (is_tombstone(ptr))
-        (*map)->tomb_cnt--;
+        map->tomb_cnt--;
 
     *ptr = entry;
 }
