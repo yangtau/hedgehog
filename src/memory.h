@@ -45,6 +45,13 @@
         size_t _len = (len);                             \
         (type*)hg_realloc(NULL, 0, _len * sizeof(type)); \
     })
+#define array_alloc_init_(type, len, init)              \
+    ({                                             \
+        size_t _size = (len) * sizeof(type);       \
+        void* ptr    = hg_realloc(NULL, 0, _size); \
+        memset(ptr, init, _size);                  \
+        (type*)ptr;                                \
+    })
 #define array_new_size_(size, len)                                      \
     ({                                                                  \
         size_t _old = (size);                                           \
@@ -54,7 +61,7 @@
 #define array_realloc_(ptr, type, old_len, new_len)                           \
     ({                                                                        \
         size_t _old_len = (old_len);                                          \
-        size_t _len     = (new_len);                                              \
+        size_t _len     = (new_len);                                          \
         (type*)hg_realloc(ptr, _old_len * sizeof(type), _len * sizeof(type)); \
     })
 #define array_free_(ptr, type, len)              \
