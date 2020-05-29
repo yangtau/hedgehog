@@ -11,7 +11,7 @@
  */
 #define flexible_size_(st, type, len)     \
     ({                                    \
-        size_t _len = len;                \
+        size_t _len = (len);              \
         sizeof(st) + sizeof(type) * _len; \
     })
 #define flexible_alloc_(st, type, len)                \
@@ -45,10 +45,16 @@
         size_t _len = (len);                             \
         (type*)hg_realloc(NULL, 0, _len * sizeof(type)); \
     })
+#define array_new_size_(size, len)                                      \
+    ({                                                                  \
+        size_t _old = (size);                                           \
+        size_t _len = (len);                                            \
+        _len >= _old ? _old * 2 : (_len * 4 <= _old ? _old / 2 : _old); \
+    })
 #define array_realloc_(ptr, type, old_len, new_len)                           \
     ({                                                                        \
         size_t _old_len = (old_len);                                          \
-        size_t _len     = (len);                                              \
+        size_t _len     = (new_len);                                              \
         (type*)hg_realloc(ptr, _old_len * sizeof(type), _len * sizeof(type)); \
     })
 #define array_free_(ptr, type, len)              \

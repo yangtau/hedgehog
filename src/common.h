@@ -21,4 +21,12 @@
         exit(-1);                                                       \
     } while (0)
 
+#define error_(...)                                         \
+    do {                                                            \
+        fprintf(stderr, "error in function %s:\n", __func__); \
+        fprintf(stderr, __VA_ARGS__);                               \
+        exit(-1);                                                   \
+    } while (0)
+
+
 #endif // _HG_COMMON_H_

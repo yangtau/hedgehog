@@ -99,15 +99,32 @@ uint32_t hg_value_hash(struct hg_value a);
 //< VAL_TYPE
 
 //> value_array
-#define INITIAL_VALUE_ARRAY_LEN 4
+#define VALUE_ARRAY_INIT_CAPACITY (2u)
 struct value_array {
     size_t len;
     size_t capacity;
-    struct hg_value values[];
+    struct hg_value* values;
 };
 
-struct value_array* value_array_new();
-struct value_array* value_array_resize(struct value_array* arr, size_t new_len);
+void value_array_init(struct value_array* arr);
+void value_array_resize(struct value_array* arr);
 void valu_array_free(struct value_array* arr);
+
+// value_array_add_: add a value into the array, and return the location
+#define value_array_add_(arr, val)        \
+    ({                                    \
+        struct value_array* _arr = (arr); \
+        struct hg_value _val     = (val); \
+        value_array_resize(_arr);         \
+        _arr->values[_arr->len++] = _val; \
+        _arr->len - 1;                    \
+    })
+#define value_array_pop_(arr)                                \
+    ({                                                       \
+        struct value_array* _arr = (arr);                    \
+        struct hg_value _val     = _arr->values[--arr->len]; \
+        value_array_resize(_arr);                            \
+        _val;                                                \
+    })
 //< value_array
 #endif // _HG_VALUE_H_
