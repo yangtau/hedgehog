@@ -1,7 +1,7 @@
 YACC = yacc
 LEX  = flex
 CC   = gcc
-CFLAGS = -std=gnu99 -g -Wall
+CFLAGS = -std=gnu99 -g -Wall -Wextra
 
 SRC := $(filter-out yy.hedgehog.c lex.hedgehog.c, $(wildcard *.c))
 OBJS := $(SRC:.c=.o)

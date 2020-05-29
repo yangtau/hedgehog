@@ -1,6 +1,7 @@
-#include <stdlib.h>
 #include "value.h"
+#include "memory.h"
 
+//> hg_value
 void hg_value_free(struct hg_value value) {
     if (value.type == HG_VALUE_OBJECT) {
         struct hg_object* obj = VAL_AS_OBJ(value);
@@ -77,3 +78,23 @@ uint32_t hg_value_hash(struct hg_value a) {
         unimplemented_("type :%x\n", a.type);
     }
 }
+//< hg_value
+
+//> hg_value_array
+void value_array_init(struct value_array* arr) {
+    arr->len      = 0;
+    arr->capacity = VALUE_ARRAY_INIT_CAPACITY;
+    arr->values   = array_alloc_(struct hg_value, VALUE_ARRAY_INIT_CAPACITY);
+}
+
+void value_array_resize(struct value_array* arr) {
+    size_t new_capacity = array_new_size_(arr->capacity, arr->len);
+    arr->values   = array_realloc_(arr->values, struct hg_value, arr->capacity,
+                                 new_capacity);
+    arr->capacity = new_capacity;
+}
+
+void valu_array_free(struct value_array* arr) {
+    array_free_(arr->values, struct hg_value, arr->capacity);
+}
+//< hg_value_array

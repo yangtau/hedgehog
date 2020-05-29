@@ -392,7 +392,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
     case AST_NODE_TUPLE: {
         fprintf(fp, "%s(", buf);
         struct ast_node_array* arr = node->node;
-        for (int i = 0; i < arr->len; i++) {
+        for (size_t i = 0; i < arr->len; i++) {
             ast_node_dump(arr->arr[i], 0, fp);
             if (i != arr->len - 1)
                 fprintf(fp, ", ");
@@ -402,7 +402,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
     case AST_NODE_LIST: {
         fprintf(fp, "%s[", buf);
         struct ast_node_array* arr = node->node;
-        for (int i = 0; i < arr->len; i++) {
+        for (size_t i = 0; i < arr->len; i++) {
             ast_node_dump(arr->arr[i], 0, fp);
             if (i != arr->len - 1)
                 fprintf(fp, ", ");
@@ -411,7 +411,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
     } break;
     case AST_NODE_STATS: {
         struct ast_node_array* arr = node->node;
-        for (int i = 0; i < arr->len; i++) {
+        for (size_t i = 0; i < arr->len; i++) {
             ast_node_dump(arr->arr[i], indent, fp);
             fprintf(fp, "\n");
         }
@@ -522,7 +522,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
     case AST_NODE_ARGS: {
         fprintf(fp, "%s", buf);
         struct ast_node_array* arr = node->node;
-        for (int i = 0; i < arr->len; i++) {
+        for (size_t i = 0; i < arr->len; i++) {
             ast_node_dump(arr->arr[i], 0, fp);
             if (i != arr->len - 1)
                 fprintf(fp, ", ");

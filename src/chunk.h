@@ -2,10 +2,11 @@
 #define _HG_CHUNK_H_
 #include "common.h"
 #include "value.h"
-#define VALUE_ARRAY_MAX_SIZE (UINT16_MAX + 1)
 
 enum opcode {
-    OP_CONSTANT,
+    OP_NOP,
+    OP_CONSTANT_8,
+    OP_CONSTANT_16,
     OP_NIL,
     OP_TRUE,
     OP_FALSE,
@@ -21,43 +22,34 @@ enum opcode {
     OP_POP,
     OP_GET_LOCAL,
     OP_SET_LOCAL,
-    OP_GET_GLOBAL,
-    OP_DEFINE_GLOBAL,
-    OP_SET_GLOBAL,
-    OP_GET_UPVALUE,
-    OP_SET_UPVALUE,
-    OP_GET_PROPERTY,
-    OP_SET_PROPERTY,
-    OP_GET_SUPER,
-    OP_PRINT,
     OP_JUMP,
     OP_JUMP_IF_FALSE,
-    OP_LOOP,
+    OP_JUMP_BACK,
     OP_CALL,
-    OP_INVOKE,
-    OP_SUPER_INVOKE,
-    OP_CLOSURE,
-    OP_CLOSE_UPVALUE,
-    OP_RETURN,
-    OP_CLASS,
-    OP_INHERIT,
-    OP_METHOD
 };
 
+#define CHUNK_INIT_CAPACITY (256u)
 struct chunk {
     size_t len;
     size_t capacity;
-    struct value_array* arr;
-    uint8_t code[];
+    struct value_array consts;
+    uint8_t* code;
 };
 
-struct chunk* chunk_new();
-struct chunk* chunk_resize(struct chunk* chk, size_t new_len);
+void chunk_init(struct chunk* chk);
 void chunk_free(struct chunk* chk);
-void chunk_write(struct chunk *chk, uint8_t byte);
-void chunk_write_word(struct chunk *chk, uint16_t word);
+
+void chunk_write(struct chunk* chk, uint8_t byte);
+uint16_t chunk_add_constant(struct chunk* chk, struct hg_value value);
+#define chunk_write_word_(chk, word)             \
+    do {                                         \
+        struct chunk* _chk = (chk);              \
+        uint16_t _word     = (word);             \
+        chunk_write(_chk, (_word >> 8) && 0xff); \
+        chunk_write(_chk, _word && 0xff);        \
+    } while (0)
 
 int chunk_dump(struct chunk* chk, FILE* fp);
 struct chunk* chunk_load(FILE* fp);
-
+void chunk_disassable(struct chunk* chk);
 #endif // _HG_CHUNK_H_
