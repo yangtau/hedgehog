@@ -33,6 +33,17 @@ void hg_value_write(struct hg_value a, FILE* fp) {
 }
 
 bool hg_value_equal(struct hg_value a, struct hg_value b) {
+    if (a.type != b.type)
+        return false;
+    if (a.as._int == b.as._int)
+        return true;
+    if (a.type == HG_VALUE_OBJECT) {
+        struct hg_object* obj_a = VAL_AS_OBJ(a);
+        struct hg_object* obj_b = VAL_AS_OBJ(a);
+        return obj_a->funcs->equal(obj_a, obj_b);
+    }
+    return false;
+    /*
 #define equal_as(type) (VAL_AS_##type(a) == VAL_AS_##type(b))
 
     if (a.type != b.type) { // TODO: how about comparing `int` with `float`
@@ -57,6 +68,7 @@ bool hg_value_equal(struct hg_value a, struct hg_value b) {
         unimplemented_("type :%x\n", a.type);
     }
 #undef equal_as
+*/
 }
 
 uint32_t hg_value_hash(struct hg_value a) {
@@ -94,7 +106,11 @@ void value_array_resize(struct value_array* arr) {
     arr->capacity = new_capacity;
 }
 
-void valu_array_free(struct value_array* arr) {
+void value_array_free(struct value_array* arr) {
     array_free_(arr->values, struct hg_value, arr->capacity);
+
+    arr->values   = NULL;
+    arr->len      = 0;
+    arr->capacity = 0;
 }
 //< hg_value_array
