@@ -46,6 +46,85 @@ int chunk_dump(struct chunk* chk, FILE* fp) {
 struct chunk* chunk_load(FILE* fp) {
     unimplemented_("TODO");
 }
-void chunk_disassable(struct chunk* chk) {
-    unimplemented_("TODO");
+
+void chunk_disassemble(struct chunk* chk) {
+#define print_(s) printf("0x%08lx %20s\n", i, s)
+#define read_word_()
+    for (size_t i = 0; i < chk->len; i++) {
+        switch (chk->code[i]) {
+        case OP_NOP:
+            print_("nop");
+            break;
+        case OP_STATIC: {
+            print_("static");
+            printf("%11s", "");
+            uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
+            i += 2;
+            hg_value_write(chk->statics.values[t], stdout);
+        } break;
+        case OP_NIL:
+            print_("nil");
+            break;
+        case OP_TRUE:
+            print_("true");
+            break;
+        case OP_FALSE:
+            print_("false");
+            break;
+        case OP_EQUAL:
+            print_("equal");
+            break;
+        case OP_GREATER:
+            print_("greater");
+            break;
+        case OP_LESS:
+            print_("less");
+            break;
+        case OP_GREATER_EQUAL:
+            print_("greater equal");
+            break;
+        case OP_LESS_EQUAL:
+            print_("less equal");
+            break;
+        case OP_ADD:
+            print_("add");
+            break;
+        case OP_SUBTRACT:
+            print_("sub");
+            break;
+        case OP_MULTIPLY:
+            print_("mul");
+            break;
+        case OP_DIVIDE:
+            print_("div");
+            break;
+        case OP_MODULO:
+            print_("mod");
+            break;
+        case OP_NOT:
+            print_("not");
+            break;
+        case OP_NEGATE:
+            print_("negate");
+            break;
+        case OP_POP:
+            print_("pop");
+            break;
+        case OP_GET_LOCAL:
+            break;
+        case OP_SET_LOCAL:
+            break;
+        case OP_JUMP:
+            break;
+        case OP_JUMP_IF_FALSE:
+            break;
+        case OP_JUMP_BACK:
+            break;
+        case OP_CALL:
+            break;
+        default:
+            unimplemented_("type :%x\n", chk->code[i]);
+        }
+    }
+#undef print_
 }

@@ -53,5 +53,5 @@ uint16_t chunk_add_static(struct chunk* chk, struct hg_value value);
 
 int chunk_dump(struct chunk* chk, FILE* fp);
 struct chunk* chunk_load(FILE* fp);
-void chunk_disassable(struct chunk* chk);
+void chunk_disassemble(struct chunk* chk);
 #endif // _HG_CHUNK_H_
