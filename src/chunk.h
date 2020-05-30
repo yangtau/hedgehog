@@ -5,18 +5,20 @@
 
 enum opcode {
     OP_NOP,
-    OP_CONSTANT_8,
-    OP_CONSTANT_16,
+    OP_STATIC,
     OP_NIL,
     OP_TRUE,
     OP_FALSE,
     OP_EQUAL,
     OP_GREATER,
     OP_LESS,
+    OP_GREATER_EQUAL,
+    OP_LESS_EQUAL,
     OP_ADD,
     OP_SUBTRACT,
     OP_MULTIPLY,
     OP_DIVIDE,
+    OP_MODULO,
     OP_NOT,
     OP_NEGATE,
     OP_POP,
@@ -32,7 +34,7 @@ enum opcode {
 struct chunk {
     size_t len;
     size_t capacity;
-    struct value_array consts;
+    struct value_array statics;
     uint8_t* code;
 };
 
@@ -40,7 +42,7 @@ void chunk_init(struct chunk* chk);
 void chunk_free(struct chunk* chk);
 
 void chunk_write(struct chunk* chk, uint8_t byte);
-uint16_t chunk_add_constant(struct chunk* chk, struct hg_value value);
+uint16_t chunk_add_static(struct chunk* chk, struct hg_value value);
 #define chunk_write_word_(chk, word)             \
     do {                                         \
         struct chunk* _chk = (chk);              \
