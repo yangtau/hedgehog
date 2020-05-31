@@ -47,8 +47,7 @@ struct ast_node* ast_node_op_new(enum ast_node_op_type type,
 //> ast_node_if
 struct ast_node* ast_node_if_new(struct ast_node* cond, struct ast_node* stats,
                                  struct ast_node* opt_else) {
-    if (opt_else != NULL)
-        assert(opt_else->type == AST_NODE_IF);
+    assert(opt_else == NULL || opt_else->type == AST_NODE_IF);
     if (cond != NULL)
         assert_expr(cond);
 
@@ -65,16 +64,16 @@ struct ast_node* ast_node_if_new(struct ast_node* cond, struct ast_node* stats,
 //< ast_node_if
 
 //> ast_node_call
-struct ast_node* ast_node_call_new(struct ast_node* id,
-                                   struct ast_node* tuple) {
-    assert(id->type == AST_NODE_VALUE || id->type == AST_NODE_CALL);
-    assert(tuple->type == AST_NODE_TUPLE);
+struct ast_node* ast_node_call_new(struct ast_node* func,
+                                   struct ast_node* args) {
+    assert_expr(func);
+    assert(args == NULL || args->type == AST_NODE_ARGS);
 
     struct ast_node* node           = ast_node_new(AST_NODE_CALL);
     struct ast_node_call* node_call = hg_alloc_(struct ast_node_call);
 
-    node_call->id    = id;
-    node_call->tuple = tuple;
+    node_call->func = func;
+    node_call->args = args;
 
     node->node = node_call;
     return node;
@@ -85,10 +84,8 @@ struct ast_node* ast_node_call_new(struct ast_node* id,
 struct ast_node* ast_node_func_new(struct ast_node* id, struct ast_node* vars,
                                    struct ast_node* stats) {
     assert(id->type == AST_NODE_VALUE);
-    if (vars != NULL)
-        assert(vars->type == AST_NODE_VARS);
-    if (stats != NULL)
-        assert(stats->type == AST_NODE_STATS);
+    assert(vars == NULL || vars->type == AST_NODE_VARS);
+    assert(stats == NULL || stats->type == AST_NODE_STATS);
 
     struct ast_node* node           = ast_node_new(AST_NODE_FUNC);
     struct ast_node_func* node_func = hg_alloc_(struct ast_node_func);
@@ -131,8 +128,7 @@ void ast_node_array_add(struct ast_node* arr, struct ast_node* item) {
 }
 
 struct ast_node* ast_node_list_new(struct ast_node* args) {
-    if (args != NULL)
-        assert(args->type == AST_NODE_ARGS);
+    assert(args == NULL || args->type == AST_NODE_ARGS);
 
     if (args == NULL)
         args = ast_node_array_new(AST_NODE_LIST);
@@ -142,8 +138,7 @@ struct ast_node* ast_node_list_new(struct ast_node* args) {
 }
 
 struct ast_node* ast_node_tuple_new(struct ast_node* args) {
-    if (args != NULL)
-        assert(args->type == AST_NODE_ARGS);
+    assert(args == NULL || args->type == AST_NODE_ARGS);
 
     if (args == NULL)
         args = ast_node_array_new(AST_NODE_TUPLE);
@@ -186,8 +181,7 @@ struct ast_node* ast_node_return_new(struct ast_node* expr) {
 struct ast_node* ast_node_while_new(struct ast_node* cond,
                                     struct ast_node* stats) {
     assert_expr(cond);
-    if (stats != NULL)
-        assert(stats->type == AST_NODE_STATS);
+    assert(stats == NULL || stats->type == AST_NODE_STATS);
 
     struct ast_node* node             = ast_node_new(AST_NODE_WHILE);
     struct ast_node_while* node_while = hg_alloc_(struct ast_node_while);
@@ -317,8 +311,8 @@ void ast_node_free(struct ast_node* node) {
     } break;
     case AST_NODE_CALL: {
         struct ast_node_call* node_call = node->node;
-        ast_node_free(node_call->id);
-        ast_node_free(node_call->tuple);
+        ast_node_free(node_call->func);
+        ast_node_free(node_call->args);
         hg_free_(struct ast_node_call, node_call);
     } break;
     case AST_NODE_FUNC: {
@@ -534,8 +528,10 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
     } break;
     case AST_NODE_CALL: {
         struct ast_node_call* call = node->node;
-        ast_node_dump(call->id, indent, fp);
-        ast_node_dump(call->tuple, 0, fp);
+        ast_node_dump(call->func, indent, fp);
+        fprintf(fp, "(");
+        ast_node_dump(call->args, 0, fp);
+        fprintf(fp, ")");
     } break;
     case AST_NODE_BREAK:
         fprintf(fp, "%sbreak", buf);
