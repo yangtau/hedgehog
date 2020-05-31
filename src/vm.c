@@ -35,8 +35,8 @@ enum vm_exe_result vm_run(struct vm* vm) {
 #define read_static_() value_array_get(&vm->chk->statics, read_word_())
 #define binary_arith_op_(op)                                             \
     do {                                                                 \
-        struct hg_value a = pop(vm);                                     \
         struct hg_value b = pop(vm);                                     \
+        struct hg_value a = pop(vm);                                     \
         if (VAL_IS_INT(a) && VAL_IS_INT(b)) {                            \
             push(vm, VAL_INT(VAL_AS_INT(a) op VAL_AS_INT(b)));           \
         } else if (VAL_IS_INT(a) && VAL_IS_FLOAT(b)) {                   \
@@ -52,8 +52,8 @@ enum vm_exe_result vm_run(struct vm* vm) {
     } while (0)
 #define binary_cmp_op_(op)                                               \
     do {                                                                 \
-        struct hg_value a = pop(vm);                                     \
         struct hg_value b = pop(vm);                                     \
+        struct hg_value a = pop(vm);                                     \
         if (VAL_IS_INT(a) && VAL_IS_INT(b)) {                            \
             push(vm, VAL_BOOL(VAL_AS_INT(a) op VAL_AS_INT(b)));          \
         } else if (VAL_IS_INT(a) && VAL_IS_FLOAT(b)) {                   \
