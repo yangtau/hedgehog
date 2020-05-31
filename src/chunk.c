@@ -19,12 +19,12 @@ void chunk_free(struct chunk* chk) {
 }
 
 static inline void chunk_resize(struct chunk* chk) {
-    size_t capacity = array_new_size_(chk->capacity, chk->len);
+    size_t capacity = array_grow_(chk->capacity, chk->len);
 
     if (chk->capacity != capacity) {
         chk->code = array_realloc_(chk->code, uint8_t, chk->capacity, capacity);
+        chk->capacity = capacity;
     }
-    chk->capacity = capacity;
 }
 
 void chunk_write(struct chunk* chk, uint8_t byte) {
@@ -37,7 +37,7 @@ uint16_t chunk_add_static(struct chunk* chk, struct hg_value value) {
         error_("The maximum number of constants of a chunk is %u",
                UINT16_MAX + 1u);
     }
-    return value_array_push_(&chk->statics, value);
+    return value_array_push(&chk->statics, value);
 }
 
 int chunk_dump(struct chunk* chk, FILE* fp) {
@@ -48,7 +48,7 @@ struct chunk* chunk_load(FILE* fp) {
 }
 
 void chunk_disassemble(struct chunk* chk) {
-#define print_(s) printf("0x%08lx %20s\n", i, s)
+#define print_(s) printf("0x%04lx %s\n", i, s)
 #define read_word_()
     for (size_t i = 0; i < chk->len; i++) {
         switch (chk->code[i]) {
@@ -57,10 +57,11 @@ void chunk_disassemble(struct chunk* chk) {
             break;
         case OP_STATIC: {
             print_("static");
-            printf("%11s", "");
+            printf("%7s", "");
             uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
             i += 2;
             hg_value_write(chk->statics.values[t], stdout);
+            printf("\n");
         } break;
         case OP_NIL:
             print_("nil");
@@ -123,7 +124,7 @@ void chunk_disassemble(struct chunk* chk) {
         case OP_CALL:
             break;
         default:
-            unimplemented_("type :%x\n", chk->code[i]);
+            unimplemented_("type :%x", chk->code[i]);
         }
     }
 #undef print_

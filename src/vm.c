@@ -32,7 +32,7 @@ enum vm_exe_result vm_run(struct vm* vm) {
         vm->ip += 2;                             \
         (uint16_t) vm->ip[-2] << 8 | vm->ip[-1]; \
     })
-#define read_static_() value_array_get_(&vm->chk->statics, read_word_())
+#define read_static_() value_array_get(&vm->chk->statics, read_word_())
 #define binary_arith_op_(op)                                             \
     do {                                                                 \
         struct hg_value a = pop(vm);                                     \

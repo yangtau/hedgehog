@@ -3,7 +3,8 @@
 #include "ast_node.h"
 #include "chunk.h"
 
-/* compile: compile AST into bytecode
+/* compile: compile AST into chunk
+ * @RETURN: 0 if success
  */
 int compile(struct ast_node* node, struct chunk* chunk);
 

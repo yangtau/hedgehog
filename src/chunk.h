@@ -42,15 +42,20 @@ void chunk_init(struct chunk* chk);
 void chunk_free(struct chunk* chk);
 
 void chunk_write(struct chunk* chk, uint8_t byte);
+static inline void chunk_write_word(struct chunk* chk, uint16_t word) {
+    chunk_write(chk, (word >> 8) & 0xff);
+    chunk_write(chk, word & 0xff);
+}
 uint16_t chunk_add_static(struct chunk* chk, struct hg_value value);
+/*
 #define chunk_write_word_(chk, word)             \
     do {                                         \
         struct chunk* _chk = (chk);              \
         uint16_t _word     = (word);             \
-        chunk_write(_chk, (_word >> 8) && 0xff); \
-        chunk_write(_chk, _word && 0xff);        \
+        chunk_write(_chk, (_word >> 8) & 0xff); \
+        chunk_write(_chk, _word & 0xff);        \
     } while (0)
-
+*/
 int chunk_dump(struct chunk* chk, FILE* fp);
 struct chunk* chunk_load(FILE* fp);
 void chunk_disassemble(struct chunk* chk);

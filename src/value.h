@@ -107,33 +107,9 @@ struct value_array {
 };
 
 void value_array_init(struct value_array* arr);
-void value_array_resize(struct value_array* arr);
 void value_array_free(struct value_array* arr);
-
-#define value_array_get_(arr, index)                \
-    ({                                              \
-        size_t _idx              = (index);         \
-        struct value_array* _arr = (arr);           \
-        if (_arr->len > _idx) {                     \
-            error_("index %d out of range", index); \
-        }                                           \
-        _arr->values[index];                        \
-    })
-// value_array_push_: add a value into the array, and return the location
-#define value_array_push_(arr, val)       \
-    ({                                    \
-        struct value_array* _arr = (arr); \
-        struct hg_value _val     = (val); \
-        value_array_resize(_arr);         \
-        _arr->values[_arr->len++] = _val; \
-        _arr->len - 1;                    \
-    })
-#define value_array_pop_(arr)                                \
-    ({                                                       \
-        struct value_array* _arr = (arr);                    \
-        struct hg_value _val     = _arr->values[--arr->len]; \
-        value_array_resize(_arr);                            \
-        _val;                                                \
-    })
+size_t value_array_push(struct value_array* arr, struct hg_value val);
+struct hg_value value_array_pop(struct value_array* arr);
+struct hg_value value_array_get(struct value_array* arr, size_t index);
 //< value_array
 #endif // _HG_VALUE_H_

@@ -8,25 +8,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define unimplemented_(...)                                         \
-    do {                                                            \
+#define unimplemented_(...)                                           \
+    do {                                                              \
         fprintf(stderr, "unimplemented in function %s:\n", __func__); \
-        fprintf(stderr, __VA_ARGS__);                               \
-        exit(-1);                                                   \
+        fprintf(stderr, __VA_ARGS__);                                 \
+        fprintf(stderr, "\n");                                \
+        exit(-1);                                                     \
     } while (0)
 
-#define unreachable_()                                                  \
-    do {                                                                \
+#define unreachable_()                                                   \
+    do {                                                                 \
         fprintf(stderr, "reach unreachable in function %s\n", __func__); \
-        exit(-1);                                                       \
+        exit(-1);                                                        \
     } while (0)
 
-#define error_(...)                                         \
-    do {                                                            \
+#define error_(...)                                           \
+    do {                                                      \
         fprintf(stderr, "error in function %s:\n", __func__); \
-        fprintf(stderr, __VA_ARGS__);                               \
-        exit(-1);                                                   \
+        fprintf(stderr, __VA_ARGS__);                         \
+        fprintf(stderr, "\n");                                \
+        exit(-1);                                             \
     } while (0)
 
+#define _force_inline_ inline __attribute__((always_inline))
 
 #endif // _HG_COMMON_H_

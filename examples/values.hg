@@ -15,7 +15,7 @@ c = false
 puts(c)
 
 # nil
-d = nil
+d = ()
 puts(d)
 
 # string
