@@ -2,11 +2,12 @@
 #include "value.h"
 #include "memory.h"
 
-#define assert_expr(node)                                       \
-    {                                                           \
-        enum ast_node_type type = node->type;                   \
-        assert(type == AST_NODE_VALUE || type == AST_NODE_OP || \
-               type == AST_NODE_CALL || type == AST_NODE_LIST); \
+#define assert_expr(node)                                        \
+    {                                                            \
+        enum ast_node_type type = (node)->type;                  \
+        assert(type == AST_NODE_VALUE || type == AST_NODE_OP ||  \
+               type == AST_NODE_CALL || type == AST_NODE_LIST || \
+               type == AST_NODE_TUPLE);                          \
     }
 
 //> ast_node
@@ -26,7 +27,7 @@ struct ast_node* ast_node_op_new(enum ast_node_op_type type,
                                  struct ast_node* left,
                                  struct ast_node* right) {
     if (left == NULL)
-        assert(type == AST_NODE_OP_SUB || type == AST_NODE_OP_NOT);
+        assert(type == AST_NODE_OP_NEG || type == AST_NODE_OP_NOT);
     else
         assert_expr(left);
     assert_expr(right);
@@ -258,16 +259,6 @@ struct ast_node* ast_node_bool_new(bool v) {
     return node;
 }
 
-struct ast_node* ast_node_nil_new() {
-    struct ast_node* node  = ast_node_new(AST_NODE_VALUE);
-    struct hg_value* value = hg_alloc_(struct hg_value);
-
-    *value = VAL_NIL();
-
-    node->node = value;
-    return node;
-}
-
 struct ast_node* ast_node_str_new(const char* s) {
     return ast_node_str_len_new(s, strlen(s));
 }
@@ -370,7 +361,7 @@ void ast_node_free(struct ast_node* node) {
                        node_arr->capacity);
     } break;
     default:
-        unimplemented_("type %x\n", node->type);
+        unimplemented_("type %x", node->type);
     }
     hg_free_(struct ast_node, node);
 }
@@ -474,7 +465,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
             fprintf(fp, " || ");
             break;
         case AST_NODE_OP_NOT:
-            fprintf(fp, " !");
+            fprintf(fp, "!");
             break;
         case AST_NODE_OP_NEQ:
             fprintf(fp, " != ");
@@ -495,25 +486,28 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
             fprintf(fp, " < ");
             break;
         case AST_NODE_OP_ADD:
-            fprintf(fp, "+");
+            fprintf(fp, " + ");
             break;
         case AST_NODE_OP_SUB:
-            fprintf(fp, "-");
+            fprintf(fp, " - ");
             break;
         case AST_NODE_OP_MUL:
-            fprintf(fp, "*");
+            fprintf(fp, " * ");
             break;
         case AST_NODE_OP_DIV:
-            fprintf(fp, "/");
+            fprintf(fp, " / ");
             break;
         case AST_NODE_OP_MOD:
-            fprintf(fp, "%%");
+            fprintf(fp, " %% ");
             break;
         case AST_NODE_OP_DDOT:
             fprintf(fp, "..");
             break;
+        case AST_NODE_OP_NEG:
+            fprintf(fp, "-");
+            break;
         default:
-            unimplemented_("ast node op:%x\n", op->op);
+            unimplemented_("ast node op:%x", op->op);
         }
         ast_node_dump(op->right, 0, fp);
     } break;
@@ -574,11 +568,11 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
 
         } break;
         default:
-            unimplemented_("hg_value type: %x\n", val->type);
+            unimplemented_("hg_value type: %x", val->type);
         }
     } break;
     default:
-        unimplemented_("type: %x\b", node->type);
+        unimplemented_("type: %x", node->type);
     }
 }
 //< ast_node_dump

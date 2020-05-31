@@ -1,4 +1,5 @@
 #include "value.h"
+#include "common.h"
 #include "memory.h"
 
 //> hg_value
@@ -21,14 +22,14 @@ void hg_value_write(struct hg_value a, FILE* fp) {
         fprintf(fp, "%s", VAL_AS_BOOL(a) ? "true" : "false");
         break;
     case HG_VALUE_NIL:
-        fprintf(fp, "nil");
+        fprintf(fp, "()");
         break;
     case HG_VALUE_OBJECT: {
         struct hg_object* obj = VAL_AS_OBJ(a);
         obj->funcs->write(obj, fp);
     } break;
     default:
-        unimplemented_("type :%x\n", a.type);
+        unimplemented_("type :%x", a.type);
     }
 }
 
@@ -65,7 +66,7 @@ bool hg_value_equal(struct hg_value a, struct hg_value b) {
         return obj_a->funcs->equal(obj_a, obj_b);
     }
     default:
-        unimplemented_("type :%x\n", a.type);
+        unimplemented_("type :%x", a.type);
     }
 #undef equal_as
 */
@@ -87,7 +88,7 @@ uint32_t hg_value_hash(struct hg_value a) {
         return obj->hash;
     }
     default:
-        unimplemented_("type :%x\n", a.type);
+        unimplemented_("type :%x", a.type);
     }
 }
 //< hg_value
@@ -99,13 +100,6 @@ void value_array_init(struct value_array* arr) {
     arr->values   = array_alloc_(struct hg_value, VALUE_ARRAY_INIT_CAPACITY);
 }
 
-void value_array_resize(struct value_array* arr) {
-    size_t new_capacity = array_new_size_(arr->capacity, arr->len);
-    arr->values   = array_realloc_(arr->values, struct hg_value, arr->capacity,
-                                 new_capacity);
-    arr->capacity = new_capacity;
-}
-
 void value_array_free(struct value_array* arr) {
     array_free_(arr->values, struct hg_value, arr->capacity);
 
@@ -113,4 +107,37 @@ void value_array_free(struct value_array* arr) {
     arr->len      = 0;
     arr->capacity = 0;
 }
+
+size_t value_array_push(struct value_array* arr, struct hg_value val) {
+    size_t cap;
+    if ((cap = array_grow_(arr->capacity, arr->len)) != arr->capacity) {
+        arr->values =
+            array_realloc_(arr->values, struct hg_value, arr->capacity, cap);
+        arr->capacity = cap;
+    }
+    arr->values[arr->len++] = val;
+    return arr->len - 1;
+}
+
+struct hg_value value_array_pop(struct value_array* arr) {
+    if (arr->len == 0) {
+        error_("pop an empty array");
+    }
+    struct hg_value val = arr->values[--arr->len];
+    size_t cap;
+    if ((cap = array_shrink_(arr->capacity, arr->len)) != arr->capacity) {
+        arr->values =
+            array_realloc_(arr->values, struct hg_value, arr->capacity, cap);
+        arr->capacity = cap;
+    }
+    return val;
+}
+
+struct hg_value value_array_get(struct value_array* arr, size_t index) {
+    if (arr->len > index) {
+        error_("index %ld out of range", index);
+    }
+    return arr->values[index];
+}
+
 //< hg_value_array

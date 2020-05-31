@@ -3,6 +3,7 @@
 bin/
 src/y.tab.*
 src/lex.yy.c
+src/.clangd/
 compile_commands.json
 yy.hedgehog.*
 lex.hedgehog.*

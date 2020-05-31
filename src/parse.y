@@ -37,7 +37,7 @@ static void yyerror(struct parser_state* p, const char* s);
        kw_if kw_else kw_for kw_break kw_continue kw_return
        kw_def kw_in kw_while
 
-%token <node> lit_float lit_int lit_bool lit_nil lit_string lit_id
+%token <node> lit_float lit_int lit_bool lit_string lit_id
 %type <node>  primary expr func_call args vars stat if_stat opt_elsif_stat
               for_stat func_def stats block program comp_stat while_stat
               list tuple
@@ -212,7 +212,7 @@ expr:
     primary
     |
     op_sub primary {
-        $$ = ast_node_op_new(AST_NODE_OP_SUB, NULL, $2);
+        $$ = ast_node_op_new(AST_NODE_OP_NEG, NULL, $2);
     }
     |
     op_not expr {
@@ -286,8 +286,6 @@ func_call:
 
 primary:
     lit_string
-    |
-    lit_nil
     |
     lit_bool
     |

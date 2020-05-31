@@ -17,7 +17,7 @@ enum ast_node_type {
     AST_NODE_VALUE,    // node->node = hg_value
     AST_NODE_RETURN,   // node->node = expr
     // store as array:
-    AST_NODE_STATS,
+    AST_NODE_STATS, // statement array
     AST_NODE_VARS,
     AST_NODE_ARGS,
     AST_NODE_LIST,
@@ -41,6 +41,7 @@ enum ast_node_op_type {
     AST_NODE_OP_LE,
     AST_NODE_OP_GT,
     AST_NODE_OP_LS,
+    AST_NODE_OP_NEG,
     AST_NODE_OP_ADD,
     AST_NODE_OP_SUB,
     AST_NODE_OP_MUL,
@@ -159,7 +160,6 @@ struct ast_node* ast_node_str_new(const char* s);
 struct ast_node* ast_node_str_len_new(const char* s, size_t len);
 struct ast_node* ast_node_bool_new(bool v);
 struct ast_node* ast_node_id_new(const char* s);
-struct ast_node* ast_node_nil_new();
 //< ast_node_value
 
 //> ast_node_free

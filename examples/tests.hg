@@ -1,0 +1,30 @@
+if true {
+}
+else if false {
+    if true {
+        if false {
+           puts("world") 
+        } else if true {
+
+        } else {
+            puts("hello")
+        }
+    }
+}
+
+def fn() {}
+
+def fn(a, b, c, de, g, hg) {
+    a+b
+    c-de
+    c*g
+    c/hg
+    c%hg
+    !c
+    c && de
+    c || de
+    -c
+    a >= 10 <= b
+    a == b
+    return
+}
