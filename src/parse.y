@@ -40,7 +40,7 @@ static void yyerror(struct parser_state* p, const char* s);
 %token <node> lit_float lit_int lit_bool lit_string lit_id
 %type <node>  primary expr func_call args vars stat if_stat opt_elsif_stat
               for_stat func_def stats block program comp_stat while_stat
-              list tuple
+              list tuple func
 
 %%
 
@@ -276,13 +276,14 @@ expr:
     };
 
 func_call:
-    lit_id tuple { /* fn(a, b) */
-        $$ = ast_node_call_new($1, $2);
-    }
-    |
-    func_call tuple { /* add_x(5)(6) */
-        $$ = ast_node_call_new($1, $2);
+    func sep_lb args sep_rb { /* fn(a, b) */
+        $$ = ast_node_call_new($1, $3);
     };
+
+func:
+    lit_id
+    |
+    func_call;
 
 primary:
     lit_string

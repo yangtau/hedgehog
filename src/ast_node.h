@@ -86,11 +86,12 @@ struct ast_node* ast_node_func_new(struct ast_node* id, struct ast_node* vars,
 
 //> ast_node_call
 struct ast_node_call {
-    struct ast_node* id;
-    struct ast_node* tuple; // tuple contains args
+    struct ast_node* func;
+    struct ast_node* args;
 };
 
-struct ast_node* ast_node_call_new(struct ast_node* id, struct ast_node* tuple);
+struct ast_node* ast_node_call_new(struct ast_node* func,
+                                   struct ast_node* args);
 //< ast_node_call
 
 //> ast_node_return
