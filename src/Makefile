@@ -1,7 +1,7 @@
 YACC = yacc
 LEX  = flex
 CC   = gcc
-CFLAGS = -std=gnu99 -g -Wall -Wextra
+CFLAGS = -std=gnu99 -g -Wall -Wextra -rdynamic
 
 SRC := $(filter-out yy.hedgehog.c lex.hedgehog.c format.c main.c hash_test.c, $(wildcard *.c))
 OBJS := $(SRC:.c=.o)
