@@ -9,6 +9,7 @@ extern FILE* yyin;
 
 int main(int argc, char* argv[]) {
     struct chunk chk;
+    struct compile_state state;
     int rc = 0;
 
     if (argc != 2) {
@@ -28,8 +29,9 @@ int main(int argc, char* argv[]) {
         ;
 
     chunk_init(&chk);
+    compile_state_init(&state);
 
-    if ((rc = compile(p.lval, &chk)) != 0) {
+    if ((rc = compile(p.lval, &chk, &state)) != 0) {
         fprintf(stderr, "compile error\n");
         goto compile_error;
     }
@@ -39,6 +41,7 @@ int main(int argc, char* argv[]) {
 compile_error:
     ast_node_free(p.lval);
     chunk_free(&chk);
+    compile_state_free(&state);
     assert(hg_memory_usage() == 0u);
     return 0;
 }

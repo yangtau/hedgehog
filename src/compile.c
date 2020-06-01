@@ -2,11 +2,12 @@
 #include "ast_node.h"
 #include "common.h"
 
-static int compile_ast_node_op(void* _node, struct chunk* chk) {
-#define compile_left_right()       \
-    do {                           \
-        compile(node->left, chk);  \
-        compile(node->right, chk); \
+static int compile_ast_node_op(void* _node, struct chunk* chk,
+                               struct compile_state* state) {
+#define compile_left_right()              \
+    do {                                  \
+        compile(node->left, chk, state);  \
+        compile(node->right, chk, state); \
     } while (0)
     struct ast_node_op* node = _node;
     switch (node->op) {
@@ -15,7 +16,7 @@ static int compile_ast_node_op(void* _node, struct chunk* chk) {
     case AST_NODE_OP_OR:
         break;
     case AST_NODE_OP_NOT:
-        compile(node->right, chk);
+        compile(node->right, chk, state);
         chunk_write(chk, OP_NOT);
         break;
     case AST_NODE_OP_NEQ:
@@ -44,7 +45,7 @@ static int compile_ast_node_op(void* _node, struct chunk* chk) {
         chunk_write(chk, OP_LESS);
         break;
     case AST_NODE_OP_NEG:
-        compile(node->right, chk);
+        compile(node->right, chk, state);
         chunk_write(chk, OP_NEGATE);
         break;
     case AST_NODE_OP_ADD:
@@ -77,7 +78,7 @@ static int compile_ast_node_op(void* _node, struct chunk* chk) {
 #undef compile_left_right
 }
 
-static int compile_ast_node_value(void* _value, struct chunk* chk) {
+static int compile_ast_node_value(void* _value, struct chunk* chk, struct compile_state* state) {
     struct hg_value* val = _value;
 
     if (VAL_IS_BOOL(*val)) {
@@ -90,26 +91,28 @@ static int compile_ast_node_value(void* _value, struct chunk* chk) {
     return 0;
 }
 
-static int compile_ast_node_stats(void* _stats, struct chunk* chk) {
+static int compile_ast_node_stats(void* _stats, struct chunk* chk,
+                                  struct compile_state* state) {
     struct ast_node_array* stats = _stats;
 
     int rc = 0;
     for (size_t i = 0; i < stats->len; i++) {
-        if ((rc = compile(stats->arr[i], chk)) != 0) {
+        if ((rc = compile(stats->arr[i], chk, state)) != 0) {
             break;
         }
     }
     return rc;
 }
 
-static int compile_ast_node_tuple(void* _tuple, struct chunk* chk) {
+static int compile_ast_node_tuple(void* _tuple, struct chunk* chk,
+                                  struct compile_state* state) {
     struct ast_node_array* tuple = _tuple;
     switch (tuple->len) {
     case 0: // nil
         chunk_write(chk, OP_NIL);
         break;
     case 1: // unpack if there is only one element in the tuple
-        compile(tuple->arr[0], chk);
+        compile(tuple->arr[0], chk, state);
         break;
     default:
         unimplemented_("TODO: tuple with length of %ld", tuple->len);
@@ -118,7 +121,8 @@ static int compile_ast_node_tuple(void* _tuple, struct chunk* chk) {
 }
 
 // compile_funcs is a static array of const pointer to function
-static int (*const compile_funcs[])(void*, struct chunk*) = {
+static int (*const compile_funcs[])(void*, struct chunk*,
+                                    struct compile_state*) = {
     [AST_NODE_OP]       = compile_ast_node_op,
     [AST_NODE_VALUE]    = compile_ast_node_value, // node->node = hg_value
     [AST_NODE_STATS]    = compile_ast_node_stats,
@@ -137,6 +141,7 @@ static int (*const compile_funcs[])(void*, struct chunk*) = {
     [AST_NODE_LIST]     = NULL,
 };
 
-int compile(struct ast_node* node, struct chunk* chunk) {
-    return compile_funcs[node->type](node->node, chunk);
+int compile(struct ast_node* node, struct chunk* chunk,
+            struct compile_state* state) {
+    return compile_funcs[node->type](node->node, chunk, state);
 }
