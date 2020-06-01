@@ -3,13 +3,6 @@
 #include "memory.h"
 
 //> hg_value
-void hg_value_free(struct hg_value value) {
-    if (value.type == HG_VALUE_OBJECT) {
-        struct hg_object* obj = VAL_AS_OBJ(value);
-        obj->funcs->free(obj);
-    }
-}
-
 void hg_value_write(struct hg_value a, FILE* fp) {
     switch (a.type) {
     case HG_VALUE_INT:
@@ -24,10 +17,9 @@ void hg_value_write(struct hg_value a, FILE* fp) {
     case HG_VALUE_NIL:
         fprintf(fp, "()");
         break;
-    case HG_VALUE_OBJECT: {
-        struct hg_object* obj = VAL_AS_OBJ(a);
-        obj->funcs->write(obj, fp);
-    } break;
+    case HG_VALUE_OBJECT:
+        hg_obj_write_(VAL_AS_OBJ(a), fp);
+        break;
     default:
         unimplemented_("type :%x", a.type);
     }
@@ -38,38 +30,9 @@ bool hg_value_equal(struct hg_value a, struct hg_value b) {
         return false;
     if (a.as._int == b.as._int)
         return true;
-    if (a.type == HG_VALUE_OBJECT) {
-        struct hg_object* obj_a = VAL_AS_OBJ(a);
-        struct hg_object* obj_b = VAL_AS_OBJ(a);
-        return obj_a->funcs->equal(obj_a, obj_b);
-    }
+    if (a.type == HG_VALUE_OBJECT)
+        return hg_obj_equal_(VAL_AS_OBJ(a), VAL_AS_OBJ(b));
     return false;
-    /*
-#define equal_as(type) (VAL_AS_##type(a) == VAL_AS_##type(b))
-
-    if (a.type != b.type) { // TODO: how about comparing `int` with `float`
-        return false;
-    }
-
-    switch (a.type) {
-    case HG_VALUE_INT:
-        return equal_as(INT);
-    case HG_VALUE_FLOAT:
-        return equal_as(FLOAT);
-    case HG_VALUE_BOOL:
-        return equal_as(BOOL);
-    case HG_VALUE_NIL:
-        return true;
-    case HG_VALUE_OBJECT: {
-        struct hg_object* obj_a = VAL_AS_OBJ(a);
-        struct hg_object* obj_b = VAL_AS_OBJ(a);
-        return obj_a->funcs->equal(obj_a, obj_b);
-    }
-    default:
-        unimplemented_("type :%x", a.type);
-    }
-#undef equal_as
-*/
 }
 
 uint32_t hg_value_hash(struct hg_value a) {
@@ -81,12 +44,8 @@ uint32_t hg_value_hash(struct hg_value a) {
         return VAL_AS_BOOL(a) ? 1u : 0u;
     case HG_VALUE_NIL:
         return 2u;
-    case HG_VALUE_OBJECT: {
-        struct hg_object* obj = VAL_AS_OBJ(a);
-        if (obj->hash == 0u)
-            obj->hash = obj->funcs->hash(obj);
-        return obj->hash;
-    }
+    case HG_VALUE_OBJECT:
+        return hg_obj_hash_(VAL_AS_OBJ(a));
     default:
         unimplemented_("type :%x", a.type);
     }

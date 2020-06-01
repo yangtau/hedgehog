@@ -18,7 +18,7 @@
 
 #define unreachable_()                                                   \
     do {                                                                 \
-        fprintf(stderr, "reach unreachable in function %s\n", __func__); \
+        fprintf(stderr, "unreachable in function %s\n", __func__); \
         exit(-1);                                                        \
     } while (0)
 

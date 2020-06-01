@@ -1,6 +1,7 @@
 #include "ast_node.h"
 #include "value.h"
 #include "memory.h"
+#include "string.h"
 
 #define assert_expr(node)                                        \
     {                                                            \
@@ -261,7 +262,7 @@ struct ast_node* ast_node_str_len_new(const char* s, size_t len) {
     struct ast_node* node  = ast_node_new(AST_NODE_VALUE);
     struct hg_value* value = hg_alloc_(struct hg_value);
 
-    *value = VAL_STR_LEN(s, len);
+    *value = VAL_OBJ(hg_string_copy(s, len));
 
     node->node = value;
     return node;
@@ -271,7 +272,7 @@ struct ast_node* ast_node_id_new(const char* s) {
     struct ast_node* node  = ast_node_new(AST_NODE_VALUE);
     struct hg_value* value = hg_alloc_(struct hg_value);
 
-    *value = VAL_ID(s);
+    *value = VAL_OBJ(hg_symbol_copy(s, strlen(s)));
 
     node->node = value;
     return node;
@@ -546,26 +547,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
 
     case AST_NODE_VALUE: {
         fprintf(fp, "%s", buf);
-        struct hg_value* val = node->node;
-        switch (val->type) {
-        case HG_VALUE_INT:
-        case HG_VALUE_BOOL:
-        case HG_VALUE_NIL:
-        case HG_VALUE_FLOAT:
-            hg_value_write(*val, fp);
-            break;
-        case HG_VALUE_OBJECT: {
-            struct hg_object* obj = VAL_AS_OBJ(*val);
-            if (obj->type == HG_OBJ_STRING)
-                fprintf(fp, "\"");
-            hg_value_write(*val, fp);
-            if (obj->type == HG_OBJ_STRING)
-                fprintf(fp, "\"");
-
-        } break;
-        default:
-            unimplemented_("hg_value type: %x", val->type);
-        }
+        hg_value_write(*(struct hg_value*)node->node, fp);
     } break;
     default:
         unimplemented_("type: %x", node->type);
