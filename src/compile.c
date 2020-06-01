@@ -78,16 +78,45 @@ static int compile_ast_node_op(void* _node, struct chunk* chk,
 #undef compile_left_right
 }
 
-static int compile_ast_node_value(void* _value, struct chunk* chk, struct compile_state* state) {
+static int compile_ast_node_variable(struct hg_value id, struct chunk* chk,
+                                     struct compile_state* state) {
+    if (state->scope_depth == 0) {
+        // global
+        struct hg_value val = hash_map_get(&state->global_vars, id);
+        uint16_t loc;
+        if (VAL_IS_UNDEF(val)) {
+            fprintf(stderr, "compile error: reference before definition `");
+            hg_value_write(id, stderr);
+            fprintf(stderr, "`\n");
+            return -1;
+        } else {
+            loc = (uint16_t)VAL_AS_INT(val);
+        }
+
+        chunk_write(chk, OP_GET_STATIC);
+        chunk_write_word(chk, loc);
+
+    } else {
+        // local
+        unimplemented_("local");
+    }
+    return 0;
+}
+
+static int compile_ast_node_value(void* _value, struct chunk* chk,
+                                  struct compile_state* state) {
     struct hg_value* val = _value;
 
     if (VAL_IS_BOOL(*val)) {
         chunk_write(chk, VAL_AS_BOOL(*val) ? OP_TRUE : OP_FALSE);
+    } else if (VAL_IS_OBJ(*val) && (VAL_AS_OBJ(*val)->type == HG_OBJ_SYMBOL)) {
+        return compile_ast_node_variable(*val, chk, state);
     } else {
         uint16_t loc = chunk_add_static(chk, *val);
-        chunk_write(chk, OP_STATIC);
+        chunk_write(chk, OP_GET_STATIC);
         chunk_write_word(chk, loc);
     }
+    // TODO: var
     return 0;
 }
 
@@ -97,9 +126,7 @@ static int compile_ast_node_stats(void* _stats, struct chunk* chk,
 
     int rc = 0;
     for (size_t i = 0; i < stats->len; i++) {
-        if ((rc = compile(stats->arr[i], chk, state)) != 0) {
-            break;
-        }
+        rc = compile(stats->arr[i], chk, state);
     }
     return rc;
 }
@@ -120,6 +147,76 @@ static int compile_ast_node_tuple(void* _tuple, struct chunk* chk,
     return 0;
 }
 
+static int compile_ast_node_args(void* _args, struct chunk* chk,
+                                 struct compile_state* state) {
+    struct ast_node_array* args = _args;
+
+    int rc = 0;
+    for (int i = args->len - 1; i >= 0; i--) {
+        // push inversely
+        rc = compile(args->arr[i], chk, state);
+    }
+
+    // push the number of args
+    if (args->len > UINT8_MAX) {
+        rc = -1;
+        fprintf(stderr,
+                "compile error: the number of arguments (%lu) is greater than "
+                "the maximum (%d)\n",
+                args->len, UINT8_MAX);
+    }
+    chunk_write(chk, OP_PUSH);
+    chunk_write(chk, (uint8_t)args->len);
+    return rc;
+}
+
+static int compile_ast_node_vars(void* _vars, struct chunk* chk,
+                                 struct compile_state* state) {
+    struct ast_node_array* vars = _vars;
+
+    int rc = 0;
+    chunk_write(chk, OP_CHECK_ARGS_NUM);
+    if (vars->len > UINT8_MAX) {
+        // TODO: restrict this while parsing
+        rc = -1;
+        fprintf(stderr,
+                "compile error: the number of variables (%lu) is greater than "
+                "the maximum (%d)\n",
+                vars->len, UINT8_MAX);
+    }
+    chunk_write(chk, (uint8_t)vars->len);
+
+    for (size_t i = 0; i < vars->len; i++) {
+        struct hg_value* id = vars->arr[i]->node;
+        if (state->scope_depth == 0) {
+            // global
+            struct hg_value val = hash_map_get(&state->global_vars, *id);
+            uint16_t loc;
+            if (VAL_IS_UNDEF(val)) {
+                loc = chunk_add_static(chk, val);
+                hash_map_put(&state->global_vars, *id, VAL_INT(loc));
+            } else {
+                loc = (uint16_t)VAL_AS_INT(val);
+            }
+
+            chunk_write(chk, OP_SET_STATIC);
+            chunk_write_word(chk, loc);
+        } else {
+            // local
+            unimplemented_("local vars");
+        }
+    }
+    return rc;
+}
+
+static int compile_ast_node_assign(void* _assign, struct chunk* chk,
+                                   struct compile_state* state) {
+    struct ast_node_assign* node = _assign;
+    compile(node->args, chk, state);
+    compile(node->vars, chk, state);
+    return 0;
+}
+
 // compile_funcs is a static array of const pointer to function
 static int (*const compile_funcs[])(void*, struct chunk*,
                                     struct compile_state*) = {
@@ -127,7 +224,9 @@ static int (*const compile_funcs[])(void*, struct chunk*,
     [AST_NODE_VALUE]    = compile_ast_node_value, // node->node = hg_value
     [AST_NODE_STATS]    = compile_ast_node_stats,
     [AST_NODE_TUPLE]    = compile_ast_node_tuple,
-    [AST_NODE_ASSIGN]   = NULL,
+    [AST_NODE_ASSIGN]   = compile_ast_node_assign,
+    [AST_NODE_VARS]     = compile_ast_node_vars,
+    [AST_NODE_ARGS]     = compile_ast_node_args,
     [AST_NODE_IF]       = NULL,
     [AST_NODE_FOR]      = NULL,
     [AST_NODE_CALL]     = NULL,
@@ -136,8 +235,6 @@ static int (*const compile_funcs[])(void*, struct chunk*,
     [AST_NODE_BREAK]    = NULL, // node->node = NULL
     [AST_NODE_CONTINUE] = NULL, // node->node = NULL
     [AST_NODE_RETURN]   = NULL, // node->node = expr
-    [AST_NODE_VARS]     = NULL,
-    [AST_NODE_ARGS]     = NULL,
     [AST_NODE_LIST]     = NULL,
 };
 

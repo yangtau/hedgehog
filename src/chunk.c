@@ -48,20 +48,26 @@ struct chunk* chunk_load(FILE* fp) {
 }
 
 void chunk_disassemble(struct chunk* chk) {
-#define print_(s) printf("0x%04lx %s\n", i, s)
+#define print_(s) printf("0x%04lx %s\n", i, (s))
 #define read_word_()
     for (size_t i = 0; i < chk->len; i++) {
         switch (chk->code[i]) {
         case OP_NOP:
             print_("nop");
             break;
-        case OP_STATIC: {
-            print_("static");
-            printf("%7s", "");
+        case OP_GET_STATIC: {
+            print_("get static");
             uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
             i += 2;
+            printf("%7s[%hu]=", "", t);
             hg_value_write(chk->statics.values[t], stdout);
             printf("\n");
+        } break;
+        case OP_SET_STATIC: {
+            print_("set static");
+            uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
+            i += 2;
+            printf("%7s[%hu]\n", "", t);
         } break;
         case OP_NIL:
             print_("nil");
@@ -111,6 +117,15 @@ void chunk_disassemble(struct chunk* chk) {
         case OP_POP:
             print_("pop");
             break;
+        case OP_PUSH: {
+            print_("push");
+            printf("%7s%hhu\n", "", chk->code[++i]);
+        } break;
+        case OP_CHECK_ARGS_NUM: {
+            print_("check args num");
+            printf("%7s%hhu\n", "", chk->code[++i]);
+
+        } break;
         case OP_GET_LOCAL:
             break;
         case OP_SET_LOCAL:

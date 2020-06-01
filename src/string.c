@@ -77,7 +77,16 @@ static uint32_t hg_string_hash(struct hg_object* _string) {
 
 //> hg_symbol
 static bool hg_symbol_equal(struct hg_object* _a, struct hg_object* _b) {
-    return _a == _b;
+    struct hg_string* str_a = (struct hg_string*)_a;
+    struct hg_string* str_b = (struct hg_string*)_b;
+    if (str_a->len != str_b->len)
+        return false;
+    if (_a->funcs->hash(_a) != _b->funcs->hash(_b))
+        return false;
+    return strncmp(str_a->str, str_b->str, str_a->len) == 0;
+
+    // TODO: symbol
+    // return _a == _b;
 }
 
 static int hg_symbol_write(struct hg_object* _string, FILE* fp) {

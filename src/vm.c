@@ -73,7 +73,7 @@ enum vm_exe_result vm_run(struct vm* vm) {
         switch (ins = read_byte_()) {
         case OP_NOP:
             break;
-        case OP_STATIC:
+        case OP_GET_STATIC:
             push(vm, read_static_());
             break;
         case OP_NIL:

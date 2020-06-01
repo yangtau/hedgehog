@@ -1,7 +1,6 @@
 #include "chunk.h"
 #include "vm.h"
 #include "compile.h"
-#include "hedgehog.h"
 #include "memory.h"
 
 extern int yyparse(struct parser_state* p);

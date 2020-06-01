@@ -1,6 +1,5 @@
 #include "common.h"
 #include "ast_node.h"
-#include "hedgehog.h"
 #include "memory.h"
 
 extern int yyparse(struct parser_state* p);

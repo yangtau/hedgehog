@@ -1,6 +1,5 @@
 %{
 #include "ast_node.h"
-#include "hedgehog.h"
 
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
