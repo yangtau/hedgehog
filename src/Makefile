@@ -3,22 +3,19 @@ LEX  = flex
 CC   = gcc
 CFLAGS = -std=gnu99 -g -Wall -Wextra
 
-SRC := $(filter-out yy.hedgehog.c lex.hedgehog.c format.c main.c, $(wildcard *.c))
+SRC := $(filter-out yy.hedgehog.c lex.hedgehog.c format.c main.c hash_test.c, $(wildcard *.c))
 OBJS := $(SRC:.c=.o)
 
 all: hg formater
 
-hg: main.o parser.o $(OBJS)
-	$(CC) $(CFLAGS) -o hg main.o parser.o $(OBJS)
+hg: main.c parser.o $(OBJS)
+	$(CC) $(CFLAGS) -o hg main.c parser.o $(OBJS)
 
-formater: format.o
-	$(CC) $(CFLAGS) -o formater format.o parser.o $(OBJS)
+hash_test: hash_test.c $(OBJS)
+	$(CC) $(CFLAGS) -o hash_test hash_test.c $(OBJS)
 
-format.o: format.c
-	$(CC) $(CFLAGS) -c format.c
-
-main.o: main.c
-	$(CC) $(CFLAGS) -c main.c
+formater: format.c $(OBJS)
+	$(CC) $(CFLAGS) -o formater format.c parser.o $(OBJS)
 
 parser.o: parse.y lex.l
 	$(YACC) -v -d -o yy.hedgehog.c parse.y
@@ -33,3 +30,4 @@ clean:
 	rm -f formater
 	rm -f tags
 	rm -f hg
+	rm -f hash_test

@@ -24,15 +24,6 @@ struct hg_value {
     } as;
 };
 
-/* hg_value_free:
- * free when `value` is hg_object
- */
-void hg_value_free(struct hg_value value);
-void hg_value_write(struct hg_value a, FILE* fp);
-bool hg_value_equal(struct hg_value a, struct hg_value b);
-uint32_t hg_value_hash(struct hg_value a);
-//< hg_value
-
 //> VAL_IS_TYPE
 /* VAL_IS_TYPE(val): val.type == TYPE
  */
@@ -81,22 +72,21 @@ uint32_t hg_value_hash(struct hg_value a);
 #define VAL_UNDEF()    ((struct hg_value){HG_VALUE_UNDEF, {._int = 0}})
 #define VAL_INT(val)   ((struct hg_value){HG_VALUE_INT, {._int = (val)}})
 #define VAL_FLOAT(val) ((struct hg_value){HG_VALUE_FLOAT, {._float = (val)}})
-#define VAL_STR_LEN(val, len)           \
-    ((struct hg_value){HG_VALUE_OBJECT, \
-                       {._obj = (struct hg_object*)hg_string_copy(val, len)}})
-#define VAL_STR(val)                 \
-    ({                               \
-        const char* _s = (val);      \
-        VAL_STR_LEN(_s, strlen(_s)); \
-    })
-#define VAL_ID(val)                                                   \
-    ({                                                                \
-        const char* _s = (val);                                       \
-        (struct hg_value){                                            \
-            HG_VALUE_OBJECT,                                          \
-            {._obj = (struct hg_object*)hg_id_copy(_s, strlen(_s))}}; \
-    })
-//< VAL_TYPE
+#define VAL_OBJ(obj) \
+    ((struct hg_value){HG_VALUE_OBJECT, {._obj = (struct hg_object*)(obj)}})
+
+void hg_value_write(struct hg_value a, FILE* fp);
+bool hg_value_equal(struct hg_value a, struct hg_value b);
+uint32_t hg_value_hash(struct hg_value a);
+/* hg_value_free:
+ * free when `value` is hg_object
+ */
+static _force_inline_ void hg_value_free(struct hg_value value) {
+    if (value.type == HG_VALUE_OBJECT) {
+        hg_obj_free_(VAL_AS_OBJ(value));
+    }
+}
+//< hg_value
 
 //> value_array
 #define VALUE_ARRAY_INIT_CAPACITY (2u)
