@@ -2,6 +2,16 @@
 #define _HG_AST_NODE_H_
 #include "common.h"
 
+//> parser_state
+struct parser_state {
+    int nerr;
+    void* lval;
+    const char* fname;
+    int lineno;
+    int tline;
+};
+//< parser_state
+
 //> ast_node
 enum ast_node_type {
     AST_NODE_ASSIGN,
