@@ -115,7 +115,7 @@ struct ast_node_assign {
     struct ast_node* vars;
     struct ast_node* args;
 };
-struct ast_node* ast_node_assign_new(struct ast_node* vars,
+struct ast_node* ast_node_assign_new(struct parser_state *p,struct ast_node* vars,
                                      struct ast_node* args);
 //< ast_node_assign
 

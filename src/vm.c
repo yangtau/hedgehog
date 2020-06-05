@@ -20,7 +20,7 @@ static inline void push(struct vm* vm, struct hg_value val) {
 
 static inline struct hg_value pop(struct vm* vm) {
     if (vm->stack_top <= vm->stack)
-        error_("pop nothing in the stack");
+        error_("pop empty stack");
     return *(--vm->stack_top);
 }
 
@@ -141,6 +141,8 @@ enum vm_exe_result vm_run(struct vm* vm) {
         } break;
         case OP_POP:
             pop(vm);
+            break;
+        case OP_PUSH:
             break;
         case OP_GET_LOCAL:
             break;

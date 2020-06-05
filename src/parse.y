@@ -111,7 +111,7 @@ stat:
     expr
     |
     vars op_assign args { /* a, b = 1, 2 */
-        $$ = ast_node_assign_new($1, $3);
+        $$ = ast_node_assign_new(p, $1, $3);
     }
     |
     kw_break {
