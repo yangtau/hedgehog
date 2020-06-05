@@ -9,3 +9,4 @@ yy.hedgehog.*
 lex.hedgehog.*
 compile_commands.json
 tags
+.vscode/

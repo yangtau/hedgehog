@@ -3,13 +3,21 @@
 #include "memory.h"
 #include "string.h"
 
-#define assert_expr(node)                                        \
+#define assert_expr_(node)                                       \
     {                                                            \
         enum ast_node_type type = (node)->type;                  \
         assert(type == AST_NODE_VALUE || type == AST_NODE_OP ||  \
                type == AST_NODE_CALL || type == AST_NODE_LIST || \
                type == AST_NODE_TUPLE);                          \
     }
+
+#define parse_error(_p, ...)                                         \
+    do {                                                             \
+        struct parser_state* p = (_p);                               \
+        p->nerr++;                                                   \
+        fprintf(stderr, "%s:%d:parser error:", p->fname, p->lineno); \
+        fprintf(stderr, __VA_ARGS__);                                \
+    } while (0)
 
 //> ast_node
 /* ast_node_new: malloc a new ast_node and set its type
@@ -30,8 +38,8 @@ struct ast_node* ast_node_op_new(enum ast_node_op_type type,
     if (left == NULL)
         assert(type == AST_NODE_OP_NEG || type == AST_NODE_OP_NOT);
     else
-        assert_expr(left);
-    assert_expr(right);
+        assert_expr_(left);
+    assert_expr_(right);
 
     struct ast_node* node       = ast_node_new(AST_NODE_OP);
     struct ast_node_op* node_op = hg_alloc_(struct ast_node_op);
@@ -50,7 +58,7 @@ struct ast_node* ast_node_if_new(struct ast_node* cond, struct ast_node* stats,
                                  struct ast_node* opt_else) {
     assert(opt_else == NULL || opt_else->type == AST_NODE_IF);
     if (cond != NULL)
-        assert_expr(cond);
+        assert_expr_(cond);
 
     struct ast_node* node       = ast_node_new(AST_NODE_IF);
     struct ast_node_if* node_if = hg_alloc_(struct ast_node_if);
@@ -67,7 +75,7 @@ struct ast_node* ast_node_if_new(struct ast_node* cond, struct ast_node* stats,
 //> ast_node_call
 struct ast_node* ast_node_call_new(struct ast_node* func,
                                    struct ast_node* args) {
-    assert_expr(func);
+    assert_expr_(func);
     assert(args == NULL || args->type == AST_NODE_ARGS);
 
     struct ast_node* node           = ast_node_new(AST_NODE_CALL);
@@ -150,10 +158,19 @@ struct ast_node* ast_node_tuple_new(struct ast_node* args) {
 //< ast_node_array
 
 //> ast_node_assign
-struct ast_node* ast_node_assign_new(struct ast_node* vars,
+struct ast_node* ast_node_assign_new(struct parser_state* p,
+                                     struct ast_node* vars,
                                      struct ast_node* args) {
     assert(vars->type == AST_NODE_VARS);
     assert(args->type == AST_NODE_ARGS);
+
+    struct ast_node_array* _vars = vars->node;
+    struct ast_node_array* _args = args->node;
+
+    if (_vars->len != _args->len) {
+        parse_error(p, "assignment: expect %lu argument but given %lu",
+                    _vars->len, _args->len);
+    }
 
     struct ast_node* node               = ast_node_new(AST_NODE_ASSIGN);
     struct ast_node_assign* node_assign = hg_alloc_(struct ast_node_assign);
@@ -169,7 +186,7 @@ struct ast_node* ast_node_assign_new(struct ast_node* vars,
 //> ast_node_return
 struct ast_node* ast_node_return_new(struct ast_node* expr) {
     if (expr != NULL)
-        assert_expr(expr);
+        assert_expr_(expr);
 
     struct ast_node* node = ast_node_new(AST_NODE_RETURN);
 
@@ -181,7 +198,7 @@ struct ast_node* ast_node_return_new(struct ast_node* expr) {
 //> ast_node_while
 struct ast_node* ast_node_while_new(struct ast_node* cond,
                                     struct ast_node* stats) {
-    assert_expr(cond);
+    assert_expr_(cond);
     assert(stats == NULL || stats->type == AST_NODE_STATS);
 
     struct ast_node* node             = ast_node_new(AST_NODE_WHILE);
@@ -200,7 +217,7 @@ struct ast_node* ast_node_for_new(struct ast_node* vars,
                                   struct ast_node* iterator,
                                   struct ast_node* stats) {
     assert(vars->type == AST_NODE_VARS);
-    assert_expr(iterator);
+    assert_expr_(iterator);
     assert(stats->type == AST_NODE_STATS);
 
     struct ast_node* node         = ast_node_new(AST_NODE_FOR);
