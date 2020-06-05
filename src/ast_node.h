@@ -68,7 +68,8 @@ struct ast_node_op {
     struct ast_node* right;
 };
 
-struct ast_node* ast_node_op_new(enum ast_node_op_type type,
+struct ast_node* ast_node_op_new(struct parser_state* p,
+                                 enum ast_node_op_type type,
                                  struct ast_node* left, struct ast_node* right);
 //< ast_node_op
 
@@ -79,7 +80,8 @@ struct ast_node_if {
     struct ast_node* opt_else; // `opt_else->type` is `AST_NODE_IF`
 };
 
-struct ast_node* ast_node_if_new(struct ast_node* cond, struct ast_node* stats,
+struct ast_node* ast_node_if_new(struct parser_state* p, struct ast_node* cond,
+                                 struct ast_node* stats,
                                  struct ast_node* opt_else);
 //< ast_node_if
 
@@ -90,7 +92,8 @@ struct ast_node_func {
     struct ast_node* stats;
 };
 
-struct ast_node* ast_node_func_new(struct ast_node* id, struct ast_node* vars,
+struct ast_node* ast_node_func_new(struct parser_state* p, struct ast_node* id,
+                                   struct ast_node* vars,
                                    struct ast_node* stats);
 //< ast_node_func
 
@@ -100,14 +103,16 @@ struct ast_node_call {
     struct ast_node* args;
 };
 
-struct ast_node* ast_node_call_new(struct ast_node* func,
+struct ast_node* ast_node_call_new(struct parser_state* p,
+                                   struct ast_node* func,
                                    struct ast_node* args);
 //< ast_node_call
 
 //> ast_node_return
 /* ast_node_return_new: ast_node->node = expr
  */
-struct ast_node* ast_node_return_new(struct ast_node* expr);
+struct ast_node* ast_node_return_new(struct parser_state* p,
+                                     struct ast_node* expr);
 //< ast_node_return
 
 //> ast_node_assign
@@ -115,7 +120,8 @@ struct ast_node_assign {
     struct ast_node* vars;
     struct ast_node* args;
 };
-struct ast_node* ast_node_assign_new(struct parser_state *p,struct ast_node* vars,
+struct ast_node* ast_node_assign_new(struct parser_state* p,
+                                     struct ast_node* vars,
                                      struct ast_node* args);
 //< ast_node_assign
 
@@ -124,7 +130,8 @@ struct ast_node_while {
     struct ast_node* cond;
     struct ast_node* stats;
 };
-struct ast_node* ast_node_while_new(struct ast_node* cond,
+struct ast_node* ast_node_while_new(struct parser_state* p,
+                                    struct ast_node* cond,
                                     struct ast_node* stats);
 //< ast_node_while
 
@@ -134,7 +141,7 @@ struct ast_node_for {
     struct ast_node* iterator;
     struct ast_node* stats;
 };
-struct ast_node* ast_node_for_new(struct ast_node* vars,
+struct ast_node* ast_node_for_new(struct parser_state* p, struct ast_node* vars,
                                   struct ast_node* iterator,
                                   struct ast_node* stats);
 //< ast_node_for
@@ -143,7 +150,8 @@ struct ast_node* ast_node_for_new(struct ast_node* vars,
 /* ast_node_loopctrl_new:
  * @type: AST_NODE_BREAK or AST_NODE_CONTINUE
  */
-struct ast_node* ast_node_loopctrl_new(enum ast_node_type type);
+struct ast_node* ast_node_loopctrl_new(struct parser_state* p,
+                                       enum ast_node_type type);
 //< ast_node_loopctrl
 
 //> ast_node_array
@@ -156,21 +164,26 @@ struct ast_node_array {
  * @type: AST_NODE_ARGS, AST_NODE_VARS, AST_NODE_STATS, AST_NODE_LIST,
  *        AST_NODE_TUPLE
  */
-struct ast_node* ast_node_array_new(enum ast_node_type type);
+struct ast_node* ast_node_array_new(struct parser_state* p,
+                                    enum ast_node_type type);
 /* ast_node_array_add: add `item` into `arr`
  */
-void ast_node_array_add(struct ast_node* arr, struct ast_node* item);
-struct ast_node* ast_node_list_new(struct ast_node* args);
-struct ast_node* ast_node_tuple_new(struct ast_node* args);
+void ast_node_array_add(struct parser_state* p, struct ast_node* arr,
+                        struct ast_node* item);
+struct ast_node* ast_node_list_new(struct parser_state* p,
+                                   struct ast_node* args);
+struct ast_node* ast_node_tuple_new(struct parser_state* p,
+                                    struct ast_node* args);
 //< ast_node_array
 
 //> ast_node_value: ast_node->node = hg_value_ptr;
-struct ast_node* ast_node_int_new(int64_t v);
-struct ast_node* ast_node_float_new(double v);
-struct ast_node* ast_node_str_new(const char* s);
-struct ast_node* ast_node_str_len_new(const char* s, size_t len);
-struct ast_node* ast_node_bool_new(bool v);
-struct ast_node* ast_node_id_new(const char* s);
+struct ast_node* ast_node_int_new(struct parser_state* p, int64_t v);
+struct ast_node* ast_node_float_new(struct parser_state* p, double v);
+struct ast_node* ast_node_str_new(struct parser_state* p, const char* s);
+struct ast_node* ast_node_str_len_new(struct parser_state* p, const char* s,
+                                      size_t len);
+struct ast_node* ast_node_bool_new(struct parser_state* p, bool v);
+struct ast_node* ast_node_id_new(struct parser_state* p, const char* s);
 //< ast_node_value
 
 //> ast_node_free

@@ -105,35 +105,35 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "while"{TRAIL}                  LEX_RETURN(kw_while);
 
 "true" {
-    lval->node = ast_node_bool_new(true);
+    lval->node = ast_node_bool_new(p, true);
     LEX_RETURN(lit_bool);
 }
 "false" {
-    lval->node = ast_node_bool_new(false);
+    lval->node = ast_node_bool_new(p, false);
     LEX_RETURN(lit_bool);
 }
 
 [A-Za-z_][A-Za-z0-9_]* {
-    lval->node = ast_node_id_new(yytext);
+    lval->node = ast_node_id_new(p, yytext);
     LEX_RETURN(lit_id);
 };
 
 (([1-9][0-9]*)|0) {
     int64_t t;
     sscanf(yytext, "%ld", &t);
-    lval->node = ast_node_int_new(t);
+    lval->node = ast_node_int_new(p, t);
     LEX_RETURN(lit_int);
 }
 
 (([1-9][0-9]*)|0)(\.[0-9]+) {
     double t;
     sscanf(yytext, "%lf", &t);
-    lval->node = ast_node_float_new(t);
+    lval->node = ast_node_float_new(p, t);
     LEX_RETURN(lit_float);
 };
 
 \"([^\\\"]|\\.)*\" {
-    lval->node = ast_node_str_len_new(yytext+1, strlen(yytext)-2);
+    lval->node = ast_node_str_len_new(p, yytext+1, strlen(yytext)-2);
     LEX_RETURN(lit_string);
 };
 
