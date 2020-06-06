@@ -3,21 +3,97 @@
 #include "ast_node.h"
 #include "common.h"
 
+/* a OR b
+     a
+ +---jump-if-false
+ |   op_true
+ |   jump --+
+ +-->b      |
+        <---+
+ */
+static int compile_ast_node_or(struct compiler_context* ctx,
+                               struct ast_node_op* node, struct chunk* chk) {
+    int rc            = 0;
+    int jif_patch_pos = -1;
+    int j_patch_pos   = -1;
+
+    rc |= compile(ctx, node->left, chk);
+
+    chunk_write(chk, OP_JUMP_IF_FALSE);
+    jif_patch_pos = chunk_write_word(chk, 0u);
+
+    chunk_write(chk, OP_TRUE);
+
+    chunk_write(chk, OP_JUMP);
+    j_patch_pos = chunk_write_word(chk, 0u);
+
+    // patch jump-if-false
+    chunk_patch_word(chk, (uint16_t)(chk->len - jif_patch_pos), jif_patch_pos);
+
+    rc |= compile(ctx, node->right, chk);
+
+    // patch jump
+    chunk_patch_word(chk, (uint16_t)(chk->len - j_patch_pos), j_patch_pos);
+
+    return rc;
+}
+
+/* a AND b
+      a
+  +---jump-if-false
+  |   b
+  |   jump ----+
+  +-->op_false |
+           <---+
+ */
+static int compile_ast_node_and(struct compiler_context* ctx,
+                                struct ast_node_op* node, struct chunk* chk) {
+    int rc            = 0;
+    int j_patch_pos   = -1;
+    int jif_patch_pos = -1;
+
+    rc |= compile(ctx, node->left, chk);
+
+    chunk_write(chk, OP_JUMP_IF_FALSE);
+    jif_patch_pos = chunk_write_word(chk, 0u);
+
+    rc |= compile(ctx, node->right, chk);
+
+    chunk_write(chk, OP_JUMP);
+    j_patch_pos = chunk_write_word(chk, 0u);
+
+    // patch jump-if-false
+    chunk_patch_word(chk, (uint16_t)(chk->len - jif_patch_pos), jif_patch_pos);
+
+    chunk_write(chk, OP_FALSE);
+
+    // patch jump
+    chunk_patch_word(chk, (uint16_t)(chk->len - j_patch_pos), j_patch_pos);
+
+    return rc;
+}
+
 static int compile_ast_node_op(struct compiler_context* ctx, void* _node,
                                struct chunk* chk) {
-#define compile_left_right()            \
-    do {                                \
-        compile(ctx, node->left, chk);  \
-        compile(ctx, node->right, chk); \
+
+    int rc = 0;
+#define compile_left_right()                  \
+    do {                                      \
+        rc |= compile(ctx, node->left, chk);  \
+        rc |= compile(ctx, node->right, chk); \
     } while (0)
+
     struct ast_node_op* node = _node;
+
     switch (node->op) {
     case AST_NODE_OP_AND:
+        rc = compile_ast_node_and(ctx, node, chk);
         break;
     case AST_NODE_OP_OR:
+        rc = compile_ast_node_or(ctx, node, chk);
         break;
     case AST_NODE_OP_NOT:
-        compile(ctx, node->right, chk);
+        rc = compile(ctx, node->right, chk);
         chunk_write(chk, OP_NOT);
         break;
     case AST_NODE_OP_NEQ:
@@ -46,7 +122,7 @@ static int compile_ast_node_op(struct compiler_context* ctx, void* _node,
         chunk_write(chk, OP_LESS);
         break;
     case AST_NODE_OP_NEG:
-        compile(ctx, node->right, chk);
+        rc = compile(ctx, node->right, chk);
         chunk_write(chk, OP_NEGATE);
         break;
     case AST_NODE_OP_ADD:
@@ -75,7 +151,7 @@ static int compile_ast_node_op(struct compiler_context* ctx, void* _node,
     default:
         unimplemented_("operator type %x", node->op);
     }
-    return 0;
+    return rc;
 #undef compile_left_right
 }
 
@@ -124,7 +200,7 @@ static int compile_ast_node_stats(struct compiler_context* ctx, void* _stats,
 
     int rc = 0;
     for (size_t i = 0; i < stats->len; i++) {
-        rc = compile(ctx, stats->arr[i], chk);
+        rc |= compile(ctx, stats->arr[i], chk);
     }
     return rc;
 }
@@ -153,7 +229,7 @@ static int compile_ast_node_args(struct compiler_context* ctx, void* _args,
     int rc = 0;
     for (int i = args->len - 1; i >= 0; i--) {
         // push inversely
-        rc = compile(ctx, args->arr[i], chk);
+        rc |= compile(ctx, args->arr[i], chk);
     }
     return rc;
 }
@@ -195,8 +271,7 @@ static int compile_ast_node_assign(struct compiler_context* ctx, void* _assign,
     return 0;
 }
 
-/*
- * IF-ELSE-IF-ELSE:
+/* IF-ELSE-IF-ELSE:
  *     if-cont
  * +---jump-if-false
  * |   if-block
@@ -216,7 +291,7 @@ static int compile_ast_node_if(struct compiler_context* ctx, void* _if,
     int j_patch_pos             = -1; // jump
 
     if (node_if->cond != NULL) {
-        rc = compile(ctx, node_if->cond, chk);
+        rc |= compile(ctx, node_if->cond, chk);
 
         // jump-if-false
         chunk_write(chk, OP_JUMP_IF_FALSE);
@@ -225,7 +300,7 @@ static int compile_ast_node_if(struct compiler_context* ctx, void* _if,
 
     // block
     if (node_if->stats != NULL) {
-        rc = compile(ctx, node_if->stats, chk);
+        rc |= compile(ctx, node_if->stats, chk);
     }
 
     // jump: needed only of there is *else-if* or *else*
@@ -242,7 +317,7 @@ static int compile_ast_node_if(struct compiler_context* ctx, void* _if,
 
     // *else-if* and *else*
     if (node_if->opt_else != NULL) {
-        rc = compile(ctx, node_if->opt_else, chk);
+        rc |= compile(ctx, node_if->opt_else, chk);
 
         // patch jump
         chunk_patch_word(chk, (uint16_t)(chk->len - j_patch_pos), j_patch_pos);
