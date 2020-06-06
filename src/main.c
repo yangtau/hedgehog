@@ -22,10 +22,19 @@ int main(int argc, char* argv[]) {
     }
 
     struct parser_state p = {
-        .lineno = 1, .tline = 1, .lval = NULL, .fname = argv[1]};
+        .nerr   = 0,
+        .lineno = 1,
+        .tline  = 1,
+        .lval   = NULL,
+        .fname  = argv[1],
+    };
 
     while (yyparse(&p))
         ;
+
+    if (p.nerr != 0) {
+        goto parser_error;
+    }
 
     chunk_init(&chk);
     compile_state_init(&state);
@@ -38,8 +47,9 @@ int main(int argc, char* argv[]) {
     chunk_disassemble(&chk);
 
 compile_error:
-    ast_node_free(p.lval);
     chunk_free(&chk);
+parser_error:
+    ast_node_free(p.lval);
     compile_state_free(&state);
     assert(hg_memory_usage() == 0u);
     return 0;

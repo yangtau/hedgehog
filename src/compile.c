@@ -1,3 +1,4 @@
+// TODO: Check the number of arguments while compiling fucntion call
 #include "compile.h"
 #include "ast_node.h"
 #include "common.h"
@@ -97,7 +98,7 @@ static int compile_ast_node_variable(struct hg_value id, struct chunk* chk,
         chunk_write_word(chk, loc);
 
     } else {
-        // local
+        // TODO: Compile local variable (get)
         unimplemented_("local");
     }
     return 0;
@@ -112,11 +113,10 @@ static int compile_ast_node_value(void* _value, struct chunk* chk,
     } else if (VAL_IS_OBJ(*val) && (VAL_AS_OBJ(*val)->type == HG_OBJ_SYMBOL)) {
         return compile_ast_node_variable(*val, chk, state);
     } else {
-        uint16_t loc = chunk_add_static(chk, *val);
-        chunk_write(chk, OP_GET_STATIC);
+        uint16_t loc = chunk_add_const(chk, *val);
+        chunk_write(chk, OP_GET_CONST);
         chunk_write_word(chk, loc);
     }
-    // TODO: var
     return 0;
 }
 
@@ -142,6 +142,7 @@ static int compile_ast_node_tuple(void* _tuple, struct chunk* chk,
         compile(tuple->arr[0], chk, state);
         break;
     default:
+        // TODO: Compile tuple
         unimplemented_("TODO: tuple with length of %ld", tuple->len);
     }
     return 0;
@@ -156,17 +157,6 @@ static int compile_ast_node_args(void* _args, struct chunk* chk,
         // push inversely
         rc = compile(args->arr[i], chk, state);
     }
-
-    // push the number of args
-    if (args->len > UINT8_MAX) {
-        rc = -1;
-        fprintf(stderr,
-                "compile error: the number of arguments (%lu) is greater than "
-                "the maximum (%d)\n",
-                args->len, UINT8_MAX);
-    }
-    chunk_write(chk, OP_PUSH);
-    chunk_write(chk, (uint8_t)args->len);
     return rc;
 }
 
@@ -175,16 +165,6 @@ static int compile_ast_node_vars(void* _vars, struct chunk* chk,
     struct ast_node_array* vars = _vars;
 
     int rc = 0;
-    chunk_write(chk, OP_CHECK_ARGS_NUM);
-    if (vars->len > UINT8_MAX) {
-        // TODO: restrict this while parsing
-        rc = -1;
-        fprintf(stderr,
-                "compile error: the number of variables (%lu) is greater than "
-                "the maximum (%d)\n",
-                vars->len, UINT8_MAX);
-    }
-    chunk_write(chk, (uint8_t)vars->len);
 
     for (size_t i = 0; i < vars->len; i++) {
         struct hg_value* id = vars->arr[i]->node;
@@ -202,7 +182,7 @@ static int compile_ast_node_vars(void* _vars, struct chunk* chk,
             chunk_write(chk, OP_SET_STATIC);
             chunk_write_word(chk, loc);
         } else {
-            // local
+            // TODO: Compile local Variables (set)
             unimplemented_("local vars");
         }
     }

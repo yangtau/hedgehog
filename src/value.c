@@ -21,7 +21,7 @@ void hg_value_write(struct hg_value a, FILE* fp) {
         hg_obj_write_(VAL_AS_OBJ(a), fp);
         break;
     default:
-        unimplemented_("type :%x", a.type);
+        unimplemented_("type: %x", a.type);
     }
 }
 
@@ -93,10 +93,18 @@ struct hg_value value_array_pop(struct value_array* arr) {
 }
 
 struct hg_value value_array_get(struct value_array* arr, size_t index) {
-    if (arr->len > index) {
+    if (index >= arr->len) {
         error_("index %ld out of range", index);
     }
     return arr->values[index];
+}
+
+void value_array_set(struct value_array* arr, struct hg_value val,
+                     size_t index) {
+    if (index >= arr->len) {
+        error_("index %ld out of range", index);
+    }
+    arr->values[index] = val;
 }
 
 //< hg_value_array

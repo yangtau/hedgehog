@@ -33,6 +33,7 @@ enum vm_exe_result vm_run(struct vm* vm) {
         (uint16_t) vm->ip[-2] << 8 | vm->ip[-1]; \
     })
 #define read_static_() value_array_get(&vm->chk->statics, read_word_())
+#define read_const_()  value_array_get(&vm->chk->consts, read_word_())
 #define binary_arith_op_(op)                                             \
     do {                                                                 \
         struct hg_value b = pop(vm);                                     \
@@ -73,8 +74,13 @@ enum vm_exe_result vm_run(struct vm* vm) {
         switch (ins = read_byte_()) {
         case OP_NOP:
             break;
+        case OP_GET_CONST:
+            push(vm, read_const_());
+            break;
         case OP_GET_STATIC:
             push(vm, read_static_());
+            break;
+        case OP_SET_STATIC:
             break;
         case OP_NIL:
             push(vm, VAL_NIL());
@@ -141,8 +147,6 @@ enum vm_exe_result vm_run(struct vm* vm) {
         } break;
         case OP_POP:
             pop(vm);
-            break;
-        case OP_PUSH:
             break;
         case OP_GET_LOCAL:
             break;
