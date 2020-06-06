@@ -44,14 +44,18 @@ struct chunk {
 void chunk_init(struct chunk* chk);
 void chunk_free(struct chunk* chk);
 
-void chunk_write(struct chunk* chk, uint8_t byte);
-static inline void chunk_write_word(struct chunk* chk, uint16_t word) {
-    chunk_write(chk, (word >> 8) & 0xff);
-    chunk_write(chk, word & 0xff);
-}
+int chunk_write(struct chunk* chk, uint8_t byte);
+static _force_inline_ int chunk_write_word(struct chunk* chk, uint16_t word);
+void chunk_patch_word(struct chunk* chk, uint16_t word, int pos);
 uint16_t chunk_add_static(struct chunk* chk, struct hg_value value);
 uint16_t chunk_add_const(struct chunk* chk, struct hg_value value);
 int chunk_dump(struct chunk* chk, FILE* fp);
 struct chunk* chunk_load(FILE* fp);
 void chunk_disassemble(struct chunk* chk);
+
+static _force_inline_ int chunk_write_word(struct chunk* chk, uint16_t word) {
+    int r = chunk_write(chk, (word >> 8) & 0xff);
+    chunk_write(chk, word & 0xff);
+    return r;
+}
 #endif // _HG_CHUNK_H_
