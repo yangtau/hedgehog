@@ -143,6 +143,10 @@ void ast_node_array_add(struct parser_state* p, struct ast_node* arr,
     node_arr->arr[node_arr->len++] = item;
 }
 
+// TODO: Create a constant value if all items in a collection are constant values
+//       - [ ] List
+//       - [ ] Tuple
+//       - [ ] Map
 struct ast_node* ast_node_list_new(struct parser_state* p,
                                    struct ast_node* args) {
     assert(args == NULL || args->type == AST_NODE_ARGS);
