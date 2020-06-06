@@ -20,11 +20,8 @@ enum opcode {
     OP_MODULO,
     OP_NOT,
     OP_NEGATE,
-    OP_POP,            // pop a byte
-    OP_PUSH,           // push a byte from chunk into stack
-    OP_CHECK_ARGS_NUM, /* compare the number of vars and args
-                          number of vars: the byte after OP_CHECK_ARGS_NUM,
-                          number of args: the byte on the top of the stack */
+    OP_POP, // pop a byte
+    OP_GET_CONST,
     OP_SET_STATIC,
     OP_GET_STATIC,
     OP_GET_LOCAL,
@@ -39,7 +36,8 @@ enum opcode {
 struct chunk {
     size_t len;
     size_t capacity;
-    struct value_array statics;
+    struct value_array statics; // global variables area
+    struct value_array consts;  // constants area
     uint8_t* code;
 };
 
@@ -52,6 +50,7 @@ static inline void chunk_write_word(struct chunk* chk, uint16_t word) {
     chunk_write(chk, word & 0xff);
 }
 uint16_t chunk_add_static(struct chunk* chk, struct hg_value value);
+uint16_t chunk_add_const(struct chunk* chk, struct hg_value value);
 int chunk_dump(struct chunk* chk, FILE* fp);
 struct chunk* chunk_load(FILE* fp);
 void chunk_disassemble(struct chunk* chk);

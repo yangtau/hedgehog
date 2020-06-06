@@ -7,10 +7,12 @@ void chunk_init(struct chunk* chk) {
     chk->len      = 0;
 
     value_array_init(&chk->statics);
+    value_array_init(&chk->consts);
 }
 
 void chunk_free(struct chunk* chk) {
     value_array_free(&chk->statics);
+    value_array_free(&chk->consts);
     array_free_(chk->code, uint8_t, chk->capacity);
 
     chk->capacity = 0;
@@ -34,10 +36,18 @@ void chunk_write(struct chunk* chk, uint8_t byte) {
 
 uint16_t chunk_add_static(struct chunk* chk, struct hg_value value) {
     if (chk->statics.len >= UINT16_MAX) {
-        error_("The maximum number of constants of a chunk is %u",
+        error_("The maximum number of statics of a chunk is %u",
                UINT16_MAX + 1u);
     }
     return value_array_push(&chk->statics, value);
+}
+
+uint16_t chunk_add_const(struct chunk* chk, struct hg_value value) {
+    if (chk->consts.len >= UINT16_MAX) {
+        error_("The maximum number of constants of a chunk is %u",
+               UINT16_MAX + 1u);
+    }
+    return value_array_push(&chk->consts, value);
 }
 
 int chunk_dump(struct chunk* chk, FILE* fp) {
@@ -48,84 +58,83 @@ struct chunk* chunk_load(FILE* fp) {
 }
 
 void chunk_disassemble(struct chunk* chk) {
-#define print_(s) printf("0x%04lx %s\n", i, (s))
+#define print_(s) printf("0x%04lx %s", i, (s))
 #define read_word_()
     for (size_t i = 0; i < chk->len; i++) {
         switch (chk->code[i]) {
         case OP_NOP:
-            print_("nop");
+            print_("nop\n");
             break;
-        case OP_GET_STATIC: {
-            print_("get static");
+        case OP_GET_CONST: {
+            print_("get ");
             uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
             i += 2;
-            printf("%7s[%hu]=", "", t);
-            hg_value_write(chk->statics.values[t], stdout);
+            printf("consts[%hu]=", t);
+            hg_value_write(chk->consts.values[t], stdout);
+            printf("\n");
+
+        } break;
+        case OP_GET_STATIC: {
+            print_("get ");
+            uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
+            i += 2;
+            printf("statics[%hu]", t);
             printf("\n");
         } break;
         case OP_SET_STATIC: {
-            print_("set static");
+            print_("set ");
             uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
             i += 2;
-            printf("%7s[%hu]\n", "", t);
+            printf("statics[%hu]\n", t);
         } break;
         case OP_NIL:
-            print_("nil");
+            print_("nil\n");
             break;
         case OP_TRUE:
-            print_("true");
+            print_("true\n");
             break;
         case OP_FALSE:
-            print_("false");
+            print_("false\n");
             break;
         case OP_EQUAL:
-            print_("equal");
+            print_("equal\n");
             break;
         case OP_GREATER:
-            print_("greater");
+            print_("greater\n");
             break;
         case OP_LESS:
-            print_("less");
+            print_("less\n");
             break;
         case OP_GREATER_EQUAL:
-            print_("greater equal");
+            print_("greater_equal\n");
             break;
         case OP_LESS_EQUAL:
-            print_("less equal");
+            print_("less_equal\n");
             break;
         case OP_ADD:
-            print_("add");
+            print_("add\n");
             break;
         case OP_SUBTRACT:
-            print_("sub");
+            print_("sub\n");
             break;
         case OP_MULTIPLY:
-            print_("mul");
+            print_("mul\n");
             break;
         case OP_DIVIDE:
-            print_("div");
+            print_("div\n");
             break;
         case OP_MODULO:
-            print_("mod");
+            print_("mod\n");
             break;
         case OP_NOT:
-            print_("not");
+            print_("not\n");
             break;
         case OP_NEGATE:
-            print_("negate");
+            print_("negate\n");
             break;
         case OP_POP:
-            print_("pop");
+            print_("pop\n");
             break;
-        case OP_PUSH: {
-            print_("push");
-            printf("%7s%hhu\n", "", chk->code[++i]);
-        } break;
-        case OP_CHECK_ARGS_NUM: {
-            print_("check args num");
-            printf("%7s%hhu\n", "", chk->code[++i]);
-
-        } break;
         case OP_GET_LOCAL:
             break;
         case OP_SET_LOCAL:
@@ -139,7 +148,7 @@ void chunk_disassemble(struct chunk* chk) {
         case OP_CALL:
             break;
         default:
-            unimplemented_("type :%x", chk->code[i]);
+            unimplemented_("type: %x", chk->code[i]);
         }
     }
 #undef print_

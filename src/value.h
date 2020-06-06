@@ -101,5 +101,8 @@ void value_array_free(struct value_array* arr);
 size_t value_array_push(struct value_array* arr, struct hg_value val);
 struct hg_value value_array_pop(struct value_array* arr);
 struct hg_value value_array_get(struct value_array* arr, size_t index);
+// change a value alreay in the array, index < arr->len
+void value_array_set(struct value_array* arr, struct hg_value val,
+                     size_t index);
 //< value_array
 #endif // _HG_VALUE_H_
