@@ -29,9 +29,17 @@ static inline void chunk_resize(struct chunk* chk) {
     }
 }
 
-void chunk_write(struct chunk* chk, uint8_t byte) {
+// return ip of the `byte`
+int chunk_write(struct chunk* chk, uint8_t byte) {
     chunk_resize(chk);
     chk->code[chk->len++] = byte;
+    return chk->len - 1;
+}
+
+void chunk_patch_word(struct chunk* chk, uint16_t word, int pos) {
+    assert(pos + 1u < chk->len);
+    chk->code[pos]     = (uint8_t)((word >> 8) & 0xff);
+    chk->code[pos + 1] = (uint8_t)(word & 0xff);
 }
 
 uint16_t chunk_add_static(struct chunk* chk, struct hg_value value) {
@@ -59,7 +67,6 @@ struct chunk* chunk_load(FILE* fp) {
 
 void chunk_disassemble(struct chunk* chk) {
 #define print_(s) printf("0x%04lx %s", i, (s))
-#define read_word_()
     for (size_t i = 0; i < chk->len; i++) {
         switch (chk->code[i]) {
         case OP_NOP:
@@ -139,16 +146,24 @@ void chunk_disassemble(struct chunk* chk) {
             break;
         case OP_SET_LOCAL:
             break;
-        case OP_JUMP:
-            break;
-        case OP_JUMP_IF_FALSE:
-            break;
+        case OP_JUMP: {
+            print_("jump ");
+            uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
+            printf("0x%04lx\n", t + i + 1);
+            i += 2;
+        } break;
+        case OP_JUMP_IF_FALSE: {
+            print_("jiff ");
+            uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
+            printf("0x%04lx\n", t + i + 1);
+            i += 2;
+        } break;
         case OP_JUMP_BACK:
             break;
         case OP_CALL:
             break;
         default:
-            unimplemented_("type: %x", chk->code[i]);
+            unimplemented_("type: 0x%x", chk->code[i]);
         }
     }
 #undef print_

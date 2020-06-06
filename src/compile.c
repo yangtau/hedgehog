@@ -90,13 +90,11 @@ static int compile_ast_node_variable(struct compiler_context* ctx,
             hg_value_write(id, stderr);
             fprintf(stderr, "`\n");
             return -1;
-        } else {
-            loc = (uint16_t)VAL_AS_INT(val);
         }
+        loc = (uint16_t)VAL_AS_INT(val);
 
         chunk_write(chk, OP_GET_STATIC);
         chunk_write_word(chk, loc);
-
     } else {
         // TODO: Compile local variable (get)
         unimplemented_("local");
@@ -197,6 +195,62 @@ static int compile_ast_node_assign(struct compiler_context* ctx, void* _assign,
     return 0;
 }
 
+/*
+ * IF-ELSE-IF-ELSE:
+ *     if-cont
+ * +---jump-if-false
+ * |   if-block
+ * |   jump  ----------+
+ * +-->else-if-cont    |
+ * +---jump-if-false   |
+ * |   else-if-block   |
+ * |   jump  ----------+
+ * +-->else-block      |
+ *           <---------+
+ */
+static int compile_ast_node_if(struct compiler_context* ctx, void* _if,
+                               struct chunk* chk) {
+    struct ast_node_if* node_if = _if;
+    int rc                      = 0;
+    int jif_patch_pos           = -1; // jump if false
+    int j_patch_pos             = -1; // jump
+
+    if (node_if->cond != NULL) {
+        rc = compile(ctx, node_if->cond, chk);
+
+        // jump-if-false
+        chunk_write(chk, OP_JUMP_IF_FALSE);
+        jif_patch_pos = chunk_write_word(chk, 0u);
+    }
+
+    // block
+    if (node_if->stats != NULL) {
+        rc = compile(ctx, node_if->stats, chk);
+    }
+
+    // jump: needed only of there is *else-if* or *else*
+    if (node_if->opt_else != NULL) {
+        chunk_write(chk, OP_JUMP);
+        j_patch_pos = chunk_write_word(chk, 0u);
+    }
+
+    // patch jump-if-false
+    if (node_if->cond != NULL) {
+        chunk_patch_word(chk, (uint16_t)(chk->len - jif_patch_pos),
+                         jif_patch_pos);
+    }
+
+    // *else-if* and *else*
+    if (node_if->opt_else != NULL) {
+        rc = compile(ctx, node_if->opt_else, chk);
+
+        // patch jump
+        chunk_patch_word(chk, (uint16_t)(chk->len - j_patch_pos), j_patch_pos);
+    }
+
+    return rc;
+}
+
 // compile_funcs is a static array of const pointer to function
 static int (*const compile_funcs[])(struct compiler_context*, void*,
                                     struct chunk*) = {
@@ -207,7 +261,7 @@ static int (*const compile_funcs[])(struct compiler_context*, void*,
     [AST_NODE_ASSIGN]   = compile_ast_node_assign,
     [AST_NODE_VARS]     = compile_ast_node_vars,
     [AST_NODE_ARGS]     = compile_ast_node_args,
-    [AST_NODE_IF]       = NULL,
+    [AST_NODE_IF]       = compile_ast_node_if,
     [AST_NODE_FOR]      = NULL,
     [AST_NODE_CALL]     = NULL,
     [AST_NODE_FUNC]     = NULL,
