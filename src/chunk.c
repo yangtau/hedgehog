@@ -158,8 +158,12 @@ void chunk_disassemble(struct chunk* chk) {
             printf("0x%04lx\n", t + i + 1);
             i += 2;
         } break;
-        case OP_JUMP_BACK:
-            break;
+        case OP_JUMP_BACK: {
+            print_("jb ");
+            uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
+            printf("0x%04lx\n", i + 1 - t);
+            i += 2;
+        } break;
         case OP_CALL:
             break;
         default:
