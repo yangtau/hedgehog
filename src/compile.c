@@ -326,6 +326,41 @@ static int compile_ast_node_if(struct compiler_context* ctx, void* _if,
     return rc;
 }
 
+/*
+    WHILE:
+      cont         <--+
+  +---jump-if-false   |
+  |   while-block     |
+  |   jump-back    ---+
+  +-->
+ */
+static int compile_ast_node_while(struct compiler_context* ctx, void* _while,
+                                  struct chunk* chk) {
+    int rc            = 0;
+    int jb_pos        = -1;
+    int jif_patch_pos = -1;
+
+    struct ast_node_while* node_while = _while;
+
+    jb_pos = chk->len; // jump-back position
+
+    rc |= compile(ctx, node_while->cond, chk);
+
+    // jump-if-false
+    chunk_write(chk, OP_JUMP_IF_FALSE);
+    jif_patch_pos = chunk_write_word(chk, 0u);
+
+    rc |= compile(ctx, node_while->stats, chk);
+
+    // jump-back
+    chunk_write(chk, OP_JUMP_BACK);
+    chunk_write_word(chk, (uint16_t)(chk->len - jb_pos));
+
+    // patch jump-if-false
+    chunk_patch_word(chk, (uint16_t)(chk->len - jif_patch_pos), jif_patch_pos);
+    return rc;
+}
+
 // compile_funcs is a static array of const pointer to function
 static int (*const compile_funcs[])(struct compiler_context*, void*,
                                     struct chunk*) = {
@@ -337,10 +372,10 @@ static int (*const compile_funcs[])(struct compiler_context*, void*,
     [AST_NODE_VARS]     = compile_ast_node_vars,
     [AST_NODE_ARGS]     = compile_ast_node_args,
     [AST_NODE_IF]       = compile_ast_node_if,
+    [AST_NODE_WHILE]    = compile_ast_node_while,
     [AST_NODE_FOR]      = NULL,
     [AST_NODE_CALL]     = NULL,
     [AST_NODE_FUNC]     = NULL,
-    [AST_NODE_WHILE]    = NULL,
     [AST_NODE_BREAK]    = NULL, // node->node = NULL
     [AST_NODE_CONTINUE] = NULL, // node->node = NULL
     [AST_NODE_RETURN]   = NULL, // node->node = expr
