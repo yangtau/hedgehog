@@ -51,6 +51,8 @@ uint16_t chunk_add_static(struct chunk* chk, struct hg_value value);
 uint16_t chunk_add_const(struct chunk* chk, struct hg_value value);
 int chunk_dump(struct chunk* chk, FILE* fp);
 struct chunk* chunk_load(FILE* fp);
+
+int chunk_disassemble_ins(struct chunk* chk, int i);
 void chunk_disassemble(struct chunk* chk);
 
 static _force_inline_ int chunk_write_word(struct chunk* chk, uint16_t word) {
