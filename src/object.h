@@ -8,7 +8,8 @@ enum hg_object_type {
     HG_OBJ_SYMBOL,
     HG_OBJ_MAP,
     HG_OBJ_LIST,
-    HG_OBJ_TUPLE
+    HG_OBJ_TUPLE,
+    HG_OBJ_FUNCTION,
 };
 
 struct hg_object_funcs;
@@ -26,22 +27,22 @@ struct hg_object_funcs {
     int (*write)(struct hg_object*, FILE*);
     bool (*equal)(struct hg_object*, struct hg_object*);
 };
-#define hg_obj_write_(obj, fp)                              \
+#define hg_obj_write_(obj, fp)                             \
     ({                                                     \
         struct hg_object* _obj = (struct hg_object*)(obj); \
         _obj->funcs->write(_obj, (fp));                    \
     })
-#define hg_obj_hash_(obj)                                   \
+#define hg_obj_hash_(obj)                                  \
     ({                                                     \
         struct hg_object* _obj = (struct hg_object*)(obj); \
         _obj->funcs->hash(_obj);                           \
     })
-#define hg_obj_free_(obj)                                   \
+#define hg_obj_free_(obj)                                  \
     ({                                                     \
         struct hg_object* _obj = (struct hg_object*)(obj); \
         _obj->funcs->free(_obj);                           \
     })
-#define hg_obj_equal_(obj1, obj2)                             \
+#define hg_obj_equal_(obj1, obj2)                            \
     ({                                                       \
         struct hg_object* _obj1 = (struct hg_object*)(obj1); \
         struct hg_object* _obj2 = (struct hg_object*)(obj2); \

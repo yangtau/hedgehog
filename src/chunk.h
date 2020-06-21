@@ -36,6 +36,8 @@ enum opcode {
 struct chunk {
     size_t len;
     size_t capacity;
+    // TODO: isolate static area from chunk
+    //       `statics` should not be in one function, it should be shared globally.
     struct value_array statics; // global variables area
     struct value_array consts;  // constants area
     uint8_t* code;

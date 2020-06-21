@@ -1,4 +1,4 @@
-YACC = yacc
+YACC = bison -y
 LEX  = flex
 CC   = gcc
 CFLAGS = -std=gnu99 -g -Wall -Wextra -rdynamic
