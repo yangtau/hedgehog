@@ -93,6 +93,21 @@ int chunk_disassemble_ins(struct chunk* chk, int i) {
         i += 2;
         printf("statics[%hu]\n", t);
     } break;
+
+    case OP_GET_LOCAL: {
+        print_("get ");
+        uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
+        i += 2;
+        printf("locals[%hu]\n", t);
+    } break;
+
+    case OP_SET_LOCAL: {
+        print_("set ");
+        uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
+        i += 2;
+        printf("locals[%hu]\n", t);
+    } break;
+
     case OP_NIL:
         print_("nil\n");
         break;
@@ -140,10 +155,6 @@ int chunk_disassemble_ins(struct chunk* chk, int i) {
         break;
     case OP_POP:
         print_("pop\n");
-        break;
-    case OP_GET_LOCAL:
-        break;
-    case OP_SET_LOCAL:
         break;
     case OP_JUMP: {
         print_("jump ");

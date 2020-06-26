@@ -38,19 +38,19 @@ int main(int argc, char* argv[]) {
     }
 
     chunk_init(&chk);
-    compiler_context_init(&ctx);
+    compiler_context_init(&ctx, &chk);
 
-    if ((rc = compile(&ctx, p.lval, &chk)) != 0) {
+    if ((rc = compile(&ctx, p.lval)) != 0) {
         fprintf(stderr, "compile error\n");
         goto compile_error;
     }
 
     chunk_disassemble(&chk);
 
-    vm_init(&vm, &chk);
-    vm_run(&vm);
+    // vm_init(&vm, &chk);
+    // vm_run(&vm);
 
-    vm_free(&vm);
+    // vm_free(&vm);
 compile_error:
     chunk_free(&chk);
 parser_error:

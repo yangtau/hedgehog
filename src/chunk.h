@@ -3,6 +3,7 @@
 #include "common.h"
 #include "value.h"
 
+//> opcode
 enum opcode {
     OP_NOP,
     OP_NIL,
@@ -20,7 +21,7 @@ enum opcode {
     OP_MODULO,
     OP_NOT,
     OP_NEGATE,
-    OP_POP, // pop a byte
+    OP_POP,
     OP_GET_CONST,
     OP_SET_STATIC,
     OP_GET_STATIC,
@@ -31,7 +32,9 @@ enum opcode {
     OP_JUMP_BACK,
     OP_CALL,
 };
+//< opcode
 
+//> chunk
 #define CHUNK_INIT_CAPACITY (256u)
 struct chunk {
     size_t len;
@@ -42,6 +45,8 @@ struct chunk {
     struct value_array consts;  // constants area
     uint8_t* code;
 };
+
+typedef struct chunk* shared_chunk_p;
 
 void chunk_init(struct chunk* chk);
 void chunk_free(struct chunk* chk);
@@ -62,4 +67,5 @@ static _force_inline_ int chunk_write_word(struct chunk* chk, uint16_t word) {
     chunk_write(chk, word & 0xff);
     return r;
 }
+//< chunk
 #endif // _HG_CHUNK_H_
