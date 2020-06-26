@@ -1,6 +1,7 @@
 #include "chunk.h"
 #include "memory.h"
 
+//> chunk
 void chunk_init(struct chunk* chk) {
     chk->code     = array_alloc_(uint8_t, CHUNK_INIT_CAPACITY);
     chk->capacity = CHUNK_INIT_CAPACITY;
@@ -8,12 +9,17 @@ void chunk_init(struct chunk* chk) {
 
     value_array_init(&chk->statics);
     value_array_init(&chk->consts);
+
+    chk->funcs.len      = 0;
+    chk->funcs.funcs    = array_alloc_(struct hg_function, 64u);
+    chk->funcs.capacity = 64;
 }
 
 void chunk_free(struct chunk* chk) {
     value_array_free(&chk->statics);
     value_array_free(&chk->consts);
     array_free_(chk->code, uint8_t, chk->capacity);
+    array_free_(chk->funcs.funcs, struct hg_function, chk->funcs.capacity);
 
     chk->capacity = 0;
     chk->len      = 0;
@@ -56,6 +62,24 @@ uint16_t chunk_add_const(struct chunk* chk, struct hg_value value) {
                UINT16_MAX + 1u);
     }
     return value_array_push(&chk->consts, value);
+}
+
+uint16_t chunk_add_func(struct chunk* chk, struct hg_function func) {
+    size_t capacity = array_grow_(chk->funcs.capacity, chk->funcs.len);
+
+    if (chk->funcs.capacity != capacity) {
+        chk->funcs.funcs = array_realloc_(chk->funcs.funcs, struct hg_function,
+                                          chk->funcs.capacity, capacity);
+        chk->funcs.capacity = capacity;
+    }
+
+    if (chk->funcs.len >= UINT16_MAX) {
+        error_("The maximum number of constants of a chunk is %u",
+               UINT16_MAX + 1u);
+    }
+
+    chk->funcs.funcs[chk->funcs.len++] = func;
+    return chk->funcs.len - 1;
 }
 
 int chunk_dump(struct chunk* chk, FILE* fp) {
@@ -200,7 +224,17 @@ int chunk_disassemble_ins(struct chunk* chk, int i) {
         i += 2;
     } break;
 
-    case OP_CALL:
+    case OP_CALL: {
+        uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
+        // uint16_t argc = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
+        print_("call ");
+        hg_value_write(chk->funcs.funcs[t].name, stdout);
+        printf("\n");
+        i += 4;
+    } break;
+
+    case OP_RET:
+        print_("ret\n");
         break;
 
     default:
@@ -211,6 +245,7 @@ int chunk_disassemble_ins(struct chunk* chk, int i) {
 }
 
 void chunk_disassemble(struct chunk* chk) {
-    for (int i = 0; i < chk->len; i++)
+    for (size_t i = 0; i < chk->len; i++)
         i = chunk_disassemble_ins(chk, i);
 }
+//< chunk

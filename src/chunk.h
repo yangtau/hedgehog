@@ -32,18 +32,31 @@ enum opcode {
     OP_JUMP_IF_FALSE,
     OP_JUMP_BACK,
     OP_CALL,
+    OP_RET,
 };
 //< opcode
+
+//> hg_function
+struct hg_function {
+    int argc;      // argument count
+    uint8_t* addr; // function entry address
+    struct hg_value name;
+};
+
+//< hg_function
 
 //> chunk
 #define CHUNK_INIT_CAPACITY (256u)
 struct chunk {
     size_t len;
     size_t capacity;
-    // TODO: isolate static area from chunk
-    //       `statics` should not be in one function, it should be shared globally.
     struct value_array statics; // global variables area
     struct value_array consts;  // constants area
+    struct {
+        size_t len;
+        size_t capacity;
+        struct hg_function* funcs;
+    } funcs;
     uint8_t* code;
 };
 
@@ -57,6 +70,8 @@ static _force_inline_ int chunk_write_word(struct chunk* chk, uint16_t word);
 void chunk_patch_word(struct chunk* chk, uint16_t word, int pos);
 uint16_t chunk_add_static(struct chunk* chk, struct hg_value value);
 uint16_t chunk_add_const(struct chunk* chk, struct hg_value value);
+uint16_t chunk_add_func(struct chunk* chk, struct hg_function func);
+
 int chunk_dump(struct chunk* chk, FILE* fp);
 struct chunk* chunk_load(FILE* fp);
 
