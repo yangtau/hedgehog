@@ -71,6 +71,11 @@ int chunk_disassemble_ins(struct chunk* chk, int i) {
     case OP_NOP:
         print_("nop\n");
         break;
+
+    case OP_QUIT:
+        print_("quit\n");
+        break;
+
     case OP_GET_CONST: {
         print_("get ");
         uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
@@ -80,6 +85,7 @@ int chunk_disassemble_ins(struct chunk* chk, int i) {
         printf("\n");
 
     } break;
+
     case OP_GET_STATIC: {
         print_("get ");
         uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
@@ -87,6 +93,7 @@ int chunk_disassemble_ins(struct chunk* chk, int i) {
         printf("statics[%hu]", t);
         printf("\n");
     } break;
+
     case OP_SET_STATIC: {
         print_("set ");
         uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
@@ -111,71 +118,91 @@ int chunk_disassemble_ins(struct chunk* chk, int i) {
     case OP_NIL:
         print_("nil\n");
         break;
+
     case OP_TRUE:
         print_("true\n");
         break;
+
     case OP_FALSE:
         print_("false\n");
         break;
+
     case OP_EQUAL:
         print_("equal\n");
         break;
+
     case OP_GREATER:
         print_("greater\n");
         break;
+
     case OP_LESS:
         print_("less\n");
         break;
+
     case OP_GREATER_EQUAL:
         print_("greater_equal\n");
         break;
+
     case OP_LESS_EQUAL:
         print_("less_equal\n");
         break;
+
     case OP_ADD:
         print_("add\n");
         break;
+
     case OP_SUBTRACT:
         print_("sub\n");
         break;
+
     case OP_MULTIPLY:
         print_("mul\n");
         break;
+
     case OP_DIVIDE:
         print_("div\n");
         break;
+
     case OP_MODULO:
         print_("mod\n");
         break;
+
     case OP_NOT:
         print_("not\n");
         break;
+
     case OP_NEGATE:
         print_("negate\n");
         break;
+
     case OP_POP:
         print_("pop\n");
         break;
+
     case OP_JUMP: {
         print_("jump ");
         uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
         printf("0x%04x\n", t + i + 1);
         i += 2;
     } break;
+
     case OP_JUMP_IF_FALSE: {
         print_("jiff ");
         uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
         printf("0x%04x\n", t + i + 1);
         i += 2;
     } break;
+
     case OP_JUMP_BACK: {
         print_("jb ");
         uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
         printf("0x%04x\n", i + 1 - t);
         i += 2;
     } break;
+
     case OP_CALL:
         break;
+
     default:
         unimplemented_("type: 0x%x", chk->code[i]);
     }

@@ -47,10 +47,10 @@ int main(int argc, char* argv[]) {
 
     chunk_disassemble(&chk);
 
-    // vm_init(&vm, &chk);
-    // vm_run(&vm);
+    vm_init(&vm, &chk);
+    vm_run(&vm);
 
-    // vm_free(&vm);
+    vm_free(&vm);
 compile_error:
     chunk_free(&chk);
 parser_error:

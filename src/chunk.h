@@ -5,6 +5,7 @@
 
 //> opcode
 enum opcode {
+    OP_QUIT, // normally quit the VM
     OP_NOP,
     OP_NIL,
     OP_TRUE,

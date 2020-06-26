@@ -134,6 +134,8 @@ static int find_variable(struct compiler_context* ctx, struct hg_value id,
 //< helper function
 
 //> compile ast_node
+static inline int compile_ast_node(struct compiler_context* ctx,
+                                   struct ast_node* node);
 /* a OR b
      a
  +---jump-if-false
@@ -148,7 +150,7 @@ static int compile_ast_node_or(struct compiler_context* ctx,
     int jif_patch_pos = -1;
     int j_patch_pos   = -1;
 
-    rc |= compile(ctx, node->left);
+    rc |= compile_ast_node(ctx, node->left);
 
     chunk_write(ctx->chk, OP_JUMP_IF_FALSE);
     jif_patch_pos = chunk_write_word(ctx->chk, 0u);
@@ -162,7 +164,7 @@ static int compile_ast_node_or(struct compiler_context* ctx,
     chunk_patch_word(ctx->chk, (uint16_t)(ctx->chk->len - jif_patch_pos),
                      jif_patch_pos);
 
-    rc |= compile(ctx, node->right);
+    rc |= compile_ast_node(ctx, node->right);
 
     // patch jump
     chunk_patch_word(ctx->chk, (uint16_t)(ctx->chk->len - j_patch_pos),
@@ -185,12 +187,12 @@ static int compile_ast_node_and(struct compiler_context* ctx,
     int j_patch_pos   = -1;
     int jif_patch_pos = -1;
 
-    rc |= compile(ctx, node->left);
+    rc |= compile_ast_node(ctx, node->left);
 
     chunk_write(ctx->chk, OP_JUMP_IF_FALSE);
     jif_patch_pos = chunk_write_word(ctx->chk, 0u);
 
-    rc |= compile(ctx, node->right);
+    rc |= compile_ast_node(ctx, node->right);
 
     chunk_write(ctx->chk, OP_JUMP);
     j_patch_pos = chunk_write_word(ctx->chk, 0u);
@@ -204,17 +206,16 @@ static int compile_ast_node_and(struct compiler_context* ctx,
     // patch jump
     chunk_patch_word(ctx->chk, (uint16_t)(ctx->chk->len - j_patch_pos),
                      j_patch_pos);
-
     return rc;
 }
 
 static int compile_ast_node_op(struct compiler_context* ctx, void* _node) {
 
     int rc = 0;
-#define compile_left_right()             \
-    do {                                 \
-        rc |= compile(ctx, node->left);  \
-        rc |= compile(ctx, node->right); \
+#define compile_left_right()                      \
+    do {                                          \
+        rc |= compile_ast_node(ctx, node->left);  \
+        rc |= compile_ast_node(ctx, node->right); \
     } while (0)
 
     struct ast_node_op* node = _node;
@@ -227,7 +228,7 @@ static int compile_ast_node_op(struct compiler_context* ctx, void* _node) {
         rc = compile_ast_node_or(ctx, node);
         break;
     case AST_NODE_OP_NOT:
-        rc = compile(ctx, node->right);
+        rc = compile_ast_node(ctx, node->right);
         chunk_write(ctx->chk, OP_NOT);
         break;
     case AST_NODE_OP_NEQ:
@@ -256,7 +257,7 @@ static int compile_ast_node_op(struct compiler_context* ctx, void* _node) {
         chunk_write(ctx->chk, OP_LESS);
         break;
     case AST_NODE_OP_NEG:
-        rc = compile(ctx, node->right);
+        rc = compile_ast_node(ctx, node->right);
         chunk_write(ctx->chk, OP_NEGATE);
         break;
     case AST_NODE_OP_ADD:
@@ -324,7 +325,7 @@ static int compile_ast_node_stats(struct compiler_context* ctx, void* _stats) {
 
     int rc = 0;
     for (size_t i = 0; i < stats->len; i++) {
-        rc |= compile(ctx, stats->arr[i]);
+        rc |= compile_ast_node(ctx, stats->arr[i]);
     }
 
     leave_scope(ctx);
@@ -338,7 +339,7 @@ static int compile_ast_node_tuple(struct compiler_context* ctx, void* _tuple) {
         chunk_write(ctx->chk, OP_NIL);
         break;
     case 1: // unpack if there is only one element in the tuple
-        compile(ctx, tuple->arr[0]);
+        compile_ast_node(ctx, tuple->arr[0]);
         break;
     default:
         // TODO: Compile tuple
@@ -353,7 +354,7 @@ static int compile_ast_node_args(struct compiler_context* ctx, void* _args) {
     int rc = 0;
     for (int i = args->len - 1; i >= 0; i--) {
         // push inversely
-        rc |= compile(ctx, args->arr[i]);
+        rc |= compile_ast_node(ctx, args->arr[i]);
     }
     return rc;
 }
@@ -368,23 +369,20 @@ static int compile_ast_node_vars(struct compiler_context* ctx, void* _vars) {
 
         int loc;
         bool islocal;
-        if ((loc = find_variable(ctx, *id, &islocal)) == -1) {
-            // not found
+        if ((loc = find_variable(ctx, *id, &islocal)) != -1) {
+            chunk_write(ctx->chk, islocal ? OP_SET_LOCAL : OP_SET_STATIC);
+            chunk_write_word(ctx->chk, loc);
+        } else if (ctx->scope_depth == 0) {
+            // define global var
+            loc = chunk_add_static(ctx->chk, VAL_UNDEF());
+            hash_map_put(&ctx->global_vars, *id, VAL_INT(loc));
 
-            if (ctx->scope_depth == 0) {
-                // global
-                islocal = false;
-                loc     = chunk_add_static(ctx->chk, VAL_UNDEF());
-                hash_map_put(&ctx->global_vars, *id, VAL_INT(loc));
-            } else {
-                // local
-                islocal = true;
-                loc = add_local(ctx, ((struct hg_string*)VAL_AS_OBJ(*id))->str);
-            }
+            chunk_write(ctx->chk, OP_SET_STATIC);
+            chunk_write_word(ctx->chk, loc);
+        } else {
+            // define local var
+            loc = add_local(ctx, ((struct hg_string*)VAL_AS_OBJ(*id))->str);
         }
-
-        chunk_write(ctx->chk, islocal ? OP_SET_LOCAL : OP_SET_STATIC);
-        chunk_write_word(ctx->chk, loc);
     }
     return rc;
 }
@@ -392,8 +390,8 @@ static int compile_ast_node_vars(struct compiler_context* ctx, void* _vars) {
 static int compile_ast_node_assign(struct compiler_context* ctx,
                                    void* _assign) {
     struct ast_node_assign* node = _assign;
-    compile(ctx, node->args);
-    compile(ctx, node->vars);
+    compile_ast_node(ctx, node->args);
+    compile_ast_node(ctx, node->vars);
     return 0;
 }
 
@@ -416,7 +414,7 @@ static int compile_ast_node_if(struct compiler_context* ctx, void* _if) {
     int j_patch_pos             = -1; // jump
 
     if (node_if->cond != NULL) {
-        rc |= compile(ctx, node_if->cond);
+        rc |= compile_ast_node(ctx, node_if->cond);
 
         // jump-if-false
         chunk_write(ctx->chk, OP_JUMP_IF_FALSE);
@@ -425,7 +423,7 @@ static int compile_ast_node_if(struct compiler_context* ctx, void* _if) {
 
     // block
     if (node_if->stats != NULL) {
-        rc |= compile(ctx, node_if->stats);
+        rc |= compile_ast_node(ctx, node_if->stats);
     }
 
     // jump: needed only of there is *else-if* or *else*
@@ -442,7 +440,7 @@ static int compile_ast_node_if(struct compiler_context* ctx, void* _if) {
 
     // *else-if* and *else*
     if (node_if->opt_else != NULL) {
-        rc |= compile(ctx, node_if->opt_else);
+        rc |= compile_ast_node(ctx, node_if->opt_else);
 
         // patch jump
         chunk_patch_word(ctx->chk, (uint16_t)(ctx->chk->len - j_patch_pos),
@@ -469,13 +467,13 @@ static int compile_ast_node_while(struct compiler_context* ctx, void* _while) {
 
     jb_pos = ctx->chk->len; // jump-back position
 
-    rc |= compile(ctx, node_while->cond);
+    rc |= compile_ast_node(ctx, node_while->cond);
 
     // jump-if-false
     chunk_write(ctx->chk, OP_JUMP_IF_FALSE);
     jif_patch_pos = chunk_write_word(ctx->chk, 0u);
 
-    rc |= compile(ctx, node_while->stats);
+    rc |= compile_ast_node(ctx, node_while->stats);
 
     // jump-back
     chunk_write(ctx->chk, OP_JUMP_BACK);
@@ -506,8 +504,19 @@ static int (*const compile_funcs[])(struct compiler_context*, void*) = {
     [AST_NODE_RETURN]   = NULL, // node->node = expr
     [AST_NODE_LIST]     = NULL,
 };
+
+static inline int compile_ast_node(struct compiler_context* ctx,
+                                   struct ast_node* node) {
+    return compile_funcs[node->type](ctx, node->node);
+}
 //< compile ast_node
 
 int compile(struct compiler_context* ctx, struct ast_node* node) {
-    return compile_funcs[node->type](ctx, node->node);
+    int rc = 0;
+
+    rc = compile_ast_node(ctx, node);
+
+    chunk_write(ctx->chk, OP_QUIT);
+
+    return rc;
 }
