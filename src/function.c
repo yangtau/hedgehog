@@ -3,17 +3,14 @@
 
 static uint32_t hg_function_hash(struct hg_object* _func) {
     assert(_func->type == HG_OBJ_FUNCTION);
-    unimplemented_();
+    unimplemented_("");
 }
 
-static uint32_t hg_function_equal(struct hg_object* _a, struct hg_object* _b) {
+static bool hg_function_equal(struct hg_object* _a, struct hg_object* _b) {
     unimplemented_("functions cannot be compared");
 }
 
 static void hg_function_free(struct hg_object* _func) {
-    assert(_func->type == HG_OBJ_FUNCTION);
-    struct hg_function* func = (struct hg_function*)_func;
-    chunk_free(&func->chk);
 }
 
 static int hg_function_write(struct hg_object* _func, FILE* fp) {
@@ -30,14 +27,12 @@ static struct hg_object_funcs hg_function_funcs = {
     .equal = hg_function_equal,
 };
 
-void hg_function_init(struct hg_function* func, int argc) {
+void hg_function_init(struct hg_function* func, int argc, uint8_t* addr) {
     func->argc = argc;
     func->obj  = (struct hg_object){
         .type  = HG_OBJ_FUNCTION,
         .funcs = &hg_function_funcs,
         .hash  = 0u,
     };
-
-    chunk_init(&func->chk);
+    func->addr = addr;
 }
-

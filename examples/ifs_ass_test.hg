@@ -1,0 +1,18 @@
+if true {
+    a = true
+} else if false {
+    b = true
+} else {
+    a = false
+}
+
+if a {
+    ()
+} else {
+}
+
+if true {
+
+} else if false {
+
+}
