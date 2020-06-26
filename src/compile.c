@@ -84,7 +84,8 @@ static void remove_locals(struct compiler_context* ctx, int scope) {
 //> compiler_context
 void compiler_context_init(struct compiler_context* ctx, shared_chunk_p chk) {
     hash_map_init(&ctx->global_vars);
-    ctx->scope_depth = -1;
+    hash_map_init(&ctx->funcs);
+    ctx->scope_depth = 0;
     ctx->chk         = chk;
     ctx->frame       = NULL;
     ctx->local_list  = NULL;
@@ -96,13 +97,14 @@ void compiler_context_free(struct compiler_context* ctx) {
     leave_frame(ctx); // free global frame
 
     hash_map_free(&ctx->global_vars);
+    hash_map_free(&ctx->funcs);
     ctx->scope_depth = 0;
     ctx->chk         = NULL;
     ctx->frame       = NULL;
     ctx->local_list  = NULL;
 }
 
-static _force_inline_ void entry_scope(struct compiler_context* ctx) {
+static _force_inline_ void enter_scope(struct compiler_context* ctx) {
     ctx->scope_depth++;
 }
 
@@ -321,14 +323,11 @@ static int compile_ast_node_value(struct compiler_context* ctx, void* _value) {
 static int compile_ast_node_stats(struct compiler_context* ctx, void* _stats) {
     struct ast_node_array* stats = _stats;
 
-    entry_scope(ctx);
-
     int rc = 0;
     for (size_t i = 0; i < stats->len; i++) {
         rc |= compile_ast_node(ctx, stats->arr[i]);
     }
 
-    leave_scope(ctx);
     return rc;
 }
 
@@ -381,7 +380,7 @@ static int compile_ast_node_vars(struct compiler_context* ctx, void* _vars) {
             chunk_write_word(ctx->chk, loc);
         } else {
             // define local var
-            loc = add_local(ctx, ((struct hg_string*)VAL_AS_OBJ(*id))->str);
+            add_local(ctx, ((struct hg_string*)VAL_AS_OBJ(*id))->str);
         }
     }
     return rc;
@@ -390,6 +389,18 @@ static int compile_ast_node_vars(struct compiler_context* ctx, void* _vars) {
 static int compile_ast_node_assign(struct compiler_context* ctx,
                                    void* _assign) {
     struct ast_node_assign* node = _assign;
+    // check if args.len == vars.len
+    struct ast_node_array* args = node->args->node;
+    struct ast_node_array* vars = node->vars->node;
+
+    if (args->len != vars->len) {
+        fprintf(stderr,
+                "compiler error: expect %ld on the left of assignment but got "
+                "%ld\n",
+                vars->len, args->len);
+        return -1;
+    }
+
     compile_ast_node(ctx, node->args);
     compile_ast_node(ctx, node->vars);
     return 0;
@@ -423,7 +434,9 @@ static int compile_ast_node_if(struct compiler_context* ctx, void* _if) {
 
     // block
     if (node_if->stats != NULL) {
+        enter_scope(ctx);
         rc |= compile_ast_node(ctx, node_if->stats);
+        leave_scope(ctx);
     }
 
     // jump: needed only of there is *else-if* or *else*
@@ -473,7 +486,9 @@ static int compile_ast_node_while(struct compiler_context* ctx, void* _while) {
     chunk_write(ctx->chk, OP_JUMP_IF_FALSE);
     jif_patch_pos = chunk_write_word(ctx->chk, 0u);
 
+    enter_scope(ctx);
     rc |= compile_ast_node(ctx, node_while->stats);
+    leave_scope(ctx);
 
     // jump-back
     chunk_write(ctx->chk, OP_JUMP_BACK);
@@ -482,6 +497,83 @@ static int compile_ast_node_while(struct compiler_context* ctx, void* _while) {
     // patch jump-if-false
     chunk_patch_word(ctx->chk, (uint16_t)(ctx->chk->len - jif_patch_pos),
                      jif_patch_pos);
+    return rc;
+}
+
+static int compile_ast_node_func(struct compiler_context* ctx, void* _func) {
+    int rc = 0;
+
+    struct ast_node_func* func  = _func;
+    struct ast_node_array* vars = func->vars->node;
+    struct hg_value* id         = func->id->node;
+
+    struct hg_function hg_func = {
+        .name = *id,
+        .argc = vars->len,
+    };
+
+    // TODO: a better way to execute global code
+    chunk_write(ctx->chk, OP_JUMP);
+    int j_patch_pos = chunk_write_word(ctx->chk, 0u);
+
+    hg_func.addr = ctx->chk->code + ctx->chk->len;
+
+    int loc = chunk_add_func(ctx->chk, hg_func);
+    hash_map_put(&ctx->funcs, *id, VAL_INT(loc));
+
+    enter_frame(ctx);
+    enter_scope(ctx);
+    for (int i = vars->len - 1; i >= 0; i--) {
+        struct hg_value* id = vars->arr[i]->node;
+
+        // define local var
+        add_local(ctx, ((struct hg_string*)VAL_AS_OBJ(*id))->str);
+    }
+
+    rc |= compile_ast_node(ctx, func->stats);
+
+    leave_scope(ctx);
+
+    // after poping
+    chunk_write(ctx->chk, OP_RET);
+
+    leave_frame(ctx);
+
+    // patch jump
+    chunk_patch_word(ctx->chk, (uint16_t)(ctx->chk->len - j_patch_pos),
+                     j_patch_pos);
+
+    return rc;
+}
+
+static int compile_ast_node_call(struct compiler_context* ctx, void* _call) {
+    struct ast_node_call* call = _call;
+
+    int rc = 0;
+    rc |= compile_ast_node(ctx, call->args);
+
+    // rc |= compile_ast_node(ctx, call->func);
+    struct hg_value* id         = call->func->node;
+    struct ast_node_array* args = call->args->node;
+
+    if (args->len > UINT16_MAX + 1u) {
+        fprintf(stderr, "compiler error: cannot have more than %u arguments",
+                UINT16_MAX + 1u);
+        return -1;
+    }
+
+    struct hg_value val = hash_map_get(&ctx->funcs, *id);
+    if (VAL_IS_UNDEF(val)) {
+        fprintf(stderr, "compiler error: call an undefined function");
+        return -1;
+    }
+
+    uint16_t loc = (uint16_t)VAL_AS_INT(val);
+
+    chunk_write(ctx->chk, OP_CALL);
+    chunk_write_word(ctx->chk, loc);
+    chunk_write_word(ctx->chk, (uint16_t)args->len);
+
     return rc;
 }
 
@@ -497,8 +589,8 @@ static int (*const compile_funcs[])(struct compiler_context*, void*) = {
     [AST_NODE_IF]       = compile_ast_node_if,
     [AST_NODE_WHILE]    = compile_ast_node_while,
     [AST_NODE_FOR]      = NULL,
-    [AST_NODE_CALL]     = NULL,
-    [AST_NODE_FUNC]     = NULL,
+    [AST_NODE_CALL]     = compile_ast_node_call,
+    [AST_NODE_FUNC]     = compile_ast_node_func,
     [AST_NODE_BREAK]    = NULL, // node->node = NULL
     [AST_NODE_CONTINUE] = NULL, // node->node = NULL
     [AST_NODE_RETURN]   = NULL, // node->node = expr

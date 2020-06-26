@@ -1,6 +1,6 @@
 #include "vm.h"
 #include "common.h"
-#include "function.h"
+#include "object.h"
 
 //> vm
 void vm_init(struct vm* vm, struct chunk* chk) {
@@ -33,7 +33,31 @@ static inline struct hg_value pop(struct vm* vm) {
     return *(--vm->stack_top);
 }
 
-static inline void call(struct vm* vm, struct hg_function* func) {
+static inline void call(struct vm* vm, int func_loc, int argc) {
+
+    struct hg_function* func = &vm->chk->funcs.funcs[func_loc];
+
+    vm->frame_top++;
+
+    if (vm->frame_top >= vm->frames + FRAME_SIZE)
+        error_("call stack overflow");
+
+    if (argc != func->argc)
+        error_("function call: expect %d arguments but got %d", func->argc,
+               argc);
+
+    *vm->frame_top = (struct frame){
+        .rt_addr = vm->ip,
+        .rt      = VAL_UNDEF(),
+        .slot    = vm->stack_top - argc,
+    };
+
+    vm->ip = func->addr;
+}
+
+static inline void ret(struct vm* vm) {
+    vm->ip = vm->frame_top->rt_addr;
+    vm->frame_top--;
 }
 
 static inline void print_stack_info(struct vm* vm) {
@@ -227,8 +251,18 @@ enum vm_exe_result vm_run(struct vm* vm) {
             vm->ip -= read_word_();
             break;
 
-        case OP_CALL:
+        case OP_CALL: {
+            int loc  = consume_word_();
+            int argc = consume_word_();
+            call(vm, loc, argc);
+        } break;
+
+        case OP_RET:
+            ret(vm);
             break;
+
+        default:
+            unreachable_();
         }
         print_stack_info(vm);
         printf("\n");

@@ -14,6 +14,7 @@ struct compiler_context {
     int scope_depth; // depth 0 for global vars
     struct local* local_list;
 
+    struct hash_map funcs; // TODO: remove this after adding closure
     shared_chunk_p chk;
 };
 void compiler_context_init(struct compiler_context* ctx, shared_chunk_p chk);
