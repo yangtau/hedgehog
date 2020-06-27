@@ -10,6 +10,11 @@
 #include <execinfo.h>
 #include <unistd.h>
 
+//> shared pointer
+typedef char* shared_char_p;
+typedef const char* const_shared_char_p;
+//< shared pointer
+
 #define _force_inline_ inline __attribute__((always_inline))
 static _force_inline_ void print_backtrace() {
     void* callstack[128];

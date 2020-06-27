@@ -15,6 +15,7 @@ struct parser_state {
 //> ast_node
 enum ast_node_type {
     AST_NODE_ASSIGN,
+    AST_NODE_LET,
     AST_NODE_OP,
     AST_NODE_IF,
     AST_NODE_FOR,
@@ -123,6 +124,15 @@ struct ast_node_assign {
 struct ast_node* ast_node_assign_new(struct parser_state* p,
                                      struct ast_node* vars,
                                      struct ast_node* args);
+//< ast_node_assign
+
+//> ast_node_assign
+struct ast_node_let {
+    struct ast_node* vars;
+    struct ast_node* args;
+};
+struct ast_node* ast_node_let_new(struct parser_state* p, struct ast_node* vars,
+                                  struct ast_node* args);
 //< ast_node_assign
 
 //> ast_node_while

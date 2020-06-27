@@ -1,43 +1,31 @@
 #include "function.h"
-#include "common.h"
+#include "string.h"
+#include "value.h"
 
-static uint32_t hg_function_hash(struct hg_object* _func) {
-    assert(_func->type == HG_OBJ_FUNCTION);
-    unimplemented_();
+static struct hg_value builtin_puts(int argc, struct hg_value* argv) {
+    for (int i = 0; i < argc; i++) {
+        hg_value_write(argv[i], stdout, false);
+        printf(" ");
+    }
+    printf("\n");
+    return VAL_UNDEF();
 }
 
-static uint32_t hg_function_equal(struct hg_object* _a, struct hg_object* _b) {
-    unimplemented_("functions cannot be compared");
-}
-
-static void hg_function_free(struct hg_object* _func) {
-    assert(_func->type == HG_OBJ_FUNCTION);
-    struct hg_function* func = (struct hg_function*)_func;
-    chunk_free(&func->chk);
-}
-
-static int hg_function_write(struct hg_object* _func, FILE* fp) {
-    assert(_func->type == HG_OBJ_FUNCTION);
-    struct hg_function* func = (struct hg_function*)_func;
-    fprintf(fp, "%s", "function");
-    return 0;
-}
-
-static struct hg_object_funcs hg_function_funcs = {
-    .hash  = hg_function_hash,
-    .free  = hg_function_free,
-    .write = hg_function_write,
-    .equal = hg_function_equal,
+static struct hg_function funcs[] = {
+    [0] =
+        {
+            .is_builtin = true,
+            .argc       = -1,
+            .as.builtin = builtin_puts,
+        },
 };
 
-void hg_function_init(struct hg_function* func, int argc) {
-    func->argc = argc;
-    func->obj  = (struct hg_object){
-        .type  = HG_OBJ_FUNCTION,
-        .funcs = &hg_function_funcs,
-        .hash  = 0u,
-    };
+const struct hg_function* hg_function_get_builtins(int* count) {
+    // TODO: alloc but not free the memory for names of built-in functions
+    struct hg_value puts_name = VAL_OBJ(hg_symbol_copy("puts", 4));
 
-    chunk_init(&func->chk);
+    funcs[0].name = puts_name;
+
+    *count = sizeof(funcs) / (sizeof(struct hg_function));
+    return funcs;
 }
-

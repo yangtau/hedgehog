@@ -2,8 +2,11 @@
 #define _HG_CHUNK_H_
 #include "common.h"
 #include "value.h"
+#include "function.h"
 
+//> opcode
 enum opcode {
+    OP_QUIT, // normally quit the VM
     OP_NOP,
     OP_NIL,
     OP_TRUE,
@@ -20,7 +23,7 @@ enum opcode {
     OP_MODULO,
     OP_NOT,
     OP_NEGATE,
-    OP_POP, // pop a byte
+    OP_POP,
     OP_GET_CONST,
     OP_SET_STATIC,
     OP_GET_STATIC,
@@ -30,18 +33,27 @@ enum opcode {
     OP_JUMP_IF_FALSE,
     OP_JUMP_BACK,
     OP_CALL,
+    OP_RET,
+    OP_RETV,
 };
+//< opcode
 
+//> chunk
 #define CHUNK_INIT_CAPACITY (256u)
 struct chunk {
     size_t len;
     size_t capacity;
-    // TODO: isolate static area from chunk
-    //       `statics` should not be in one function, it should be shared globally.
     struct value_array statics; // global variables area
     struct value_array consts;  // constants area
+    struct {
+        size_t len;
+        size_t capacity;
+        struct hg_function* funcs;
+    } funcs;
     uint8_t* code;
 };
+
+typedef struct chunk* shared_chunk_p;
 
 void chunk_init(struct chunk* chk);
 void chunk_free(struct chunk* chk);
@@ -51,6 +63,8 @@ static _force_inline_ int chunk_write_word(struct chunk* chk, uint16_t word);
 void chunk_patch_word(struct chunk* chk, uint16_t word, int pos);
 uint16_t chunk_add_static(struct chunk* chk, struct hg_value value);
 uint16_t chunk_add_const(struct chunk* chk, struct hg_value value);
+uint16_t chunk_add_func(struct chunk* chk, struct hg_function func);
+
 int chunk_dump(struct chunk* chk, FILE* fp);
 struct chunk* chunk_load(FILE* fp);
 
@@ -62,4 +76,5 @@ static _force_inline_ int chunk_write_word(struct chunk* chk, uint16_t word) {
     chunk_write(chk, word & 0xff);
     return r;
 }
+//< chunk
 #endif // _HG_CHUNK_H_
