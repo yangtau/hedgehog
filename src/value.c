@@ -1,6 +1,7 @@
 #include "value.h"
 #include "common.h"
 #include "memory.h"
+#include <string.h>
 
 //> hg_value
 void hg_value_write(struct hg_value a, FILE* fp, bool debug_mode) {
@@ -67,6 +68,14 @@ void value_array_init(struct value_array* arr) {
     arr->len      = 0;
     arr->capacity = VALUE_ARRAY_INIT_CAPACITY;
     arr->values   = array_alloc_(struct hg_value, VALUE_ARRAY_INIT_CAPACITY);
+}
+
+void value_array_init_with_values(struct value_array* arr, int len,
+                                  const struct hg_value* values) {
+    arr->len      = len;
+    arr->capacity = len; // TODO: make capacity be the power of 2
+    arr->values   = array_alloc_(struct hg_value, len);
+    memcpy(arr->values, values, len * sizeof(struct hg_value));
 }
 
 void value_array_free(struct value_array* arr) {

@@ -55,6 +55,20 @@ struct ast_node* ast_node_op_new(struct parser_state* p,
 }
 //< ast_node_op
 
+//> ast_node_index
+struct ast_node* ast_node_index_new(struct parser_state* p, struct ast_node* xs,
+                                    struct ast_node* idx) {
+    struct ast_node* node        = ast_node_new(AST_NODE_INDEX);
+    struct ast_node_index* index = hg_alloc_(struct ast_node_index);
+
+    index->xs  = xs;
+    index->idx = idx;
+
+    node->node = index;
+    return node;
+}
+//< ast_node_index
+
 //> ast_node_if
 struct ast_node* ast_node_if_new(struct parser_state* p, struct ast_node* cond,
                                  struct ast_node* stats,
@@ -343,6 +357,13 @@ void ast_node_free(struct ast_node* node) {
     if (node == NULL)
         return;
     switch (node->type) {
+    case AST_NODE_INDEX: {
+        struct ast_node_index* idx = node->node;
+        ast_node_free(idx->idx);
+        ast_node_free(idx->xs);
+        hg_free_(struct ast_node_index, idx);
+    } break;
+
     case AST_NODE_ASSIGN: {
         struct ast_node_assign* node_assign = node->node;
         ast_node_free(node_assign->args);
@@ -623,8 +644,18 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
     } break;
 
     case AST_NODE_VALUE:
+        fprintf(fp, "%s", buf);
         hg_value_write(*(struct hg_value*)node->node, fp, true);
         break;
+
+    case AST_NODE_INDEX: {
+        struct ast_node_index* idx = node->node;
+        fprintf(fp, "%s", buf);
+        ast_node_dump(idx->xs, 0, fp);
+        fprintf(fp, "[");
+        ast_node_dump(idx->idx, 0, fp);
+        fprintf(fp, "]");
+    } break;
 
     default:
         unimplemented_("type: %x", node->type);

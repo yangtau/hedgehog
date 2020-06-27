@@ -22,6 +22,7 @@ enum ast_node_type {
     AST_NODE_CALL,
     AST_NODE_FUNC,
     AST_NODE_WHILE,
+    AST_NODE_INDEX,
     // only node:
     AST_NODE_BREAK,    // node->node = NULL
     AST_NODE_CONTINUE, // node->node = NULL
@@ -73,6 +74,15 @@ struct ast_node* ast_node_op_new(struct parser_state* p,
                                  enum ast_node_op_type type,
                                  struct ast_node* left, struct ast_node* right);
 //< ast_node_op
+
+//>
+struct ast_node_index {
+    struct ast_node* xs;
+    struct ast_node* idx;
+};
+struct ast_node* ast_node_index_new(struct parser_state* p, struct ast_node* xs,
+                                    struct ast_node* idx);
+//<
 
 //> ast_node_if
 struct ast_node_if {

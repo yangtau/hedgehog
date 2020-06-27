@@ -11,11 +11,13 @@ static void hg_string_free(struct hg_object*);
 static bool hg_string_equal(struct hg_object*, struct hg_object*);
 static uint32_t hg_string_hash(struct hg_object*);
 static int hg_string_write(struct hg_object*, FILE*);
+static struct hg_object* hg_string_add(struct hg_object*, struct hg_object*);
 static struct hg_object_funcs hg_string_funcs = {
     .free  = hg_string_free,
     .equal = hg_string_equal,
     .hash  = hg_string_hash,
     .write = hg_string_write,
+    .add   = hg_string_add,
 };
 
 struct hg_string* hg_string_copy(const char* s, size_t len) {
@@ -72,6 +74,30 @@ static uint32_t hg_string_hash(struct hg_object* _string) {
         hash += 1u;
 
     return hash;
+}
+
+static struct hg_object* hg_string_add(struct hg_object* _a,
+                                       struct hg_object* _b) {
+    struct hg_string* a = (struct hg_string*)_a;
+    struct hg_string* b = (struct hg_string*)_b;
+
+    struct hg_string* str =
+        flexible_alloc_(struct hg_string, char, a->len + b->len + 1);
+
+    str->obj = (struct hg_object){
+        .funcs = &hg_string_funcs,
+        .type  = HG_OBJ_STRING,
+        .hash  = 0u,
+    };
+
+    strncpy(str->str, a->str, a->len);
+    strncpy(str->str + a->len, b->str, b->len);
+
+    str->len = a->len + b->len;
+
+    str->str[str->len] = '\0';
+
+    return (struct hg_object*)str;
 }
 //< hg_string
 

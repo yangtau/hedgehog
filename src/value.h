@@ -97,6 +97,8 @@ struct value_array {
 };
 
 void value_array_init(struct value_array* arr);
+void value_array_init_with_values(struct value_array* arr, int len,
+                                  const struct hg_value* values);
 void value_array_free(struct value_array* arr);
 size_t value_array_push(struct value_array* arr, struct hg_value val);
 struct hg_value value_array_pop(struct value_array* arr);

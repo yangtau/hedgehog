@@ -26,6 +26,7 @@ struct hg_object_funcs {
     uint32_t (*hash)(struct hg_object*);
     int (*write)(struct hg_object*, FILE*);
     bool (*equal)(struct hg_object*, struct hg_object*);
+    struct hg_object* (*add)(struct hg_object*, struct hg_object*);
 };
 #define hg_obj_write_(obj, fp)                             \
     ({                                                     \
@@ -48,5 +49,12 @@ struct hg_object_funcs {
         struct hg_object* _obj2 = (struct hg_object*)(obj2); \
         _obj1->funcs->equal(_obj1, _obj2);                   \
     })
+#define hg_obj_add_(obj1, obj2)                            \
+    ({                                                       \
+        struct hg_object* _obj1 = (struct hg_object*)(obj1); \
+        struct hg_object* _obj2 = (struct hg_object*)(obj2); \
+        _obj1->funcs->add(_obj1, _obj2);                   \
+    })
+
 //< hg_object
 #endif // _HG_OBJECT_H_

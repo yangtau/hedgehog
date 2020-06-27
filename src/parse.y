@@ -39,7 +39,7 @@ static void yyerror(struct parser_state* p, const char* s);
 %token <node> lit_float lit_int lit_bool lit_string lit_id
 %type <node>  primary expr func_call args vars stat if_stat opt_elsif_stat
               for_stat func_def stats block program comp_stat while_stat
-              list tuple func
+              list tuple func index_expr
 
 %%
 
@@ -172,12 +172,22 @@ func_def:
     };
 
 vars:
+    index_expr {
+        $$ = ast_node_array_new(p, AST_NODE_VARS);
+        ast_node_array_add(p, $$, $1);
+    }
+    |
     lit_id {
         $$ = ast_node_array_new(p, AST_NODE_VARS);
         ast_node_array_add(p, $$, $1);
     }
     |
     vars sep_comma lit_id {
+        ast_node_array_add(p, $$, $3);
+        $$ = $1;
+    }
+    |
+    vars sep_comma index_expr {
         ast_node_array_add(p, $$, $3);
         $$ = $1;
     };
@@ -288,6 +298,11 @@ func:
     |
     func_call;
 
+index_expr:
+    primary sep_ls primary sep_rs {
+        $$ = ast_node_index_new(p, $1, $3);
+    };
+
 primary:
     lit_string
     |
@@ -303,7 +318,9 @@ primary:
     |
     list
     |
-    tuple;
+    tuple
+    |
+    index_expr;
 
 %%
 
