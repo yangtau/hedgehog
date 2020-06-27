@@ -45,6 +45,7 @@ static int lex_return(struct parser_state* p, int c) {
         case kw_def: printf("def "); break;
         case kw_in: printf("in "); break;
         case kw_while: printf("while "); break;
+        case kw_let: printf("let "); break;
         case lit_int: printf("%s:int ", yytext);break;
         case lit_string: printf("%s:str ", yytext);break;
         case lit_float: printf("%s:float ", yytext);break;
@@ -103,6 +104,7 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "for"{TRAIL}                    LEX_RETURN(kw_for);
 "def"{TRAIL}                    LEX_RETURN(kw_def);
 "while"{TRAIL}                  LEX_RETURN(kw_while);
+"let"{TRAIL}                    LEX_RETURN(kw_let);
 
 "true" {
     lval->node = ast_node_bool_new(p, true);

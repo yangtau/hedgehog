@@ -196,6 +196,31 @@ struct ast_node* ast_node_assign_new(struct parser_state* p,
 }
 //< ast_node_assign
 
+//> ast_node_let
+struct ast_node* ast_node_let_new(struct parser_state* p, struct ast_node* vars,
+                                  struct ast_node* args) {
+    assert(vars->type == AST_NODE_VARS);
+    assert(args->type == AST_NODE_ARGS);
+
+    struct ast_node_array* _vars = vars->node;
+    struct ast_node_array* _args = args->node;
+
+    if (_vars->len != _args->len) {
+        parse_error_(p, "assignment: expect %lu argument but given %lu",
+                     _vars->len, _args->len);
+    }
+
+    struct ast_node* node               = ast_node_new(AST_NODE_LET);
+    struct ast_node_assign* node_assign = hg_alloc_(struct ast_node_assign);
+
+    node_assign->vars = vars;
+    node_assign->args = args;
+
+    node->node = node_assign;
+    return node;
+}
+//< ast_node_let
+
 //> ast_node_return
 struct ast_node* ast_node_return_new(struct parser_state* p,
                                      struct ast_node* expr) {
@@ -324,6 +349,14 @@ void ast_node_free(struct ast_node* node) {
         ast_node_free(node_assign->vars);
         hg_free_(struct ast_node_assign, node_assign);
     } break;
+
+    case AST_NODE_LET: {
+        struct ast_node_let* node_let = node->node;
+        ast_node_free(node_let->args);
+        ast_node_free(node_let->vars);
+        hg_free_(struct ast_node_assign, node_let);
+    } break;
+
     case AST_NODE_OP: {
         struct ast_node_op* node_op = node->node;
         ast_node_free(node_op->left);
@@ -454,6 +487,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
         ast_node_dump(whl->stats, indent + 1, fp);
         fprintf(fp, "%s}", buf);
     } break;
+
     case AST_NODE_ASSIGN: {
         struct ast_node_assign* asg = node->node;
         fprintf(fp, "%s", buf);
@@ -461,6 +495,15 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
         fprintf(fp, " = ");
         ast_node_dump(asg->args, 0, fp);
     } break;
+
+    case AST_NODE_LET: {
+        struct ast_node_assign* asg = node->node;
+        fprintf(fp, "%slet ", buf);
+        ast_node_dump(asg->vars, 0, fp);
+        fprintf(fp, " = ");
+        ast_node_dump(asg->args, 0, fp);
+    } break;
+
     case AST_NODE_IF: {
         struct ast_node_if* nif = node->node;
         fprintf(fp, "%sif ", buf);
@@ -579,10 +622,10 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
         ast_node_dump(node->node, 0, fp);
     } break;
 
-    case AST_NODE_VALUE: {
-        fprintf(fp, "%s", buf);
-        hg_value_write(*(struct hg_value*)node->node, fp);
-    } break;
+    case AST_NODE_VALUE:
+        hg_value_write(*(struct hg_value*)node->node, fp, true);
+        break;
+
     default:
         unimplemented_("type: %x", node->type);
     }

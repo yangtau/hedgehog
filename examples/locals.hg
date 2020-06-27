@@ -1,0 +1,11 @@
+if (true) {
+    a = 10
+    b = a + 100
+    if (false) {
+        c = b + 1000
+        a = -c
+    }
+    d = "world"
+} else {
+    a = "hello"
+}

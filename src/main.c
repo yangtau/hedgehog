@@ -38,14 +38,14 @@ int main(int argc, char* argv[]) {
     }
 
     chunk_init(&chk);
-    compiler_context_init(&ctx);
+    compiler_context_init(&ctx, &chk);
 
-    if ((rc = compile(&ctx, p.lval, &chk)) != 0) {
+    if ((rc = compile(&ctx, p.lval)) != 0) {
         fprintf(stderr, "compile error\n");
         goto compile_error;
     }
 
-    chunk_disassemble(&chk);
+    // chunk_disassemble(&chk);
 
     vm_init(&vm, &chk);
     vm_run(&vm);
@@ -56,6 +56,6 @@ compile_error:
 parser_error:
     ast_node_free(p.lval);
     compiler_context_free(&ctx);
-    assert(hg_memory_usage() == 0u);
+    // assert(hg_memory_usage() == 0u);
     return 0;
 }

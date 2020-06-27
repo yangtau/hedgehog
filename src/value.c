@@ -3,7 +3,7 @@
 #include "memory.h"
 
 //> hg_value
-void hg_value_write(struct hg_value a, FILE* fp) {
+void hg_value_write(struct hg_value a, FILE* fp, bool debug_mode) {
     switch (a.type) {
     case HG_VALUE_INT:
         fprintf(fp, "%ld", VAL_AS_INT(a));
@@ -17,9 +17,19 @@ void hg_value_write(struct hg_value a, FILE* fp) {
     case HG_VALUE_NIL:
         fprintf(fp, "()");
         break;
-    case HG_VALUE_OBJECT:
-        hg_obj_write_(VAL_AS_OBJ(a), fp);
+    case HG_VALUE_UNDEF:
+        fprintf(fp, "undef");
         break;
+    case HG_VALUE_OBJECT: {
+        struct hg_object* obj = VAL_AS_OBJ(a);
+        bool flag             = debug_mode && obj->type == HG_OBJ_STRING;
+
+        if (flag)
+            printf("\"");
+        hg_obj_write_(obj, fp);
+        if (flag)
+            printf("\"");
+    } break;
     default:
         unimplemented_("type: %x", a.type);
     }

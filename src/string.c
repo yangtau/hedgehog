@@ -41,7 +41,7 @@ static void hg_string_free(struct hg_object* _string) {
 
 static int hg_string_write(struct hg_object* _string, FILE* fp) {
     struct hg_string* string = (struct hg_string*)_string;
-    return fprintf(fp, "\"%.*s\"", (int)string->len, string->str);
+    return fprintf(fp, "%.*s", (int)string->len, string->str);
 }
 
 static bool hg_string_equal(struct hg_object* _a, struct hg_object* _b) {

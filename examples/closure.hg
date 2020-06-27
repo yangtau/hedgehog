@@ -1,0 +1,17 @@
+set = ()
+get = ()
+
+def func() {
+    a = "hello"
+    def fn1() {
+       a = "fn1 changes `a`" 
+    }
+    def fn2() {
+        puts(a)
+    }
+    set = fn1
+    get = fn2
+}
+
+set()
+get()

@@ -22,7 +22,7 @@ int hash_set_write(struct hash_set* set, FILE* fp) {
                 fprintf(fp, ", ");
             }
             flag = true;
-            hg_value_write(*item, fp);
+            hg_value_write(*item, fp, true);
         }
     }
     fprintf(fp, "}");
@@ -144,9 +144,9 @@ int hash_map_write(struct hash_map* map, FILE* fp) {
             }
             flag = true;
 
-            hg_value_write(entry->key, fp);
+            hg_value_write(entry->key, fp, true);
             fprintf(fp, ": ");
-            hg_value_write(entry->value, fp);
+            hg_value_write(entry->value, fp, true);
         }
     }
     fprintf(fp, "}");
