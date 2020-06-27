@@ -1,8 +1,8 @@
-set = ()
-get = ()
+let set = ()
+let get = ()
 
 def func() {
-    a = "hello"
+    let a = "hello"
     def fn1() {
        a = "fn1 changes `a`" 
     }

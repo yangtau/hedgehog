@@ -1,4 +1,4 @@
-a = 10
+let a = 10
 if a > 10 {
     puts("a is greater than 10")
 } else if a == 10 { 
