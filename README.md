@@ -7,7 +7,7 @@ I am rewriting it...
 
 ## TODO:
 
-- [ ] AST to IR
-- [ ] VM
+- [x] AST to IR
+- [x] VM
 - [ ] GC
 - [ ] Optimizing
