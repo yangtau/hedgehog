@@ -3,10 +3,11 @@
 #include "value.h"
 
 static struct hg_value builtin_puts(int argc, struct hg_value* argv) {
-    while (argc--) {
-        hg_value_write(argv[argc], stdout);
-        printf("\n");
+    for (int i = 0; i < argc; i++) {
+        hg_value_write(argv[i], stdout, false);
+        printf(" ");
     }
+    printf("\n");
     return VAL_UNDEF();
 }
 

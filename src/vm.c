@@ -4,7 +4,7 @@
 #include "value.h"
 #include "function.h"
 
-#define HG_VM_DEBUG
+// #define HG_VM_DEBUG
 
 //> vm
 void vm_init(struct vm* vm, struct chunk* chk) {
@@ -76,7 +76,7 @@ static inline void print_stack_info(struct vm* vm) {
     printf("### stack top    ###>\n");
     for (struct hg_value* p = vm->stack_top - 1; p >= vm->stack; p--) {
         printf("0x%lx ", p - vm->stack);
-        hg_value_write(*p, stdout);
+        hg_value_write(*p, stdout, true);
         printf("\n");
     }
     printf("### stack bottom ###<\n");
