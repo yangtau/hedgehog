@@ -105,7 +105,7 @@ int chunk_disassemble_ins(struct chunk* chk, int i) {
         uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
         i += 2;
         printf("consts[%hu]=", t);
-        hg_value_write(chk->consts.values[t], stdout);
+        hg_value_write(chk->consts.values[t], stdout, true);
         printf("\n");
 
     } break;
@@ -228,7 +228,7 @@ int chunk_disassemble_ins(struct chunk* chk, int i) {
         uint16_t t = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
         // uint16_t argc = (uint16_t)chk->code[i + 1] << 8 | chk->code[i + 2];
         print_("call ");
-        hg_value_write(chk->funcs.funcs[t].name, stdout);
+        hg_value_write(chk->funcs.funcs[t].name, stdout, true);
         printf("\n");
         i += 4;
     } break;

@@ -34,7 +34,7 @@ static void yyerror(struct parser_state* p, const char* s);
        sep_lb sep_rb // ()
        sep_nl sep_semic sep_comma // \n;,
        kw_if kw_else kw_for kw_break kw_continue kw_return
-       kw_def kw_in kw_while
+       kw_def kw_in kw_while kw_let
 
 %token <node> lit_float lit_int lit_bool lit_string lit_id
 %type <node>  primary expr func_call args vars stat if_stat opt_elsif_stat
@@ -109,6 +109,10 @@ stat:
     if_stat
     |
     expr
+    |
+    kw_let vars op_assign args { /* let a, b = 1, 2 */
+        $$ = ast_node_let_new(p, $2, $4);
+    }
     |
     vars op_assign args { /* a, b = 1, 2 */
         $$ = ast_node_assign_new(p, $1, $3);

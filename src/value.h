@@ -75,7 +75,7 @@ struct hg_value {
 #define VAL_OBJ(obj) \
     ((struct hg_value){HG_VALUE_OBJECT, {._obj = (struct hg_object*)(obj)}})
 
-void hg_value_write(struct hg_value a, FILE* fp);
+void hg_value_write(struct hg_value a, FILE* fp, bool debug_mode);
 bool hg_value_equal(struct hg_value a, struct hg_value b);
 uint32_t hg_value_hash(struct hg_value a);
 /* hg_value_free:

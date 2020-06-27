@@ -306,7 +306,7 @@ static int compile_ast_node_value(struct compiler_context* ctx, void* _value) {
         int loc;
         if ((loc = find_variable(ctx, *val, &islocal)) == -1) {
             fprintf(stderr, "compile error: reference before definition `");
-            hg_value_write(*val, stderr);
+            hg_value_write(*val, stderr, true);
             fprintf(stderr, "`\n");
             rc = -1;
         } else {
@@ -352,14 +352,14 @@ static int compile_ast_node_args(struct compiler_context* ctx, void* _args) {
     struct ast_node_array* args = _args;
 
     int rc = 0;
-    for (int i = args->len - 1; i >= 0; i--) {
+    for (size_t i = 0; i < args->len; i++) {
         // push inversely
         rc |= compile_ast_node(ctx, args->arr[i]);
     }
     return rc;
 }
 
-static int compile_ast_node_vars(struct compiler_context* ctx, void* _vars) {
+static int compile_define_vars(struct compiler_context* ctx, void* _vars) {
     struct ast_node_array* vars = _vars;
 
     int rc = 0;
@@ -369,9 +369,13 @@ static int compile_ast_node_vars(struct compiler_context* ctx, void* _vars) {
 
         int loc;
         bool islocal;
+        // TODO: only find variable in the same scope
+        //       need some tests
         if ((loc = find_variable(ctx, *id, &islocal)) != -1) {
-            chunk_write(ctx->chk, islocal ? OP_SET_LOCAL : OP_SET_STATIC);
-            chunk_write_word(ctx->chk, loc);
+            fprintf(stderr, "redefine variable: ");
+            hg_value_write(*id, stderr, true);
+            fprintf(stderr, "\n");
+            return -1;
         } else if (ctx->scope_depth == 0) {
             // define global var
             loc = chunk_add_static(ctx->chk, VAL_UNDEF());
@@ -387,8 +391,52 @@ static int compile_ast_node_vars(struct compiler_context* ctx, void* _vars) {
     return rc;
 }
 
+static int compile_set_vars(struct compiler_context* ctx, void* _vars) {
+    struct ast_node_array* vars = _vars;
+
+    int rc = 0;
+
+    for (int i = vars->len - 1; i >= 0; i--) {
+        struct hg_value* id = vars->arr[i]->node;
+
+        int loc;
+        bool islocal;
+        if ((loc = find_variable(ctx, *id, &islocal)) != -1) {
+            chunk_write(ctx->chk, islocal ? OP_SET_LOCAL : OP_SET_STATIC);
+            chunk_write_word(ctx->chk, loc);
+        } else {
+            fprintf(stderr, "compile error: reference before definition: ");
+            hg_value_write(*id, stderr, true);
+            fprintf(stderr, "\n");
+            rc |= -1;
+        }
+    }
+    return rc;
+}
+
 static int compile_ast_node_assign(struct compiler_context* ctx,
                                    void* _assign) {
+    struct ast_node_assign* node = _assign;
+    // check if args.len == vars.len
+    struct ast_node_array* args = node->args->node;
+    struct ast_node_array* vars = node->vars->node;
+
+    int rc = 0;
+
+    if (args->len != vars->len) {
+        fprintf(stderr,
+                "compiler error: expect %ld on the left of assignment but got "
+                "%ld\n",
+                vars->len, args->len);
+        return -1;
+    }
+
+    rc |= compile_ast_node(ctx, node->args);
+    rc |= compile_set_vars(ctx, node->vars->node);
+    return rc;
+}
+
+static int compile_ast_node_let(struct compiler_context* ctx, void* _assign) {
     struct ast_node_assign* node = _assign;
     // check if args.len == vars.len
     struct ast_node_array* args = node->args->node;
@@ -402,9 +450,11 @@ static int compile_ast_node_assign(struct compiler_context* ctx,
         return -1;
     }
 
-    compile_ast_node(ctx, node->args);
-    compile_ast_node(ctx, node->vars);
-    return 0;
+    int rc = 0;
+    rc |= compile_ast_node(ctx, node->args);
+
+    rc |= compile_define_vars(ctx, node->vars->node);
+    return rc;
 }
 
 /* IF-ELSE-IF-ELSE:
@@ -505,12 +555,12 @@ static int compile_ast_node_func(struct compiler_context* ctx, void* _func) {
     int rc = 0;
 
     struct ast_node_func* func  = _func;
-    struct ast_node_array* vars = func->vars->node;
+    struct ast_node_array* vars = func->vars == NULL ? NULL : func->vars->node;
     struct hg_value* id         = func->id->node;
 
     struct hg_function hg_func = {
         .name       = *id,
-        .argc       = vars->len,
+        .argc       = vars == NULL ? 0 : vars->len,
         .is_builtin = false,
     };
 
@@ -525,14 +575,14 @@ static int compile_ast_node_func(struct compiler_context* ctx, void* _func) {
 
     enter_frame(ctx);
     enter_scope(ctx);
-    for (int i = vars->len - 1; i >= 0; i--) {
-        struct hg_value* id = vars->arr[i]->node;
 
-        // define local var
-        add_local(ctx, ((struct hg_string*)VAL_AS_OBJ(*id))->str);
+    if (vars != NULL) {
+        rc |= compile_define_vars(ctx, vars);
     }
 
-    rc |= compile_ast_node(ctx, func->stats);
+    if (func->stats != NULL) {
+        rc |= compile_ast_node(ctx, func->stats);
+    }
 
     leave_scope(ctx);
 
@@ -551,19 +601,25 @@ static int compile_ast_node_func(struct compiler_context* ctx, void* _func) {
 static int compile_ast_node_call(struct compiler_context* ctx, void* _call) {
     struct ast_node_call* call = _call;
 
-    int rc = 0;
-    rc |= compile_ast_node(ctx, call->args);
+    int rc        = 0;
+    uint16_t argc = 0;
+    if (call->args != NULL) {
+        rc |= compile_ast_node(ctx, call->args);
 
-    // rc |= compile_ast_node(ctx, call->func);
-    struct hg_value* id         = call->func->node;
-    struct ast_node_array* args = call->args->node;
+        struct ast_node_array* args = call->args->node;
 
-    if (args->len > UINT16_MAX + 1u) {
-        fprintf(stderr, "compiler error: cannot have more than %u arguments",
-                UINT16_MAX + 1u);
-        return -1;
+        if (args->len > UINT16_MAX + 1u) {
+            fprintf(stderr,
+                    "compiler error: cannot have more than %u arguments",
+                    UINT16_MAX + 1u);
+            return -1;
+        }
+        argc = (uint16_t)args->len;
     }
 
+    // TODO: function may be something like an item in a list, or a return value
+    // rc |= compile_ast_node(ctx, call->func);
+    struct hg_value* id = call->func->node;
     struct hg_value val = hash_map_get(&ctx->funcs, *id);
     if (VAL_IS_UNDEF(val)) {
         fprintf(stderr, "compiler error: call an undefined function");
@@ -574,7 +630,7 @@ static int compile_ast_node_call(struct compiler_context* ctx, void* _call) {
 
     chunk_write(ctx->chk, OP_CALL);
     chunk_write_word(ctx->chk, loc);
-    chunk_write_word(ctx->chk, (uint16_t)args->len);
+    chunk_write_word(ctx->chk, argc);
 
     return rc;
 }
@@ -601,7 +657,8 @@ static int (*const compile_funcs[])(struct compiler_context*, void*) = {
     [AST_NODE_STATS]    = compile_ast_node_stats,
     [AST_NODE_TUPLE]    = compile_ast_node_tuple,
     [AST_NODE_ASSIGN]   = compile_ast_node_assign,
-    [AST_NODE_VARS]     = compile_ast_node_vars,
+    [AST_NODE_LET]      = compile_ast_node_let,
+    [AST_NODE_VARS]     = NULL,
     [AST_NODE_ARGS]     = compile_ast_node_args,
     [AST_NODE_IF]       = compile_ast_node_if,
     [AST_NODE_WHILE]    = compile_ast_node_while,

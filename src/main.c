@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
         goto compile_error;
     }
 
-    chunk_disassemble(&chk);
+    // chunk_disassemble(&chk);
 
     vm_init(&vm, &chk);
     vm_run(&vm);
