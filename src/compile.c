@@ -577,6 +577,21 @@ static int compile_ast_node_call(struct compiler_context* ctx, void* _call) {
     return rc;
 }
 
+static int compile_ast_node_return(struct compiler_context* ctx, void* _ret) {
+    int rc = 0;
+
+    struct ast_node* ret = _ret;
+
+    if (ret == NULL) {
+        chunk_write(ctx->chk, OP_RET);
+    } else {
+        rc |= compile_ast_node(ctx, ret);
+        chunk_write(ctx->chk, OP_RETV);
+    }
+
+    return rc;
+}
+
 // compile_funcs is a static array of const pointer to function
 static int (*const compile_funcs[])(struct compiler_context*, void*) = {
     [AST_NODE_OP]       = compile_ast_node_op,
@@ -591,9 +606,9 @@ static int (*const compile_funcs[])(struct compiler_context*, void*) = {
     [AST_NODE_FOR]      = NULL,
     [AST_NODE_CALL]     = compile_ast_node_call,
     [AST_NODE_FUNC]     = compile_ast_node_func,
-    [AST_NODE_BREAK]    = NULL, // node->node = NULL
-    [AST_NODE_CONTINUE] = NULL, // node->node = NULL
-    [AST_NODE_RETURN]   = NULL, // node->node = expr
+    [AST_NODE_BREAK]    = NULL,                    // node->node = NULL
+    [AST_NODE_CONTINUE] = NULL,                    // node->node = NULL
+    [AST_NODE_RETURN]   = compile_ast_node_return, // node->node = expr
     [AST_NODE_LIST]     = NULL,
 };
 
