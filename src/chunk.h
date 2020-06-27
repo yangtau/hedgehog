@@ -2,6 +2,7 @@
 #define _HG_CHUNK_H_
 #include "common.h"
 #include "value.h"
+#include "function.h"
 
 //> opcode
 enum opcode {
@@ -36,15 +37,6 @@ enum opcode {
     OP_RETV,
 };
 //< opcode
-
-//> hg_function
-struct hg_function {
-    int argc;      // argument count
-    uint8_t* addr; // function entry address
-    struct hg_value name;
-};
-
-//< hg_function
 
 //> chunk
 #define CHUNK_INIT_CAPACITY (256u)

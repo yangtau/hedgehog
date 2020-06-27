@@ -2,6 +2,7 @@
 #include "memory.h"
 #include "string.h"
 #include "value.h"
+#include "function.h"
 #include <string.h>
 
 //> frame_context
@@ -508,15 +509,16 @@ static int compile_ast_node_func(struct compiler_context* ctx, void* _func) {
     struct hg_value* id         = func->id->node;
 
     struct hg_function hg_func = {
-        .name = *id,
-        .argc = vars->len,
+        .name       = *id,
+        .argc       = vars->len,
+        .is_builtin = false,
     };
 
     // TODO: a better way to execute global code
     chunk_write(ctx->chk, OP_JUMP);
     int j_patch_pos = chunk_write_word(ctx->chk, 0u);
 
-    hg_func.addr = ctx->chk->code + ctx->chk->len;
+    hg_func.as.user_def = ctx->chk->code + ctx->chk->len;
 
     int loc = chunk_add_func(ctx->chk, hg_func);
     hash_map_put(&ctx->funcs, *id, VAL_INT(loc));
@@ -618,8 +620,20 @@ static inline int compile_ast_node(struct compiler_context* ctx,
 }
 //< compile ast_node
 
+static void import_builtin(struct compiler_context* ctx) {
+    int count;
+    const struct hg_function* funcs = hg_function_get_builtins(&count);
+
+    for (int i = 0; i < count; i++) {
+        int loc = chunk_add_func(ctx->chk, funcs[i]);
+        hash_map_put(&ctx->funcs, funcs[i].name, VAL_INT(loc));
+    }
+}
+
 int compile(struct compiler_context* ctx, struct ast_node* node) {
     int rc = 0;
+
+    import_builtin(ctx);
 
     rc = compile_ast_node(ctx, node);
 

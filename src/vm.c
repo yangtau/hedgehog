@@ -2,6 +2,9 @@
 #include "common.h"
 #include "object.h"
 #include "value.h"
+#include "function.h"
+
+#define HG_VM_DEBUG
 
 //> vm
 void vm_init(struct vm* vm, struct chunk* chk) {
@@ -37,21 +40,28 @@ static inline void call(struct vm* vm, int func_loc, int argc) {
 
     struct hg_function* func = &vm->chk->funcs.funcs[func_loc];
 
-    vm->frame_top++;
-
-    if (vm->frame_top >= vm->frames + FRAME_SIZE)
-        error_("call stack overflow");
-
-    if (argc != func->argc)
+    if (func->argc != -1 && argc != func->argc)
         error_("function call: expect %d arguments but got %d", func->argc,
                argc);
 
-    *vm->frame_top = (struct frame){
-        .rt_addr = vm->ip,
-        .slot    = vm->stack_top - argc,
-    };
+    if (func->is_builtin) {
+        struct hg_value val = func->as.builtin(argc, vm->stack_top - argc);
 
-    vm->ip = func->addr;
+        vm->stack_top = vm->stack_top - argc;
+        push(vm, val);
+    } else {
+        vm->frame_top++;
+
+        if (vm->frame_top >= vm->frames + FRAME_SIZE)
+            error_("call stack overflow");
+
+        *vm->frame_top = (struct frame){
+            .rt_addr = vm->ip,
+            .slot    = vm->stack_top - argc,
+        };
+
+        vm->ip = func->as.user_def;
+    }
 }
 
 static inline void ret(struct vm* vm, struct hg_value val) {
@@ -73,7 +83,6 @@ static inline void print_stack_info(struct vm* vm) {
 }
 
 enum vm_exe_result vm_run(struct vm* vm) {
-// TODO: check the range of ip when debug
 #define consume_byte_()                                \
     ({                                                 \
         assert(vm->ip < vm->chk->code + vm->chk->len); \
@@ -128,9 +137,10 @@ enum vm_exe_result vm_run(struct vm* vm) {
     } while (0)
 
     while (vm->ip < vm->chk->code + vm->chk->len) {
+#ifdef HG_VM_DEBUG
         chunk_disassemble_ins(vm->chk, vm->ip - vm->chk->code);
+#endif
         uint8_t ins;
-
         switch (ins = consume_byte_()) {
         case OP_NOP:
             break;
@@ -270,8 +280,10 @@ enum vm_exe_result vm_run(struct vm* vm) {
         default:
             unreachable_();
         }
+#ifdef HG_VM_DEBUG
         print_stack_info(vm);
         printf("\n");
+#endif
     }
     return VM_EXE_IP_OUT_OF_RANGE;
 #undef consume_byte_
