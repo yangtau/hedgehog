@@ -56,6 +56,6 @@ compile_error:
 parser_error:
     ast_node_free(p.lval);
     compiler_context_free(&ctx);
-    assert(hg_memory_usage() == 0u);
+    // assert(hg_memory_usage() == 0u);
     return 0;
 }

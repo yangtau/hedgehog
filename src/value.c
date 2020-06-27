@@ -17,6 +17,9 @@ void hg_value_write(struct hg_value a, FILE* fp) {
     case HG_VALUE_NIL:
         fprintf(fp, "()");
         break;
+    case HG_VALUE_UNDEF:
+        fprintf(fp, "undef");
+        break;
     case HG_VALUE_OBJECT:
         hg_obj_write_(VAL_AS_OBJ(a), fp);
         break;
