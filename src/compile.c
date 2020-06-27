@@ -1,9 +1,12 @@
 #include "compile.h"
+#include "ast_node.h"
 #include "memory.h"
 #include "string.h"
 #include "value.h"
 #include "function.h"
 #include <string.h>
+
+// #define HG_ENABLE_WARNING
 
 //> frame_context
 struct frame_context {
@@ -326,7 +329,19 @@ static int compile_ast_node_stats(struct compiler_context* ctx, void* _stats) {
 
     int rc = 0;
     for (size_t i = 0; i < stats->len; i++) {
-        rc |= compile_ast_node(ctx, stats->arr[i]);
+        struct ast_node* node = stats->arr[i];
+        rc |= compile_ast_node(ctx, node);
+
+        if (node->type == AST_NODE_CALL || node->type == AST_NODE_VALUE ||
+            node->type == AST_NODE_LIST || node->type == AST_NODE_TUPLE ||
+            node->type == AST_NODE_OP || node->type == AST_NODE_ARGS ||
+            node->type == AST_NODE_VARS) {
+            chunk_write(ctx->chk, OP_POP);
+#ifdef HG_ENABLE_WARNING
+            fprintf(stderr, "compiler warning: the result of the expression "
+                            "was not used\n");
+#endif
+        }
     }
 
     return rc;
@@ -451,6 +466,7 @@ static int compile_set_vars(struct compiler_context* ctx, void* _vars) {
 
     for (int i = vars->len - 1; i >= 0; i--) {
         if (vars->arr[i]->type == AST_NODE_INDEX) {
+            // TODO: the result of calling `index_set` will be on the stack
             rc |= compile_ast_node_index_set(ctx, vars->arr[i]->node);
             continue;
         }
@@ -626,7 +642,9 @@ static int compile_ast_node_func(struct compiler_context* ctx, void* _func) {
     chunk_write(ctx->chk, OP_JUMP);
     int j_patch_pos = chunk_write_word(ctx->chk, 0u);
 
-    hg_func.as.user_def = ctx->chk->code + ctx->chk->len;
+    // TODO: find out why the line below do not work
+    // hg_func.as.user_def = ctx->chk->code + ctx->chk->len;
+    hg_func.as.user_def = ctx->chk->len;
 
     int loc = chunk_add_func(ctx->chk, hg_func);
     hash_map_put(&ctx->funcs, *id, VAL_INT(loc));

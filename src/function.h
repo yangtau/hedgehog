@@ -10,7 +10,7 @@ struct hg_function {
     bool is_builtin;
     int argc; // argument count
     union {
-        uint8_t* user_def; // function entry address
+        size_t user_def; // function entry address
         builtin_func builtin;
     } as;
     struct hg_value name;
