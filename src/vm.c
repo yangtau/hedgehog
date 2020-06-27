@@ -60,7 +60,7 @@ static inline void call(struct vm* vm, int func_loc, int argc) {
             .slot    = vm->stack_top - argc,
         };
 
-        vm->ip = func->as.user_def;
+        vm->ip = func->as.user_def + vm->chk->code;
     }
 }
 
