@@ -348,13 +348,66 @@ static int compile_ast_node_tuple(struct compiler_context* ctx, void* _tuple) {
     return 0;
 }
 
+static int compile_ast_node_index_set(struct compiler_context* ctx,
+                                      struct ast_node_index* idx) {
+    int rc        = 0;
+    uint16_t argc = 3;
+
+    rc |= compile_ast_node(ctx, idx->xs);
+    rc |= compile_ast_node(ctx, idx->idx);
+
+    struct hg_value id  = VAL_OBJ(hg_symbol_copy("index_set", 9));
+    struct hg_value val = hash_map_get(&ctx->funcs, id);
+    if (VAL_IS_UNDEF(val)) {
+        fprintf(stderr, "compiler error: call an undefined function");
+        return -1;
+    }
+    hg_value_free(id);
+
+    uint16_t loc = (uint16_t)VAL_AS_INT(val);
+
+    chunk_write(ctx->chk, OP_CALL);
+    chunk_write_word(ctx->chk, loc);
+    chunk_write_word(ctx->chk, argc);
+
+    return rc;
+}
+
+static int compile_ast_node_index_get(struct compiler_context* ctx,
+                                      struct ast_node_index* idx) {
+    int rc        = 0;
+    uint16_t argc = 2;
+
+    rc |= compile_ast_node(ctx, idx->xs);
+    rc |= compile_ast_node(ctx, idx->idx);
+
+    struct hg_value id  = VAL_OBJ(hg_symbol_copy("index_get", 9));
+    struct hg_value val = hash_map_get(&ctx->funcs, id);
+    if (VAL_IS_UNDEF(val)) {
+        fprintf(stderr, "compiler error: call an undefined function");
+        return -1;
+    }
+    hg_value_free(id);
+
+    uint16_t loc = (uint16_t)VAL_AS_INT(val);
+
+    chunk_write(ctx->chk, OP_CALL);
+    chunk_write_word(ctx->chk, loc);
+    chunk_write_word(ctx->chk, argc);
+
+    return rc;
+}
+
 static int compile_ast_node_args(struct compiler_context* ctx, void* _args) {
     struct ast_node_array* args = _args;
 
     int rc = 0;
     for (size_t i = 0; i < args->len; i++) {
-        // push inversely
-        rc |= compile_ast_node(ctx, args->arr[i]);
+        if (args->arr[i]->type == AST_NODE_INDEX) {
+            rc |= compile_ast_node_index_get(ctx, args->arr[i]->node);
+        } else {
+            rc |= compile_ast_node(ctx, args->arr[i]);
+        }
     }
     return rc;
 }
@@ -397,6 +450,11 @@ static int compile_set_vars(struct compiler_context* ctx, void* _vars) {
     int rc = 0;
 
     for (int i = vars->len - 1; i >= 0; i--) {
+        if (vars->arr[i]->type == AST_NODE_INDEX) {
+            rc |= compile_ast_node_index_set(ctx, vars->arr[i]->node);
+            continue;
+        }
+
         struct hg_value* id = vars->arr[i]->node;
 
         int loc;
@@ -650,6 +708,41 @@ static int compile_ast_node_return(struct compiler_context* ctx, void* _ret) {
     return rc;
 }
 
+static int compile_ast_node_list(struct compiler_context* ctx, void* _list) {
+    struct ast_node_array* list = _list;
+
+    int rc        = 0;
+    uint16_t argc = 0;
+    if (list != NULL) {
+        rc |= compile_ast_node_args(ctx, list);
+
+        if (list->len > UINT16_MAX + 1u) {
+            fprintf(stderr,
+                    "compiler error: cannot have more than %u elements while "
+                    "compiling a list",
+                    UINT16_MAX + 1u);
+            return -1;
+        }
+        argc = (uint16_t)list->len;
+    }
+
+    struct hg_value id  = VAL_OBJ(hg_symbol_copy("list", 4));
+    struct hg_value val = hash_map_get(&ctx->funcs, id);
+    if (VAL_IS_UNDEF(val)) {
+        fprintf(stderr, "compiler error: call an undefined function");
+        return -1;
+    }
+    hg_value_free(id);
+
+    uint16_t loc = (uint16_t)VAL_AS_INT(val);
+
+    chunk_write(ctx->chk, OP_CALL);
+    chunk_write_word(ctx->chk, loc);
+    chunk_write_word(ctx->chk, argc);
+
+    return rc;
+}
+
 // compile_funcs is a static array of const pointer to function
 static int (*const compile_funcs[])(struct compiler_context*, void*) = {
     [AST_NODE_OP]       = compile_ast_node_op,
@@ -668,7 +761,8 @@ static int (*const compile_funcs[])(struct compiler_context*, void*) = {
     [AST_NODE_BREAK]    = NULL,                    // node->node = NULL
     [AST_NODE_CONTINUE] = NULL,                    // node->node = NULL
     [AST_NODE_RETURN]   = compile_ast_node_return, // node->node = expr
-    [AST_NODE_LIST]     = NULL,
+    [AST_NODE_LIST]     = compile_ast_node_list,
+    [AST_NODE_INDEX]    = NULL,
 };
 
 static inline int compile_ast_node(struct compiler_context* ctx,

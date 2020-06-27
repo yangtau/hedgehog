@@ -99,23 +99,29 @@ enum vm_exe_result vm_run(struct vm* vm) {
         vm->ip += 2;                                       \
         (uint16_t) vm->ip[-2] << 8 | vm->ip[-1];           \
     })
-#define binary_arith_op_(op)                                         \
-    do {                                                             \
-        struct hg_value b = pop(vm);                                 \
-        struct hg_value a = pop(vm);                                 \
-        if (VAL_IS_INT(a) && VAL_IS_INT(b)) {                        \
-            push(vm, VAL_INT(VAL_AS_INT(a) op VAL_AS_INT(b)));       \
-        } else if (VAL_IS_INT(a) && VAL_IS_FLOAT(b)) {               \
-            push(vm, VAL_FLOAT(VAL_AS_INT(a) op VAL_AS_FLOAT(b)));   \
-        } else if (VAL_IS_FLOAT(a) && VAL_IS_INT(b)) {               \
-            push(vm, VAL_FLOAT(VAL_AS_FLOAT(a) op VAL_AS_INT(b)));   \
-        } else if (VAL_IS_FLOAT(a) && VAL_IS_FLOAT(b)) {             \
-            push(vm, VAL_FLOAT(VAL_AS_FLOAT(a) op VAL_AS_FLOAT(b))); \
-        } else {                                                     \
-            error_("unsupported operand type for " #op               \
-                   ": value_type: %x value_type: %x",                \
-                   a.type, b.type);                                  \
-        }                                                            \
+#define binary_arith_op_(op)                                                  \
+    do {                                                                      \
+        struct hg_value b = pop(vm);                                          \
+        struct hg_value a = pop(vm);                                          \
+        if (VAL_IS_INT(a) && VAL_IS_INT(b)) {                                 \
+            push(vm, VAL_INT(VAL_AS_INT(a) op VAL_AS_INT(b)));                \
+        } else if (VAL_IS_INT(a) && VAL_IS_FLOAT(b)) {                        \
+            push(vm, VAL_FLOAT(VAL_AS_INT(a) op VAL_AS_FLOAT(b)));            \
+        } else if (VAL_IS_FLOAT(a) && VAL_IS_INT(b)) {                        \
+            push(vm, VAL_FLOAT(VAL_AS_FLOAT(a) op VAL_AS_INT(b)));            \
+        } else if (VAL_IS_FLOAT(a) && VAL_IS_FLOAT(b)) {                      \
+            push(vm, VAL_FLOAT(VAL_AS_FLOAT(a) op VAL_AS_FLOAT(b)));          \
+        } else {                                                              \
+            struct hg_object* obja = VAL_AS_OBJ(a);                           \
+            struct hg_object* objb = VAL_AS_OBJ(b);                           \
+            if (objb->type == HG_OBJ_STRING && obja->type == HG_OBJ_STRING) { \
+                push(vm, VAL_OBJ(hg_obj_add_(obja, objb)));                   \
+            } else {                                                          \
+                error_("unsupported operand type for " #op                    \
+                       ": value_type: %x value_type: %x",                     \
+                       a.type, b.type);                                       \
+            }                                                                 \
+        }                                                                     \
     } while (0)
 #define binary_cmp_op_(op)                                          \
     do {                                                            \
