@@ -9,7 +9,6 @@
 
 struct frame {
     uint8_t* rt_addr;
-    struct hg_value rt;
     struct hg_value* slot;
 };
 

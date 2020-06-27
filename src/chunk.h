@@ -33,6 +33,7 @@ enum opcode {
     OP_JUMP_BACK,
     OP_CALL,
     OP_RET,
+    OP_RETV,
 };
 //< opcode
 

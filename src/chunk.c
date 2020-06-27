@@ -237,6 +237,10 @@ int chunk_disassemble_ins(struct chunk* chk, int i) {
         print_("ret\n");
         break;
 
+    case OP_RETV:
+        print_("retv\n");
+        break;
+
     default:
         unimplemented_("type: 0x%x", chk->code[i]);
     }

@@ -1,6 +1,7 @@
 #include "vm.h"
 #include "common.h"
 #include "object.h"
+#include "value.h"
 
 //> vm
 void vm_init(struct vm* vm, struct chunk* chk) {
@@ -12,7 +13,6 @@ void vm_init(struct vm* vm, struct chunk* chk) {
     // initialize the global frame
     *vm->frame_top = (struct frame){
         .rt_addr = NULL,
-        .rt      = VAL_UNDEF(),
         .slot    = vm->stack,
     };
 }
@@ -48,16 +48,18 @@ static inline void call(struct vm* vm, int func_loc, int argc) {
 
     *vm->frame_top = (struct frame){
         .rt_addr = vm->ip,
-        .rt      = VAL_UNDEF(),
         .slot    = vm->stack_top - argc,
     };
 
     vm->ip = func->addr;
 }
 
-static inline void ret(struct vm* vm) {
-    vm->ip = vm->frame_top->rt_addr;
+static inline void ret(struct vm* vm, struct hg_value val) {
+    vm->ip        = vm->frame_top->rt_addr;
+    vm->stack_top = vm->frame_top->slot;
     vm->frame_top--;
+
+    push(vm, val); // return val
 }
 
 static inline void print_stack_info(struct vm* vm) {
@@ -258,7 +260,11 @@ enum vm_exe_result vm_run(struct vm* vm) {
         } break;
 
         case OP_RET:
-            ret(vm);
+            ret(vm, VAL_UNDEF());
+            break;
+
+        case OP_RETV:
+            ret(vm, pop(vm));
             break;
 
         default:
