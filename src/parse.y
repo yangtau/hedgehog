@@ -32,6 +32,7 @@ static void yyerror(struct parser_state* p, const char* s);
 %token sep_lp sep_rp // {}
        sep_ls sep_rs // []
        sep_lb sep_rb // ()
+       sep_colon // :
        sep_nl sep_semic sep_comma // \n;,
        kw_if kw_else kw_for kw_break kw_continue kw_return
        kw_def kw_in kw_while kw_let
@@ -39,7 +40,7 @@ static void yyerror(struct parser_state* p, const char* s);
 %token <node> lit_float lit_int lit_bool lit_string lit_id
 %type <node>  primary expr func_call args vars stat if_stat opt_elsif_stat
               for_stat func_def stats block program comp_stat while_stat
-              list tuple func index_expr
+              list tuple func index_expr map entries
 
 %%
 
@@ -201,6 +202,28 @@ list:
         $$ = ast_node_list_new(p, $2);
     };
 
+map:
+    sep_lp entries sep_comma sep_rp {
+        $$ = ast_node_map_new(p, $2);
+    }
+    |
+    sep_lp entries sep_rp {
+        $$ = ast_node_map_new(p, $2);
+    };
+
+entries:
+    expr sep_colon expr {
+        $$ = ast_node_array_new(p, AST_NODE_ARGS);
+        ast_node_array_add(p, $$, $1);
+        ast_node_array_add(p, $$, $3);
+    }
+    |
+    entries sep_comma expr sep_colon expr {
+        ast_node_array_add(p, $$, $3);
+        ast_node_array_add(p, $$, $5);
+        $$ = $1;
+    };
+
 tuple:
     sep_lb args sep_rb {
         $$ = ast_node_tuple_new(p, $2);
@@ -320,7 +343,9 @@ primary:
     |
     tuple
     |
-    index_expr;
+    index_expr
+    |
+    map;
 
 %%
 

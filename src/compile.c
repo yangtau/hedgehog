@@ -761,6 +761,41 @@ static int compile_ast_node_list(struct compiler_context* ctx, void* _list) {
     return rc;
 }
 
+static int compile_ast_node_map(struct compiler_context* ctx, void* _map) {
+    struct ast_node_array* map = _map;
+    assert(map != NULL);
+
+    int rc        = 0;
+    uint16_t argc = 0;
+    
+    rc |= compile_ast_node_args(ctx, map);
+
+    if (map->len > UINT16_MAX + 1u) {
+        fprintf(stderr,
+                "compiler error: cannot have more than %u elements while "
+                "compiling a list",
+                UINT16_MAX + 1u);
+        return -1;
+    }
+    argc = (uint16_t)map->len;
+
+    struct hg_value id  = VAL_OBJ(hg_symbol_copy("map", 3));
+    struct hg_value val = hash_map_get(&ctx->funcs, id);
+    if (VAL_IS_UNDEF(val)) {
+        fprintf(stderr, "compiler error: call an undefined function");
+        return -1;
+    }
+    hg_value_free(id);
+
+    uint16_t loc = (uint16_t)VAL_AS_INT(val);
+
+    chunk_write(ctx->chk, OP_CALL);
+    chunk_write_word(ctx->chk, loc);
+    chunk_write_word(ctx->chk, argc);
+
+    return rc;
+}
+
 // compile_funcs is a static array of const pointer to function
 static int (*const compile_funcs[])(struct compiler_context*, void*) = {
     [AST_NODE_OP]       = compile_ast_node_op,
@@ -780,7 +815,8 @@ static int (*const compile_funcs[])(struct compiler_context*, void*) = {
     [AST_NODE_CONTINUE] = NULL,                    // node->node = NULL
     [AST_NODE_RETURN]   = compile_ast_node_return, // node->node = expr
     [AST_NODE_LIST]     = compile_ast_node_list,
-    [AST_NODE_INDEX]    = NULL,
+    [AST_NODE_MAP]      = compile_ast_node_map,
+    [AST_NODE_INDEX]    = compile_ast_node_index_get,
 };
 
 static inline int compile_ast_node(struct compiler_context* ctx,

@@ -34,6 +34,7 @@ enum ast_node_type {
     AST_NODE_ARGS,
     AST_NODE_LIST,
     AST_NODE_TUPLE,
+    AST_NODE_MAP,
 };
 
 struct ast_node {
@@ -194,6 +195,8 @@ struct ast_node* ast_node_list_new(struct parser_state* p,
                                    struct ast_node* args);
 struct ast_node* ast_node_tuple_new(struct parser_state* p,
                                     struct ast_node* args);
+struct ast_node* ast_node_map_new(struct parser_state* p,
+                                    struct ast_node* args);                            
 //< ast_node_array
 
 //> ast_node_value: ast_node->node = hg_value_ptr;

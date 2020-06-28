@@ -8,7 +8,8 @@
         enum ast_node_type type = (node)->type;                  \
         assert(type == AST_NODE_VALUE || type == AST_NODE_OP ||  \
                type == AST_NODE_CALL || type == AST_NODE_LIST || \
-               type == AST_NODE_TUPLE);                          \
+               type == AST_NODE_TUPLE || type == AST_NODE_MAP || \
+               type == AST_NODE_INDEX);                          \
     }
 
 #define parse_error_(p, ...)                                             \
@@ -180,6 +181,14 @@ struct ast_node* ast_node_tuple_new(struct parser_state* p,
         args = ast_node_array_new(p, AST_NODE_TUPLE);
 
     args->type = AST_NODE_TUPLE;
+    return args;
+}
+
+struct ast_node* ast_node_map_new(struct parser_state* p,
+                                  struct ast_node* args) {
+    assert(args != NULL);
+
+    args->type = AST_NODE_MAP;
     return args;
 }
 //< ast_node_array
@@ -435,6 +444,7 @@ void ast_node_free(struct ast_node* node) {
     case AST_NODE_VARS:
     case AST_NODE_ARGS:
     case AST_NODE_LIST:
+    case AST_NODE_MAP:
     case AST_NODE_TUPLE: {
         struct ast_node_array* node_arr = node->node;
         for (size_t i = 0; i < node_arr->len; i++) {
@@ -473,6 +483,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
         }
         fprintf(fp, ")");
     } break;
+
     case AST_NODE_LIST: {
         fprintf(fp, "%s[", buf);
         struct ast_node_array* arr = node->node;
@@ -483,6 +494,20 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
         }
         fprintf(fp, "]");
     } break;
+
+    case AST_NODE_MAP: {
+        fprintf(fp, "%s{", buf);
+        struct ast_node_array* arr = node->node;
+        for (size_t i = 0; i < arr->len; i += 2) {
+            ast_node_dump(arr->arr[i], 0, fp);
+            fprintf(fp, ": ");
+            ast_node_dump(arr->arr[i + 1], 0, fp);
+            if (i != arr->len - 2)
+                fprintf(fp, ", ");
+        }
+        fprintf(fp, "}");
+    } break;
+
     case AST_NODE_STATS: {
         struct ast_node_array* arr = node->node;
         for (size_t i = 0; i < arr->len; i++) {
@@ -490,6 +515,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
             fprintf(fp, "\n");
         }
     } break;
+
     case AST_NODE_FUNC: {
         struct ast_node_func* func = node->node;
         fprintf(fp, "%sdef ", buf);
@@ -500,6 +526,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
         ast_node_dump(func->stats, indent + 1, fp);
         fprintf(fp, "%s}", buf);
     } break;
+
     case AST_NODE_WHILE: {
         struct ast_node_while* whl = node->node;
         fprintf(fp, "%swhile ", buf);
@@ -546,6 +573,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
             next = elif->opt_else;
         }
     } break;
+
     case AST_NODE_OP: {
         struct ast_node_op* op = node->node;
         fprintf(fp, "%s", buf);
@@ -615,6 +643,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
                 fprintf(fp, ", ");
         }
     } break;
+
     case AST_NODE_FOR: {
         struct ast_node_for* nfor = node->node;
         fprintf(fp, "%sfor ", buf);
@@ -625,6 +654,7 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
         ast_node_dump(nfor->stats, indent + 1, fp);
         fprintf(fp, "}");
     } break;
+
     case AST_NODE_CALL: {
         struct ast_node_call* call = node->node;
         ast_node_dump(call->func, indent, fp);
@@ -632,12 +662,15 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
         ast_node_dump(call->args, 0, fp);
         fprintf(fp, ")");
     } break;
+
     case AST_NODE_BREAK:
         fprintf(fp, "%sbreak", buf);
         break;
+
     case AST_NODE_CONTINUE:
         fprintf(fp, "%scontinue", buf);
         break;
+
     case AST_NODE_RETURN: {
         fprintf(fp, "%sreturn ", buf);
         ast_node_dump(node->node, 0, fp);
