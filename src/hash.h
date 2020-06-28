@@ -1,6 +1,10 @@
 #ifndef _HG_HASH_H_
 #define _HG_HASH_H_
+#include "object.h"
 #include "value.h"
+
+// TODO: replace hash_set_init with hash_set_new
+//       to make it a hg_object type
 
 #define HASH_INITIAL_SIZE (3u)
 #define HASH_LOAD_FACTOR  (0.75)
@@ -11,6 +15,7 @@
 //NOTE: if there are tombstones in the set, then `() in set` is true.
 //      DO NOT use hash_set to store nil.
 struct hash_set {
+    struct hg_object obj;
     size_t capacity;
     size_t len; // valid and tombstone items
     size_t tomb_cnt;
@@ -48,6 +53,7 @@ struct hash_map_entry {
 
 //> hash_map
 struct hash_map {
+    struct hg_object obj;
     size_t capacity;
     size_t len;      // the number of valid entries and tombstones
     size_t tomb_cnt; // the number of tombstones
