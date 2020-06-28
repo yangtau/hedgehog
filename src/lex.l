@@ -36,6 +36,7 @@ static int lex_return(struct parser_state* p, int c) {
         case sep_nl: printf("\\n\n"); break;
         case sep_semic: printf(";"); break;
         case sep_comma: printf(","); break;
+        case sep_colon: printf(":"); break;
         case kw_if: printf("if "); break;
         case kw_else: printf("else "); break;
         case kw_for: printf("for "); break;
@@ -84,6 +85,7 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "!"{TRAIL}                      LEX_RETURN(op_not);
 "="{TRAIL}                      LEX_RETURN(op_assign);
 
+":"{TRAIL}                      LEX_RETURN(sep_colon);
 "["{TRAIL}                      LEX_RETURN(sep_ls);
 "("{TRAIL}                      LEX_RETURN(sep_lb);
 "{"{TRAIL}                      LEX_RETURN(sep_lp);
