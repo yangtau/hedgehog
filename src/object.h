@@ -7,6 +7,7 @@ enum hg_object_type {
     HG_OBJ_STRING,
     HG_OBJ_SYMBOL,
     HG_OBJ_MAP,
+    HG_OBJ_SET,
     HG_OBJ_LIST,
     HG_OBJ_TUPLE,
     HG_OBJ_FUNCTION,

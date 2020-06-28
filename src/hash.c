@@ -12,7 +12,8 @@ static inline bool item_is_tombstone(struct hg_value* val) {
 static inline bool item_is_valid(struct hg_value* val) {
     return !VAL_IS_UNDEF(*val) && !VAL_IS_NIL(*val);
 }
-int hash_set_write(struct hash_set* set, FILE* fp) {
+
+inline int hash_set_write(struct hash_set* set, FILE* fp) {
     fprintf(fp, "{");
     bool flag = false;
     for (size_t i = 0; i < set->capacity; i++) {
@@ -29,14 +30,7 @@ int hash_set_write(struct hash_set* set, FILE* fp) {
     return 1;
 }
 
-void hash_set_init_with_capacity(struct hash_set* set, size_t capacity) {
-    set->len      = 0;
-    set->tomb_cnt = 0;
-    set->capacity = capacity;
-    set->items    = array_alloc_init_(struct hg_value, capacity, 0);
-}
-
-void hash_set_free(struct hash_set* set) {
+inline void hash_set_free(struct hash_set* set) {
     array_free_(set->items, struct hg_value, set->capacity);
     set->len      = 0;
     set->capacity = 0;
@@ -44,9 +38,39 @@ void hash_set_free(struct hash_set* set) {
     set->items    = NULL;
 }
 
-static struct hg_value* hash_set_find(struct hash_set* set,
-                                      struct hg_value item,
-                                      value_equal_func func) {
+static int hash_set_obj_write(struct hg_object* _set, FILE* fp) {
+    struct hash_set* set = (struct hash_set*)_set;
+    return hash_set_write(set, fp);
+}
+
+static void hash_set_obj_free(struct hg_object* _set) {
+    hash_set_free((struct hash_set*)_set);
+}
+
+static struct hg_object_funcs hash_set_obj_funcs = {
+    .write = hash_set_obj_write,
+    .free  = hash_set_obj_free,
+    .equal = NULL,
+    .hash  = NULL,
+};
+
+void hash_set_init_with_capacity(struct hash_set* set, size_t capacity) {
+    set->len      = 0;
+    set->tomb_cnt = 0;
+    set->capacity = capacity;
+
+    set->obj = (struct hg_object){
+        .type  = HG_OBJ_SET,
+        .funcs = &hash_set_obj_funcs,
+        .hash  = 0u,
+    };
+
+    set->items = array_alloc_init_(struct hg_value, capacity, 0);
+}
+
+static struct hg_value* hash_set_find_with_equal(struct hash_set* set,
+                                                 struct hg_value item,
+                                                 value_equal_func func) {
     assert(!VAL_IS_UNDEF(item));
     uint32_t hash = hg_value_hash(item) % set->capacity;
 
@@ -87,7 +111,7 @@ static inline void hash_set_adjust(struct hash_set* set) {
 }
 
 void hash_set_put(struct hash_set* set, struct hg_value item) {
-    struct hg_value* ptr = hash_set_find(set, item, hg_value_equal);
+    struct hg_value* ptr = hash_set_find_with_equal(set, item, hg_value_equal);
 
     if (item_is_empty(ptr))
         set->len++;
@@ -99,16 +123,16 @@ void hash_set_put(struct hash_set* set, struct hg_value item) {
 }
 
 bool hash_set_contain(struct hash_set* set, struct hg_value item) {
-    return item_is_valid(hash_set_find(set, item, hg_value_equal));
+    return item_is_valid(hash_set_find_with_equal(set, item, hg_value_equal));
 }
 
 bool hash_set_contain_with_equal(struct hash_set* set, struct hg_value item,
                                  value_equal_func func) {
-    return item_is_valid(hash_set_find(set, item, func));
+    return item_is_valid(hash_set_find_with_equal(set, item, func));
 }
 
 struct hg_value hash_set_remove(struct hash_set* set, struct hg_value item) {
-    struct hg_value* ptr = hash_set_find(set, item, hg_value_equal);
+    struct hg_value* ptr = hash_set_find_with_equal(set, item, hg_value_equal);
     struct hg_value t    = VAL_UNDEF();
 
     if (item_is_valid(ptr)) {
@@ -153,21 +177,45 @@ int hash_map_write(struct hash_map* map, FILE* fp) {
     return 1;
 }
 
-void hash_map_init_with_capacity(struct hash_map* map, size_t capacity) {
-    map->len      = 0;
-    map->tomb_cnt = 0;
-    map->capacity = capacity;
-
-    // initialize all value in entries to be HG_VALUE_UNDEF
-    map->entries = array_alloc_init_(struct hash_map_entry, capacity, 0);
-}
-
 void hash_map_free(struct hash_map* map) {
     array_free_(map->entries, struct hash_map_entry, map->capacity);
     map->capacity = 0;
     map->len      = 0;
     map->entries  = NULL;
     map->tomb_cnt = 0;
+}
+
+// hg_object wrapper
+static int hash_map_obj_write(struct hg_object* _map, FILE* fp) {
+    struct hash_map* map = (struct hash_map*)_map;
+    return hash_map_write(map, fp);
+}
+
+// hg_object wrapper
+static void hash_map_obj_free(struct hg_object* _map) {
+    hash_map_free((struct hash_map*)_map);
+}
+
+static struct hg_object_funcs hash_map_obj_funcs = {
+    .write = hash_map_obj_write,
+    .free  = hash_map_obj_free,
+    .equal = NULL,
+    .hash  = NULL,
+};
+
+void hash_map_init_with_capacity(struct hash_map* map, size_t capacity) {
+    map->len      = 0;
+    map->tomb_cnt = 0;
+    map->capacity = capacity;
+
+    map->obj = (struct hg_object){
+        .type  = HG_OBJ_MAP,
+        .funcs = &hash_map_obj_funcs,
+        .hash  = 0u,
+    };
+
+    // initialize all value in entries to be HG_VALUE_UNDEF
+    map->entries = array_alloc_init_(struct hash_map_entry, capacity, 0);
 }
 
 static void hash_map_resize(struct hash_map* map, size_t new_capacity) {
