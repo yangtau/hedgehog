@@ -133,11 +133,11 @@ static struct hg_function funcs[] = {
 const struct hg_function* hg_function_get_builtins(int* count) {
     // TODO: alloc but not free the memory for names of built-in functions
     funcs[0].name = VAL_OBJ(hg_symbol_copy("puts", 4));
-    funcs[1].name = VAL_OBJ(hg_symbol_copy("list", 4));
-    funcs[2].name = VAL_OBJ(hg_symbol_copy("index_get", 9));
-    funcs[3].name = VAL_OBJ(hg_symbol_copy("index_set", 9));
-    funcs[4].name = VAL_OBJ(hg_symbol_copy("set", 3));
-    funcs[5].name = VAL_OBJ(hg_symbol_copy("map", 3));
+    funcs[1].name = VAL_OBJ(hg_symbol_copy("List", 4));
+    funcs[2].name = VAL_OBJ(hg_symbol_copy("!index_get", 10));
+    funcs[3].name = VAL_OBJ(hg_symbol_copy("!index_set", 10));
+    funcs[4].name = VAL_OBJ(hg_symbol_copy("Set", 3));
+    funcs[5].name = VAL_OBJ(hg_symbol_copy("Map", 3));
 
     *count = sizeof(funcs) / (sizeof(struct hg_function));
     return funcs;

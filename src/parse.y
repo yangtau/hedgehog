@@ -322,7 +322,7 @@ func:
     func_call;
 
 index_expr:
-    primary sep_ls primary sep_rs {
+    primary sep_ls expr sep_rs {
         $$ = ast_node_index_new(p, $1, $3);
     };
 

@@ -1,0 +1,21 @@
+# TODO: fix bug in following code
+def fn() {
+  let ys  = [9, 6, 4, 5, 3, 2, 1]
+  puts("before sort, ys =", ys)
+
+  # sort
+  let i = 0
+  while i < 7 {
+    let j = 0
+    while j < 7-i-1 {
+      if ys[j] > ys[j+1] {
+        ys[j], ys[j+1] = ys[j+1], ys[j]
+      }
+      j = j+1
+    }
+    i = i+1
+  }
+  puts("after sort, ys =", ys)
+}
+
+fn()
