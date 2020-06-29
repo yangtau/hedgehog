@@ -371,7 +371,7 @@ static int compile_ast_node_index_set(struct compiler_context* ctx,
     rc |= compile_ast_node(ctx, idx->xs);
     rc |= compile_ast_node(ctx, idx->idx);
 
-    struct hg_value id  = VAL_OBJ(hg_symbol_copy("index_set", 9));
+    struct hg_value id  = VAL_OBJ(hg_symbol_copy("!index_set", 10));
     struct hg_value val = hash_map_get(&ctx->funcs, id);
     if (VAL_IS_UNDEF(val)) {
         fprintf(stderr, "compiler error: call an undefined function");
@@ -396,7 +396,7 @@ static int compile_ast_node_index_get(struct compiler_context* ctx,
     rc |= compile_ast_node(ctx, idx->xs);
     rc |= compile_ast_node(ctx, idx->idx);
 
-    struct hg_value id  = VAL_OBJ(hg_symbol_copy("index_get", 9));
+    struct hg_value id  = VAL_OBJ(hg_symbol_copy("!index_get", 10));
     struct hg_value val = hash_map_get(&ctx->funcs, id);
     if (VAL_IS_UNDEF(val)) {
         fprintf(stderr, "compiler error: call an undefined function");
@@ -411,6 +411,10 @@ static int compile_ast_node_index_get(struct compiler_context* ctx,
     chunk_write_word(ctx->chk, argc);
 
     return rc;
+}
+
+static int compile_ast_node_index(struct compiler_context* ctx, void* idx) {
+    return compile_ast_node_index_get(ctx, idx);
 }
 
 static int compile_ast_node_args(struct compiler_context* ctx, void* _args) {
@@ -744,7 +748,7 @@ static int compile_ast_node_list(struct compiler_context* ctx, void* _list) {
         argc = (uint16_t)list->len;
     }
 
-    struct hg_value id  = VAL_OBJ(hg_symbol_copy("list", 4));
+    struct hg_value id  = VAL_OBJ(hg_symbol_copy("List", 4));
     struct hg_value val = hash_map_get(&ctx->funcs, id);
     if (VAL_IS_UNDEF(val)) {
         fprintf(stderr, "compiler error: call an undefined function");
@@ -767,7 +771,7 @@ static int compile_ast_node_map(struct compiler_context* ctx, void* _map) {
 
     int rc        = 0;
     uint16_t argc = 0;
-    
+
     rc |= compile_ast_node_args(ctx, map);
 
     if (map->len > UINT16_MAX + 1u) {
@@ -779,7 +783,7 @@ static int compile_ast_node_map(struct compiler_context* ctx, void* _map) {
     }
     argc = (uint16_t)map->len;
 
-    struct hg_value id  = VAL_OBJ(hg_symbol_copy("map", 3));
+    struct hg_value id  = VAL_OBJ(hg_symbol_copy("Map", 3));
     struct hg_value val = hash_map_get(&ctx->funcs, id);
     if (VAL_IS_UNDEF(val)) {
         fprintf(stderr, "compiler error: call an undefined function");
@@ -816,7 +820,7 @@ static int (*const compile_funcs[])(struct compiler_context*, void*) = {
     [AST_NODE_RETURN]   = compile_ast_node_return, // node->node = expr
     [AST_NODE_LIST]     = compile_ast_node_list,
     [AST_NODE_MAP]      = compile_ast_node_map,
-    [AST_NODE_INDEX]    = compile_ast_node_index_get,
+    [AST_NODE_INDEX]    = compile_ast_node_index,
 };
 
 static inline int compile_ast_node(struct compiler_context* ctx,
