@@ -1,11 +1,13 @@
 if (true) {
-    let a = 10
+    let a = 10     # first `a`
     let b = a + 100
-    if (false) {
-        let c = b + 1000
-        let a = -c
+    if (true) {
+        let b = b + 1000
+        let a = -b
     }
-    let d = "world"
+    let d = a * 100 # refers to the first `a`
+    puts(d)
 } else {
     let a = "hello"
+    puts(a)
 }

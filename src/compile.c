@@ -38,6 +38,19 @@ struct local {
     struct local* prev;
 };
 
+// find local only in the same scope
+static int find_scope_local(struct compiler_context* ctx, const char* id) {
+    struct local** lpp = &ctx->local_list;
+
+    while (*lpp != NULL) {
+        if ((*lpp)->scope == ctx->scope_depth && strcmp((*lpp)->id, id) == 0)
+            return (*lpp)->offset;
+
+        lpp = &(*lpp)->prev;
+    }
+    return -1;
+}
+
 // return the offset for success, -1 for error
 static int find_local(struct compiler_context* ctx, const char* id) {
     struct local** lpp = &ctx->local_list;
@@ -118,6 +131,23 @@ static _force_inline_ void leave_scope(struct compiler_context* ctx) {
 //< compiler_context
 
 //> helper function
+static int find_variable_in_scope(struct compiler_context* ctx,
+                                  struct hg_value id, bool* is_local) {
+    struct hg_string* str = (struct hg_string*)VAL_AS_OBJ(id);
+    if (ctx->scope_depth == 0) {
+        // find globals
+        *is_local           = false;
+        struct hg_value val = hash_map_get(&ctx->global_vars, id);
+
+        return VAL_IS_UNDEF(val) ? -1 : (int)VAL_AS_INT(val);
+    } else {
+        // find locals
+        *is_local = true;
+        int off   = find_scope_local(ctx, str->str);
+        return off;
+    }
+}
+
 static int find_variable(struct compiler_context* ctx, struct hg_value id,
                          bool* is_local) {
     struct hg_string* str = (struct hg_string*)VAL_AS_OBJ(id);
@@ -444,9 +474,7 @@ static int compile_define_vars(struct compiler_context* ctx, void* _vars) {
 
         int loc;
         bool islocal;
-        // TODO: only find variable in the same scope
-        //       need some tests
-        if ((loc = find_variable(ctx, *id, &islocal)) != -1) {
+        if ((loc = find_variable_in_scope(ctx, *id, &islocal)) != -1) {
             fprintf(stderr, "redefine variable: ");
             hg_value_write(*id, stderr, true);
             fprintf(stderr, "\n");
@@ -473,7 +501,6 @@ static int compile_set_vars(struct compiler_context* ctx, void* _vars) {
 
     for (int i = vars->len - 1; i >= 0; i--) {
         if (vars->arr[i]->type == AST_NODE_INDEX) {
-            // TODO: the result of calling `index_set` will be on the stack
             rc |= compile_ast_node_index_set(ctx, vars->arr[i]->node);
             continue;
         }
