@@ -1,14 +1,10 @@
-# TODO: fix bug in following code
 def sort(ys, len) {
   let i = 0
   while i < len {
     let j = 0
     while j < len-i-1 {
       if ys[j] > ys[j+1] {
-        # ys[j], ys[j+1] = ys[j+1], ys[j]
-        let t   = ys[j]
-        ys[j]   = ys[j+1]
-        ys[j+1] = t
+        ys[j], ys[j+1] = ys[j+1], ys[j]
       }
       j = j+1
     }
