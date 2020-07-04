@@ -385,6 +385,9 @@ static int compile_ast_node_index_set(struct compiler_context* ctx,
     chunk_write_word(ctx->chk, loc);
     chunk_write_word(ctx->chk, argc);
 
+    // pop the result of calling !index_set
+    chunk_write(ctx->chk, OP_POP);
+
     return rc;
 }
 
