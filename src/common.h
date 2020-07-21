@@ -10,6 +10,8 @@
 #include <execinfo.h>
 #include <unistd.h>
 
+#define struct_field_offset_(st, field) ((intptr_t)(&((st*)0)->field))
+
 //> shared pointer
 typedef char* shared_char_p;
 typedef const char* const_shared_char_p;

@@ -6,9 +6,9 @@ say_hello_to("yangtau")
 
 def fib(n) {
     let a, b = 0, 1
-    while a < n {
+    while b < n {
         a, b = b, a+b
-        puts(b)
+        puts(a)
     }
 }
 puts("fib(100):")
@@ -31,14 +31,3 @@ def fac(n) {
 
 puts("fac(10) =", fac(10))
 
-let xs = [1, 2, 3, 4]
-puts(xs[1])
-puts(xs)
-xs[2] = 100
-puts(xs)
-
-let i = 0
-while i < 4 {
-    puts(xs[i])
-    i = i+1
-}

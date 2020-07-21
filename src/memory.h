@@ -54,14 +54,14 @@
     })
 #define array_grow_(capacity, len)      \
     ({                                  \
-        size_t _cap = (capacity);   \
-        size_t _len = (len);        \
+        size_t _cap = (capacity);       \
+        size_t _len = (len);            \
         _len >= _cap ? _cap * 2 : _cap; \
     })
 #define array_shrink_(capacity, len)        \
     ({                                      \
-        size_t _cap = (capacity);       \
-        size_t _len = (len);            \
+        size_t _cap = (capacity);           \
+        size_t _len = (len);                \
         _len <= _cap / 4 ? _cap / 2 : _cap; \
     })
 #define array_realloc_(ptr, type, old_capacity, new_capacity) \
