@@ -7,4 +7,7 @@
 void gc_set_vm(struct vm* vm);
 struct hg_object* gc_alloc(size_t size);
 
+// clean all objects
+void gc_clean();
+
 #endif

@@ -29,32 +29,32 @@ struct hg_object_funcs {
     bool (*equal)(struct hg_object*, struct hg_object*);
     struct hg_object* (*add)(struct hg_object*, struct hg_object*);
 };
-#define hg_obj_write_(obj, fp)                             \
-    ({                                                     \
-        struct hg_object* _obj = (struct hg_object*)(obj); \
-        _obj->funcs->write(_obj, (fp));                    \
+#define hg_obj_write_(obj, fp)          \
+    ({                                  \
+        struct hg_object* _obj = (obj); \
+        _obj->funcs->write(_obj, (fp)); \
     })
-#define hg_obj_hash_(obj)                                  \
-    ({                                                     \
-        struct hg_object* _obj = (struct hg_object*)(obj); \
-        _obj->funcs->hash(_obj);                           \
+#define hg_obj_hash_(obj)               \
+    ({                                  \
+        struct hg_object* _obj = (obj); \
+        _obj->funcs->hash(_obj);        \
     })
-#define hg_obj_free_(obj)                                  \
-    ({                                                     \
-        struct hg_object* _obj = (struct hg_object*)(obj); \
-        _obj->funcs->free(_obj);                           \
+#define hg_obj_free_(obj)               \
+    ({                                  \
+        struct hg_object* _obj = (obj); \
+        _obj->funcs->free(_obj);        \
     })
-#define hg_obj_equal_(obj1, obj2)                            \
-    ({                                                       \
-        struct hg_object* _obj1 = (struct hg_object*)(obj1); \
-        struct hg_object* _obj2 = (struct hg_object*)(obj2); \
-        _obj1->funcs->equal(_obj1, _obj2);                   \
+#define hg_obj_equal_(obj1, obj2)          \
+    ({                                     \
+        struct hg_object* _obj1 = (obj1);  \
+        struct hg_object* _obj2 = (obj2);  \
+        _obj1->funcs->equal(_obj1, _obj2); \
     })
-#define hg_obj_add_(obj1, obj2)                            \
-    ({                                                       \
-        struct hg_object* _obj1 = (struct hg_object*)(obj1); \
-        struct hg_object* _obj2 = (struct hg_object*)(obj2); \
-        _obj1->funcs->add(_obj1, _obj2);                   \
+#define hg_obj_add_(obj1, obj2)           \
+    ({                                    \
+        struct hg_object* _obj1 = (obj1); \
+        struct hg_object* _obj2 = (obj2); \
+        _obj1->funcs->add(_obj1, _obj2);  \
     })
 
 //< hg_object
