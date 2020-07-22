@@ -42,25 +42,25 @@ struct hg_value {
     ({                                    \
         struct hg_value _value = (value); \
         assert(VAL_IS_INT(_value));       \
-        (_value).as._int;                 \
+        _value.as._int;                   \
     })
 #define VAL_AS_FLOAT(value)               \
     ({                                    \
         struct hg_value _value = (value); \
         assert(VAL_IS_FLOAT(_value));     \
-        (_value).as._float;               \
+        _value.as._float;                 \
     })
 #define VAL_AS_BOOL(value)                \
     ({                                    \
         struct hg_value _value = (value); \
         assert(VAL_IS_BOOL(_value));      \
-        (_value).as._bool;                \
+        _value.as._bool;                  \
     })
 #define VAL_AS_OBJ(value)                 \
     ({                                    \
         struct hg_value _value = (value); \
         assert(VAL_IS_OBJ(_value));       \
-        (_value).as._obj;                 \
+        _value.as._obj;                   \
     })
 //< VAL_AS_TYPE
 
@@ -103,7 +103,7 @@ void value_array_free(struct value_array* arr);
 size_t value_array_push(struct value_array* arr, struct hg_value val);
 struct hg_value value_array_pop(struct value_array* arr);
 struct hg_value value_array_get(struct value_array* arr, size_t index);
-// change a value alreay in the array, index < arr->len
+// change a value already in the array, index < arr->len
 void value_array_set(struct value_array* arr, struct hg_value val,
                      size_t index);
 //< value_array
