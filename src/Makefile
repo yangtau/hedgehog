@@ -31,3 +31,4 @@ clean:
 	rm -f tags
 	rm -f hg
 	rm -f hash_test
+	rm -rf *.dSYM

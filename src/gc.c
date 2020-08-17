@@ -27,6 +27,10 @@ static size_t object_mem_size_hold = 1 << 8;
 static void mark();
 static void sweep();
 
+void gc_init(struct vm* t) {
+    vm = t;
+}
+
 struct hg_object* gc_alloc(size_t size) {
     assert(size >= sizeof(struct hg_object));
     assert(vm != NULL);
@@ -123,19 +127,13 @@ static inline void sweep() {
             obj_wrapper* t = *p;
             *p             = t->next;
 
-            // TODO: make all object flexiable to avoid free and alloc twice for every object
-
             hg_obj_free_(&t->obj);
             hg_realloc(t, t->size, 0);
         } else {
-            (*p)->mark = true;
+            (*p)->mark = false;
         }
         p = &(*p)->next;
     }
-}
-
-void gc_clean() {
-    sweep();
 }
 
 #undef obj2wrapper_
