@@ -12,10 +12,6 @@
 
 #define struct_field_offset_(st, field) ((intptr_t)(&((st*)0)->field))
 
-//> shared pointer
-typedef char* shared_char_p;
-typedef const char* const_shared_char_p;
-//< shared pointer
 
 #define _force_inline_ inline __attribute__((always_inline))
 static _force_inline_ void print_backtrace() {

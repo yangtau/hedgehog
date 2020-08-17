@@ -34,7 +34,7 @@ static void leave_frame(struct compiler_context* ctx) {
 struct local {
     int offset; // offset int the function stack frame
     int scope;
-    const_shared_char_p id;
+    const char* id;
     struct local* prev;
 };
 
@@ -65,7 +65,7 @@ static int find_local(struct compiler_context* ctx, const char* id) {
 }
 
 // return the offset
-static int add_local(struct compiler_context* ctx, const_shared_char_p id) {
+static int add_local(struct compiler_context* ctx, const char* id) {
     struct local* p = hg_alloc_(struct local);
 
     *p = (struct local){
