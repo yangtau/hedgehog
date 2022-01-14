@@ -1,0 +1,119 @@
+# first line comments
+fn fac(n) {
+  if n <=1 { return 1 } else { return n * fac(n-1) }
+}
+
+# tail call version:
+fn fac_tailcall(n) {
+  fn f(acc, n) {
+    if n <= 1 { return acc} else { return f(acc*n, n-1) }
+  }
+  return f(1, n)
+}
+
+math = require("math") # -- math is a local number
+
+math.add(3, 9) # --> 12
+print(math.pi) # --> 3.14159
+
+print = G.print # -- all modules share the same `G` table
+G = {} # -- override global locally
+
+greet = fn() {print("hello")}
+
+fn Car(speed) {
+  car = {postion: 0}
+
+  # -- methods of a object
+  car.run = fn (time) { car.postion = car.postion + time }
+  return car
+}
+
+car = Car(4)
+car.run(3)
+print(car.postion) # --> 12
+
+fn Base() {
+  o = {}
+  o.hello = fn () { return "hello from base" }
+  return o
+}
+
+base = Base()
+
+fn A() {
+  a = {}
+  setmeta(a, base)
+  return a
+}
+
+a = A()
+a.hello() # -- `hello` of base will be called
+
+fn Greeter(Namer) {
+  o = {}
+  o.greet = fn () { return "hello, " + Namer.name() }
+  return o
+}
+
+fn Human(name) {
+  o = {}
+  G.setmeta(o, Greeter(o))
+  o.name = fn () { return name }
+  return o
+}
+
+a = Human("yangtao")
+a.greet()
+
+# functional
+fn Fun(t) {
+  m = {}
+  setmeta(t, m)
+  
+  m.map = fn (f) {
+    res = {}
+    setmeta(res, m)
+    for k, v in t {
+      res[k] = f(v)
+    }
+    return res
+  }
+    
+  m.filter = fn (f) {
+    res = {}
+    setmeta(res, m)
+    for k, v in t {
+      res[k] = f(v)
+    }
+    return res
+  }
+  
+  return t
+}
+
+{hello: fn(){print("ho")}}.hello()
+
+fn() {} ()
+
+fn() {
+
+} ()
+
+
+fn() {} (
+
+)
+
+fn(
+
+) {} ()
+
+fn() {
+  return fn(a) {print(a)}
+} ()("hello")
+
+lists[1], a.a = 1, 2 #fn(a) {print(a)}
+
+
+# last line comments

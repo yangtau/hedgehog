@@ -68,7 +68,19 @@ struct ast_node* ast_node_index_new(struct parser_state* p, struct ast_node* xs,
     node->node = index;
     return node;
 }
-//< ast_node_index
+
+struct ast_node* ast_node_dot_new(struct parser_state* p, struct ast_node* pre,
+                                  struct ast_node* suf) {
+    assert(suf->type == AST_NODE_VALUE);
+
+    struct ast_node* node    = ast_node_new(AST_NODE_DOT);
+    struct ast_node_dot* dot = hg_alloc_(struct ast_node_dot);
+
+    dot->pre   = pre;
+    dot->suf   = suf;
+    node->node = dot;
+    return node;
+}
 
 //> ast_node_if
 struct ast_node* ast_node_if_new(struct parser_state* p, struct ast_node* cond,
@@ -350,7 +362,7 @@ struct ast_node* ast_node_str_len_new(struct parser_state* p, const char* s,
     return node;
 }
 
-struct ast_node* ast_node_id_new(struct parser_state* p, const char* s) {
+struct ast_node* ast_node_symbol_new(struct parser_state* p, const char* s) {
     struct ast_node* node  = ast_node_new(AST_NODE_VALUE);
     struct hg_value* value = hg_alloc_(struct hg_value);
 
@@ -371,6 +383,13 @@ void ast_node_free(struct ast_node* node) {
         ast_node_free(idx->idx);
         ast_node_free(idx->xs);
         hg_free_(struct ast_node_index, idx);
+    } break;
+
+    case AST_NODE_DOT: {
+        struct ast_node_dot* dot = node->node;
+        ast_node_free(dot->pre);
+        ast_node_free(dot->suf);
+        hg_free_(struct ast_node_dot, dot);
     } break;
 
     case AST_NODE_ASSIGN: {
@@ -688,6 +707,13 @@ void ast_node_dump(struct ast_node* node, int indent, FILE* fp) {
         fprintf(fp, "[");
         ast_node_dump(idx->idx, 0, fp);
         fprintf(fp, "]");
+    } break;
+
+    case AST_NODE_DOT: {
+        struct ast_node_dot* dot = node->node;
+        ast_node_dump(dot->pre, 0, fp);
+        fprintf(fp, "%s", ".");
+        ast_node_dump(dot->suf, 0, fp);
     } break;
 
     default:

@@ -11,7 +11,7 @@ static int lex_return(struct parser_state* p, int c) {
 // #define LEX_DEBUG
 #ifdef LEX_DEBUG
     switch (c) {
-        case op_ddot: printf(".."); break;
+        case op_dot: printf("."); break;
         case op_assign: printf("="); break;
         case op_or: printf("||"); break;
         case op_and: printf("&&"); break;
@@ -43,7 +43,7 @@ static int lex_return(struct parser_state* p, int c) {
         case kw_break: printf("brk "); break;
         case kw_continue: printf("conti "); break;
         case kw_return: printf("ret "); break;
-        case kw_def: printf("def "); break;
+        case kw_fn: printf("fn "); break;
         case kw_in: printf("in "); break;
         case kw_while: printf("while "); break;
         case kw_let: printf("let "); break;
@@ -68,7 +68,7 @@ static int lex_return(struct parser_state* p, int c) {
 
 TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 %%
-".."{TRAIL}                     LEX_RETURN(op_ddot);
+"."{TRAIL}                      LEX_RETURN(op_dot);
 "+"{TRAIL}                      LEX_RETURN(op_add);
 "-"{TRAIL}                      LEX_RETURN(op_sub);
 "*"{TRAIL}                      LEX_RETURN(op_mul);
@@ -89,10 +89,10 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "["{TRAIL}                      LEX_RETURN(sep_ls);
 "("{TRAIL}                      LEX_RETURN(sep_lb);
 "{"{TRAIL}                      LEX_RETURN(sep_lp);
+","{TRAIL}                      LEX_RETURN(sep_comma);
 {TRAIL}"]"                      LEX_RETURN(sep_rs);
 {TRAIL}")"                      LEX_RETURN(sep_rb);
 {TRAIL}"}"                      LEX_RETURN(sep_rp);
-{TRAIL}","{TRAIL}               LEX_RETURN(sep_comma);
 {TRAIL}";"{TRAIL}               LEX_RETURN(sep_semic);
 "\n"                            LEX_RETURN(sep_nl);
 "#"[^\n]*"\n"                   LEX_RETURN(sep_nl);
@@ -104,35 +104,33 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "continue"{TRAIL}               LEX_RETURN(kw_continue);
 "return"{TRAIL}                 LEX_RETURN(kw_return);
 "for"{TRAIL}                    LEX_RETURN(kw_for);
-"def"{TRAIL}                    LEX_RETURN(kw_def);
-"while"{TRAIL}                  LEX_RETURN(kw_while);
-"let"{TRAIL}                    LEX_RETURN(kw_let);
+"fn"{TRAIL}                    LEX_RETURN(kw_fn);
 
 "true" {
-    lval->node = ast_node_bool_new(p, true);
+    // lval->node = ast_node_bool_new(p, true);
     LEX_RETURN(lit_bool);
 }
 "false" {
-    lval->node = ast_node_bool_new(p, false);
+    // lval->node = ast_node_bool_new(p, false);
     LEX_RETURN(lit_bool);
 }
 
 [A-Za-z_][A-Za-z0-9_]* {
-    lval->node = ast_node_id_new(p, yytext);
-    LEX_RETURN(lit_id);
+    // lval->node = ast_node_symbol_new(p, yytext);
+    LEX_RETURN(lit_symbol);
 };
 
 (([1-9][0-9]*)|0) {
     int64_t t;
-    sscanf(yytext, "%ld", &t);
-    lval->node = ast_node_int_new(p, t);
+    // sscanf(yytext, "%ld", &t);
+    // lval->node = ast_node_int_new(p, t);
     LEX_RETURN(lit_int);
 }
 
 (([1-9][0-9]*)|0)(\.[0-9]+) {
     double t;
-    sscanf(yytext, "%lf", &t);
-    lval->node = ast_node_float_new(p, t);
+    // sscanf(yytext, "%lf", &t);
+    // lval->node = ast_node_float_new(p, t);
     LEX_RETURN(lit_float);
 };
 
