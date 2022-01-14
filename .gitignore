@@ -1,12 +1,10 @@
 *.o
 *.out
-bin/
+.clangd/
+.vscode/
+compile_commands.json
+
 src/y.tab.*
 src/lex.yy.c
-src/.clangd/
-compile_commands.json
 yy.hedgehog.*
 lex.hedgehog.*
-compile_commands.json
-tags
-.vscode/
