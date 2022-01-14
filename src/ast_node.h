@@ -23,6 +23,7 @@ enum ast_node_type {
     AST_NODE_FUNC,
     AST_NODE_WHILE,
     AST_NODE_INDEX,
+    AST_NODE_DOT,
     // only node:
     AST_NODE_BREAK,    // node->node = NULL
     AST_NODE_CONTINUE, // node->node = NULL
@@ -76,14 +77,24 @@ struct ast_node* ast_node_op_new(struct parser_state* p,
                                  struct ast_node* left, struct ast_node* right);
 //< ast_node_op
 
-//>
+//> ast_node_index
 struct ast_node_index {
     struct ast_node* xs;
     struct ast_node* idx;
 };
 struct ast_node* ast_node_index_new(struct parser_state* p, struct ast_node* xs,
                                     struct ast_node* idx);
-//<
+//< ast_node_index
+
+//> ast_node_dot
+// pre.suf
+struct ast_node_dot {
+    struct ast_node* pre;
+    struct ast_node* suf;
+};
+struct ast_node* ast_node_dot_new(struct parser_state* p, struct ast_node* pre,
+                                  struct ast_node* suf);
+//< ast_node_dot
 
 //> ast_node_if
 struct ast_node_if {
@@ -196,7 +207,7 @@ struct ast_node* ast_node_list_new(struct parser_state* p,
 struct ast_node* ast_node_tuple_new(struct parser_state* p,
                                     struct ast_node* args);
 struct ast_node* ast_node_map_new(struct parser_state* p,
-                                    struct ast_node* args);                            
+                                  struct ast_node* args);
 //< ast_node_array
 
 //> ast_node_value: ast_node->node = hg_value_ptr;
@@ -206,7 +217,7 @@ struct ast_node* ast_node_str_new(struct parser_state* p, const char* s);
 struct ast_node* ast_node_str_len_new(struct parser_state* p, const char* s,
                                       size_t len);
 struct ast_node* ast_node_bool_new(struct parser_state* p, bool v);
-struct ast_node* ast_node_id_new(struct parser_state* p, const char* s);
+struct ast_node* ast_node_symbol_new(struct parser_state* p, const char* s);
 //< ast_node_value
 
 //> ast_node_free
