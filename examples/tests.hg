@@ -1,3 +1,7 @@
+a = {}
+b = {"a": a}
+
+
 # first line comments
 fn fac(n) {
   if n <=1 { return 1 } else { return n * fac(n-1) }
@@ -13,7 +17,7 @@ fn fac_tailcall(n) {
 
 math = require("math") # -- math is a local number
 
-math.add(3, 9) # --> 12
+math.add(3, 9) # 12
 print(math.pi) # --> 3.14159
 
 print = G.print # -- all modules share the same `G` table
@@ -115,5 +119,6 @@ fn() {
 
 lists[1], a.a = 1, 2 #fn(a) {print(a)}
 
+_ = fn () {}
 
 # last line comments

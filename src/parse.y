@@ -4,6 +4,13 @@
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 
+
+#ifdef YYAC_DEBUG
+#define print printf
+#else
+#define print(...)
+#endif
+
 %}
 
 %define api.pure
@@ -21,72 +28,53 @@ static void yyerror(struct parser_state* p, const char* s);
 
 // precedence table
 %right op_assign
-%right op_not
-%left op_dot
 %left op_or
 %left op_and 
+%right op_not
 %left op_neq op_eq op_ge op_le op_gt op_ls
 %left op_add op_sub
 %left op_mul op_div op_mod
 
 %token sep_lp sep_rp // {}
-       sep_ls sep_rs // ()
+       sep_ls sep_rs // []
        sep_lb sep_rb // ()
        sep_colon // :
        sep_nl sep_semic sep_comma // \n;,
-       kw_if kw_else kw_for kw_break kw_continue kw_return
-       kw_in kw_fn
+       kw_if kw_else kw_for kw_break kw_continue kw_return kw_in kw_fn
+       op_dot
 
 %token <node> lit_float lit_int lit_bool lit_string lit_symbol
-%type <node>  primary expr func_call args params stat if_stat opt_elsif_stat
-              for_stat func_def stats block program comp_stat
-              index_expr map_expr list_expr entries dot_expr func_expr
-              assignable assignable_list
-              callable
 
 %%
 
 program:
-    comp_stat {
-        // p->lval = $1;
-    };
-
-comp_stat:
-    opt_sep stats opt_sep {
-//         $$ = $2;
-    };
-
-block:
-    sep_lp sep_rp {
-//         $$ = NULL; 
-    }
-    |
-    sep_lp comp_stat sep_rp {
-//         $$ = $2; 
-    };
+    optional_seps stats optional_seps { }
+    ;
 
 stats:
     stat {
-//         $$ = ast_node_array_new(p, AST_NODE_STATS);
-//        ast_node_array_add(p, $$, $1);
+        print("\n%d: shift stat to stats\n", __LINE__);
     }
     |
     stats seps stat {
-//         $$ = $1;
-//        ast_node_array_add(p, $$, $3);
+        print("\n%d: shift stat to stats (append)\n", __LINE__);
     }
-    |
+    /*
     stats error {
+        print("\n%d: shift stats with error to stats (append)\n", __LINE__);
     }
     |
     error {
-//         $$ = NULL;
-    };
+        print("\n%d: shift error to stats (append)\n", __LINE__);
+    }
+    */
+    ;
 
-opt_sep:
-    /* none */
+optional_seps:
+    /* none */ {}
     |
-    seps;
+    seps
+    ;
 
 seps:
     sep
@@ -103,231 +91,207 @@ sep:
     sep_nl;
 
 stat:
-    func_def
-    |
-    for_stat
-    |
-    if_stat
-    |
-    expr
-    |
-    assignable_list op_assign args { /* a, b = 1, 2 */
-//         $$ = ast_node_assign_new(p, $1, $3);
+    assignment_stat {
+        print("\n%d: reduce assignment_stat to stat\n", __LINE__);
     }
     |
-    kw_break {
-//         $$ = ast_node_loopctrl_new(p, AST_NODE_BREAK);
+    if_stat {
+        print("\n%d: reduce if_stat to stat\n", __LINE__);
     }
     |
-    kw_continue {
-//         $$ = ast_node_loopctrl_new(p, AST_NODE_CONTINUE);
+    for_stat {
+        print("\n%d: reduce for_stat to stat\n", __LINE__);
     }
     |
-    kw_return {
-//         $$ = ast_node_return_new(p, NULL);
+    function_stat {
+        print("\n%d: reduce function_stat to stat\n", __LINE__);
     }
     |
-    kw_return expr {
-//         $$ = ast_node_return_new(p, $2);
+    return_stat {
+        print("\n%d: reduce return_stat to stat\n", __LINE__);
+    }
+    |
+    continue_stat {
+        print("\n%d: reduce continue_stat to stat\n", __LINE__);
+    }
+    |
+    break_stat {
+        print("\n%d: reduce break_stat to stat\n", __LINE__);
+    }
+    |
+    expr {
+        print("\n%d: reduce expr to stat\n", __LINE__);
+    }
+    ;
+
+block:
+    sep_lp sep_rp {
+        print("\n%d: empty block \n", __LINE__);
+    }
+    |
+    sep_lp stats sep_rp {
+        print("\n%d: stats block\n", __LINE__);
     };
 
 
-assignable_list:
-    assignable
+function_stat:
+    kw_fn lit_symbol sep_lb sep_rb block {
+        print("\n%d: function without parameters\n", __LINE__);
+    }
     |
-    assignable_list sep_comma assignable;
+    kw_fn lit_symbol sep_lb parameters sep_rb block {
+        print("\n%d: function without\n", __LINE__);
+    }
+    ;
 
-assignable:
+parameters:
+    lit_symbol
+    |
+    parameters sep_comma lit_symbol;
+
+assignment_stat:
+    vars op_assign exprs; 
+
+vars:
+    var_declarator
+    |
+    vars sep_comma var_declarator;
+
+var_declarator:
     lit_symbol
     |
     index_expr
     |
-    dot_expr
-    ;
-
-if_stat:
-    kw_if expr block opt_elsif_stat {
-//         $$ = ast_node_if_new(p, $2, $3, $4);
-    };
-
-opt_elsif_stat:
-    /* none */ {
-//        $$ = NULL;
-    }
-    |
-    kw_else block {
-//         $$ = ast_node_if_new(p, NULL, $2, NULL);
-    }
-    |
-    kw_else kw_if expr block opt_elsif_stat {
-//         $$ = ast_node_if_new(p, $3, $4, $5);
-    };
+    field_expr;
 
 for_stat:
-    kw_for params kw_in expr block {
-//         $$ = ast_node_for_new(p, $2, $4, $5);
+    kw_for parameters kw_in expr block;
+
+continue_stat:
+    kw_continue { };
+
+break_stat:
+    kw_break { };
+
+return_stat:
+    kw_return {
+        print("\n%d: return nothing\n", __LINE__);
+    }
+    |
+    kw_return expr {
+        print("\n%d: return expr\n", __LINE__);
     };
 
-func_def:
-    kw_fn lit_symbol sep_lb sep_rb block {
-//         $$ = ast_node_func_new(p, $2, NULL, $5);
+if_stat:
+    kw_if expr block {
+        print("\n%d: if stat\n", __LINE__);
     }
     |
-    kw_fn lit_symbol sep_lb params sep_rb block {
-//         $$ = ast_node_func_new(p, $2, $4, $6);
+    kw_if expr block else_stat {
+        print("\n%d: if-else stat\n", __LINE__);
     };
 
-func_expr:
-    kw_fn sep_lb sep_rb block {
-    }
-    |
-    kw_fn sep_lb params sep_rb block {
-        // $$ = ast_node_func_new(p, $2, $4, $6);
+else_stat:
+    kw_else block {
+        print("\n%d: else expr\n", __LINE__);
     };
 
-params:
-    lit_symbol {
-        // $$ = ast_node_array_new(p, AST_NODE_VARS);
-        // ast_node_array_add(p, $$, $1);
-    }
+arguments:
+    sep_lb sep_rb
     |
-    params sep_comma lit_symbol {
-        // ast_node_array_add(p, $$, $3);
-        // $$ = $1;
-    };
+    sep_lb exprs sep_rb
+    ;
 
-list_expr:
-    sep_lp args sep_comma sep_rp {
-        // $$ = ast_node_list_new(p, $2);
-    }
+exprs:
+    expr
     |
-    sep_lp args sep_rp {
-//         $$ = ast_node_list_new(p, $2);
-    };
+    exprs sep_comma expr
+    ;
 
-map_expr:
-    sep_lp entries sep_comma sep_rp {
-//         $$ = ast_node_map_new(p, $2);
-    }
+function_def_expr:
+    kw_fn sep_lb sep_rb block
     |
-    sep_lp entries sep_rp {
-//         $$ = ast_node_map_new(p, $2);
-    };
+    kw_fn sep_lb parameters sep_rb block;
 
-entries:
-    expr sep_colon expr {
-//         $$ = ast_node_array_new(p, AST_NODE_ARGS);
-//        ast_node_array_add(p, $$, $1);
-//        ast_node_array_add(p, $$, $3);
+function_call_expr:
+    primary arguments {
+        print("\n%d: call function\n", __LINE__);
     }
-    |
-    entries sep_comma expr sep_colon expr {
-//        ast_node_array_add(p, $$, $3);
-//        ast_node_array_add(p, $$, $5);
-//         $$ = $1;
-    };
-
-args:
-    /* none */ {
-//         $$ = NULL;
-    }
-    |
-    expr {
-//         $$ = ast_node_array_new(p, AST_NODE_ARGS);
-//        ast_node_array_add(p, $$, $1);
-    }
-    |
-    args sep_comma expr {
-//        ast_node_array_add(p, $$, $3);
-//         $$ = $1;
-    };
-
-expr:
-    primary
-    |
-    op_sub primary {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_NEG, NULL, $2);
-    }
-    | // TODO: not should have higher precedence than `and` and `or`
-    op_not expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_NOT, NULL, $2);
-    }
-    |
-    expr op_and expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_AND, $1, $3);
-    }
-    |
-    expr op_or expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_OR, $1, $3);
-    } 
-    |
-    expr op_ls expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_LS, $1, $3);
-    } 
-    |
-    expr op_gt expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_GT, $1, $3);
-    }
-    |
-    expr op_ge expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_GE, $1, $3);
-    }
-    |
-    expr op_le expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_LE, $1, $3);
-    }
-    |
-    expr op_eq expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_EQ, $1, $3);
-    }
-    |
-    expr op_neq expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_NEQ, $1, $3);
-    }
-    |
-    expr op_add expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_ADD, $1, $3);
-    }
-    |
-    expr op_sub expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_SUB, $1, $3);
-    }
-    |
-    expr op_mod expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_MOD, $1, $3);
-    }
-    |
-    expr op_div expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_DIV, $1, $3);
-    }
-    |
-    expr op_mul expr {
-//         $$ = ast_node_op_new(p, AST_NODE_OP_MUL, $1, $3);
-    };
-
-func_call:
-    callable sep_lb args sep_rb { /* f(a, b) */
-//         $$ = ast_node_call_new(p, $1, $3);
-    };
-
-callable:
-    lit_symbol
-    |
-    dot_expr
-    |
-    func_expr
-    |
-    func_call
     ;
 
 index_expr:
-    primary sep_ls expr sep_rs {
-//         $$ = ast_node_index_new(p, $1, $3);
+    primary sep_ls expr sep_rs;
+
+field_expr:
+    primary op_dot lit_symbol;
+
+table_expr:
+    sep_lp sep_rp {
+        print("\n%d: empty table\n", __LINE__);
+    }
+    |
+    sep_lp exprs sep_rp
+    |
+    sep_lp table_entris sep_rp
+    ;
+
+table_entris:
+    expr sep_colon expr {
+        print("\n%d: reduce expr:expr to entries\n", __LINE__);
+    }
+    |
+    table_entris sep_comma expr sep_colon expr {
+        print("\n%d: append table entries\n", __LINE__);
     };
 
-dot_expr:
-    primary op_dot lit_symbol {
-//         $$ = ast_node_dot_new(p, $1, $3);
+
+expr:
+    primary {
+    }
+    |
+    op_sub primary {
+    }
+    |
+    op_not expr {
+    }
+    |
+    expr op_and expr {
+    }
+    |
+    expr op_or expr {
+    } 
+    |
+    expr op_ls expr {
+    } 
+    |
+    expr op_gt expr {
+    }
+    |
+    expr op_ge expr {
+    }
+    |
+    expr op_le expr {
+    }
+    |
+    expr op_eq expr {
+    }
+    |
+    expr op_neq expr {
+    }
+    |
+    expr op_add expr {
+    }
+    |
+    expr op_sub expr {
+    }
+    |
+    expr op_mod expr {
+    }
+    |
+    expr op_div expr {
+    }
+    |
+    expr op_mul expr {
     };
 
 primary:
@@ -339,19 +303,21 @@ primary:
     |
     lit_float
     |
-    lit_symbol 
+    lit_symbol
     |
-    func_call
+    table_expr {
+        print("\n%d: reduce table to primary\n", __LINE__);
+    }
+    |
+    function_call_expr
     |
     index_expr
     |
-    map_expr
+    field_expr
     |
-    dot_expr
+    sep_lb expr sep_rb
     |
-    func_expr
-    |
-    list_expr;
+    function_def_expr;
 
 %%
 
