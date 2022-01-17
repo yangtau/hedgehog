@@ -8,7 +8,6 @@
 static int lex_return(struct parser_state* p, int c) {
     p->lineno = p->tline;
     p->tline = yylineno;
-// #define LEX_DEBUG
 #ifdef LEX_DEBUG
     switch (c) {
         case op_dot: printf("."); break;
@@ -27,7 +26,7 @@ static int lex_return(struct parser_state* p, int c) {
         case op_mul: printf("*"); break;
         case op_div: printf("/"); break;
         case op_mod: printf("%%"); break;
-        case sep_lp: printf("{\n"); break;
+        case sep_lp: printf("{"); break;
         case sep_rp: printf("}"); break;
         case sep_ls: printf("["); break;
         case sep_rs: printf("]"); break;
@@ -45,14 +44,12 @@ static int lex_return(struct parser_state* p, int c) {
         case kw_return: printf("ret "); break;
         case kw_fn: printf("fn "); break;
         case kw_in: printf("in "); break;
-        case kw_while: printf("while "); break;
-        case kw_let: printf("let "); break;
         case lit_int: printf("%s:int ", yytext);break;
-        case lit_string: printf("%s:str ", yytext);break;
+        case lit_string: printf("`%s`:str ", yytext);break;
         case lit_float: printf("%s:float ", yytext);break;
         case lit_bool:
-        case lit_id:
-            printf("%s ", yytext); break;
+        case lit_symbol:
+            printf("@%s", yytext); break;
         default: printf("#ERROR");
     }
     fflush(stdout);
@@ -84,7 +81,6 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "||"{TRAIL}                     LEX_RETURN(op_or);
 "!"{TRAIL}                      LEX_RETURN(op_not);
 "="{TRAIL}                      LEX_RETURN(op_assign);
-
 ":"{TRAIL}                      LEX_RETURN(sep_colon);
 "["{TRAIL}                      LEX_RETURN(sep_ls);
 "("{TRAIL}                      LEX_RETURN(sep_lb);
@@ -93,8 +89,8 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 {TRAIL}"]"                      LEX_RETURN(sep_rs);
 {TRAIL}")"                      LEX_RETURN(sep_rb);
 {TRAIL}"}"                      LEX_RETURN(sep_rp);
-{TRAIL}";"{TRAIL}               LEX_RETURN(sep_semic);
-"\n"                            LEX_RETURN(sep_nl);
+";"{TRAIL}                      LEX_RETURN(sep_semic);
+"\n"{TRAIL}                     LEX_RETURN(sep_nl);
 "#"[^\n]*"\n"                   LEX_RETURN(sep_nl);
 
 {TRAIL}"in"{TRAIL}              LEX_RETURN(kw_in);
