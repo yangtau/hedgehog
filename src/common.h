@@ -1,5 +1,5 @@
-#ifndef _HG_COMMON_H_
-#define _HG_COMMON_H_
+#ifndef HG_COMMON_H_
+#define HG_COMMON_H_
 
 #include <assert.h>
 #include <stdbool.h>
@@ -12,8 +12,8 @@
 
 #define struct_field_offset_(st, field) ((intptr_t)(&((st*)0)->field))
 
-
 #define _force_inline_ inline __attribute__((always_inline))
+
 static _force_inline_ void print_backtrace() {
     void* callstack[128];
     size_t frames = backtrace(callstack, 128);
@@ -45,4 +45,4 @@ static _force_inline_ void print_backtrace() {
         exit(-1);                                             \
     } while (0)
 
-#endif // _HG_COMMON_H_
+#endif // HG_COMMON_H_

@@ -1,55 +1,56 @@
 %{
-#include <string.h>
-#include "ast_node.h"
+#include "ast.h"
 #include "yy.hedgehog.h"
 
-#define YY_DECL int yylex(YYSTYPE* lval, struct parser_state* p)
+#include <string.h>
 
-static int lex_return(struct parser_state* p, int c) {
+#define YY_DECL int yylex(YYSTYPE* lval, struct hg_parser_state* p)
+
+static int lex_return(struct hg_parser_state* p, int c) {
     p->lineno = p->tline;
     p->tline = yylineno;
 #ifdef LEX_DEBUG
     switch (c) {
-        case op_dot: printf("."); break;
-        case op_assign: printf("="); break;
-        case op_or: printf("||"); break;
-        case op_and: printf("&&"); break;
-        case op_not: printf("!"); break;
-        case op_neq: printf("!="); break;
-        case op_eq: printf("=="); break;
-        case op_ge: printf(">="); break;
-        case op_le: printf("<="); break;
-        case op_gt: printf(">"); break;
-        case op_ls: printf("<"); break;
-        case op_add: printf("+"); break;
-        case op_sub: printf("-"); break;
-        case op_mul: printf("*"); break;
-        case op_div: printf("/"); break;
-        case op_mod: printf("%%"); break;
-        case sep_lp: printf("{"); break;
-        case sep_rp: printf("}"); break;
-        case sep_ls: printf("["); break;
-        case sep_rs: printf("]"); break;
-        case sep_lb: printf("("); break;
-        case sep_rb: printf(")"); break;
-        case sep_nl: printf("\\n\n"); break;
-        case sep_semic: printf(";"); break;
-        case sep_comma: printf(","); break;
-        case sep_colon: printf(":"); break;
-        case kw_if: printf("if "); break;
-        case kw_else: printf("else "); break;
-        case kw_for: printf("for "); break;
-        case kw_break: printf("brk "); break;
-        case kw_continue: printf("conti "); break;
-        case kw_return: printf("ret "); break;
-        case kw_fn: printf("fn "); break;
-        case kw_in: printf("in "); break;
-        case lit_int: printf("%s:int ", yytext);break;
-        case lit_string: printf("`%s`:str ", yytext);break;
-        case lit_float: printf("%s:float ", yytext);break;
-        case lit_bool:
-        case lit_symbol:
-            printf("@%s", yytext); break;
+        case op_dot: printf(".");                      break;
+        case op_assign: printf("=");                   break;
+        case op_or: printf("||");                      break;
+        case op_and: printf("&&");                     break;
+        case op_not: printf("!");                      break;
+        case op_neq: printf("!=");                     break;
+        case op_eq: printf("==");                      break;
+        case op_ge: printf(">=");                      break;
+        case op_le: printf("<=");                      break;
+        case op_gt: printf(">");                       break;
+        case op_ls: printf("<");                       break;
+        case op_add: printf("+");                      break;
+        case op_sub: printf("-");                      break;
+        case op_mul: printf("*");                      break;
+        case op_div: printf("/");                      break;
+        case op_mod: printf("%%");                     break;
+        case sep_lp: printf("{");                      break;
+        case sep_rp: printf("}");                      break;
+        case sep_ls: printf("[");                      break;
+        case sep_rs: printf("]");                      break;
+        case sep_lb: printf("(");                      break;
+        case sep_rb: printf(")");                      break;
+        case sep_nl: printf("\\n\n");                  break;
+        case sep_semic: printf(";");                   break;
+        case sep_comma: printf(",");                   break;
+        case sep_colon: printf(":");                   break;
+        case kw_if: printf("if ");                     break;
+        case kw_else: printf("else ");                 break;
+        case kw_for: printf("for ");                   break;
+        case kw_break: printf("brk ");                 break;
+        case kw_continue: printf("conti ");            break;
+        case kw_return: printf("ret ");                break;
+        case kw_fn: printf("fn ");                     break;
+        case kw_in: printf("in ");                     break;
+        case lit_int: printf("%s:int ", yytext);       break;
+        case lit_string: printf("`%s`:str ", yytext);  break;
+        case lit_float: printf("%s:float ", yytext);   break;
+        case lit_false: printf("false:bool ", yytext); break;
+        case lit_true: printf("true:bool ", yytext);   break;
+        case lit_id: printf("@%s", yytext);            break;
         default: printf("#ERROR");
     }
     fflush(stdout);
@@ -92,7 +93,6 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 ";"{TRAIL}                      LEX_RETURN(sep_semic);
 "\n"{TRAIL}                     LEX_RETURN(sep_nl);
 "#"[^\n]*"\n"                   LEX_RETURN(sep_nl);
-
 {TRAIL}"in"{TRAIL}              LEX_RETURN(kw_in);
 {TRAIL}"else"{TRAIL}            LEX_RETURN(kw_else);
 "if"{TRAIL}                     LEX_RETURN(kw_if);
@@ -100,20 +100,20 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "continue"{TRAIL}               LEX_RETURN(kw_continue);
 "return"{TRAIL}                 LEX_RETURN(kw_return);
 "for"{TRAIL}                    LEX_RETURN(kw_for);
-"fn"{TRAIL}                    LEX_RETURN(kw_fn);
+"fn"{TRAIL}                     LEX_RETURN(kw_fn);
 
 "true" {
     // lval->node = ast_node_bool_new(p, true);
-    LEX_RETURN(lit_bool);
+    LEX_RETURN(lit_true);
 }
 "false" {
     // lval->node = ast_node_bool_new(p, false);
-    LEX_RETURN(lit_bool);
+    LEX_RETURN(lit_false);
 }
 
 [A-Za-z_][A-Za-z0-9_]* {
     // lval->node = ast_node_symbol_new(p, yytext);
-    LEX_RETURN(lit_symbol);
+    LEX_RETURN(lit_id);
 };
 
 (([1-9][0-9]*)|0) {
@@ -131,7 +131,7 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 };
 
 \"([^\\\"]|\\.)*\" {
-    lval->node = ast_node_str_len_new(p, yytext+1, strlen(yytext)-2);
+    // lval->node = ast_node_str_len_new(p, yytext+1, strlen(yytext)-2);
     LEX_RETURN(lit_string);
 };
 

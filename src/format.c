@@ -1,8 +1,8 @@
 #include "common.h"
-#include "ast_node.h"
+#include "ast.h"
 #include "memory.h"
 
-extern int yyparse(struct parser_state* p);
+extern int yyparse(struct hg_parser_state* p);
 
 int main(int argc, char** argv) {
     extern FILE* yyin;
@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 
     yyin = f;
 
-    struct parser_state p = {
+    struct hg_parser_state p = {
         .lineno = 1, .tline = 1, .lval = NULL, .fname = argv[1]};
 
     while (yyparse(&p))

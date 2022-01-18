@@ -1,5 +1,5 @@
 %{
-#include "ast_node.h"
+#include "ast.h"
 
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
@@ -14,16 +14,16 @@
 %}
 
 %define api.pure
-%parse-param {struct parser_state* p}
+%parse-param {struct hg_parser_state* p}
 %lex-param {p}
 
 %union {
-    struct ast_node* node;
+    void* node;
 }
  
 %{
-int yylex(YYSTYPE* lval, struct parser_state* p);
-static void yyerror(struct parser_state* p, const char* s);
+int yylex(YYSTYPE* lval, struct hg_parser_state* p);
+static void yyerror(struct hg_parser_state* p, const char* s);
 %}
 
 // precedence table
@@ -43,12 +43,12 @@ static void yyerror(struct parser_state* p, const char* s);
        kw_if kw_else kw_for kw_break kw_continue kw_return kw_in kw_fn
        op_dot
 
-%token <node> lit_float lit_int lit_bool lit_string lit_symbol
+%token <node> lit_float lit_int lit_true lit_false lit_string lit_id
 
 %%
 
 program:
-    optional_seps stats optional_seps { }
+    optional_seps stats optional_seps
     ;
 
 stats:
@@ -59,19 +59,21 @@ stats:
     stats seps stat {
         print("\n%d: shift stat to stats (append)\n", __LINE__);
     }
-    /*
-    stats error {
-        print("\n%d: shift stats with error to stats (append)\n", __LINE__);
+    ;
+
+block:
+    sep_lp sep_rp {
+        print("\n%d: empty block \n", __LINE__);
     }
     |
-    error {
-        print("\n%d: shift error to stats (append)\n", __LINE__);
+    sep_lp stats sep_rp {
+        print("\n%d: stats block\n", __LINE__);
     }
-    */
     ;
 
 optional_seps:
-    /* none */ {}
+    /* none */ {
+    }
     |
     seps
     ;
@@ -81,14 +83,18 @@ seps:
     | 
     seps sep {
         yyerrok;
-    };
+    }
+    ;
 
 sep:
     sep_semic {
        yyerrok;
     }
     |
-    sep_nl;
+    sep_nl {
+       yyerrok;
+    }
+    ;
 
 stat:
     assignment_stat {
@@ -124,30 +130,20 @@ stat:
     }
     ;
 
-block:
-    sep_lp sep_rp {
-        print("\n%d: empty block \n", __LINE__);
-    }
-    |
-    sep_lp stats sep_rp {
-        print("\n%d: stats block\n", __LINE__);
-    };
-
-
 function_stat:
-    kw_fn lit_symbol sep_lb sep_rb block {
+    kw_fn lit_id sep_lb sep_rb block {
         print("\n%d: function without parameters\n", __LINE__);
     }
     |
-    kw_fn lit_symbol sep_lb parameters sep_rb block {
+    kw_fn lit_id sep_lb parameters sep_rb block {
         print("\n%d: function without\n", __LINE__);
     }
     ;
 
 parameters:
-    lit_symbol
+    lit_id
     |
-    parameters sep_comma lit_symbol;
+    parameters sep_comma lit_id;
 
 assignment_stat:
     vars op_assign exprs; 
@@ -158,7 +154,7 @@ vars:
     vars sep_comma var_declarator;
 
 var_declarator:
-    lit_symbol
+    lit_id
     |
     index_expr
     |
@@ -223,7 +219,7 @@ index_expr:
     primary sep_ls expr sep_rs;
 
 field_expr:
-    primary op_dot lit_symbol;
+    primary op_dot lit_id;
 
 table_expr:
     sep_lp sep_rp {
@@ -297,13 +293,15 @@ expr:
 primary:
     lit_string
     |
-    lit_bool
+    lit_true
+    |
+    lit_false
     |
     lit_int
     |
     lit_float
     |
-    lit_symbol
+    lit_id
     |
     table_expr {
         print("\n%d: reduce table to primary\n", __LINE__);
@@ -323,7 +321,7 @@ primary:
 
 #include "lex.hedgehog.c"
 
-static void yyerror(struct parser_state* p, const char* s) {
+static void yyerror(struct hg_parser_state* p, const char* s) {
     p->nerr++;
     if (p->fname) {
         fprintf(stderr, "%s:%d:%s:\n`%s`\n", p->fname, p->lineno, s, yytext);
