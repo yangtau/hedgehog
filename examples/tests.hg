@@ -6,10 +6,12 @@ fn fac(n) {
 
 # tail call version:
 fn fac_tailcall(n) {
+
   fn f(acc, n) {
     if n <= 1 { return acc} else { return f(acc*n, n-1) }
   }
   return f(1, n)
+
 }
 
 ## import modules ##

@@ -1,20 +1,14 @@
 YACC = bison
 LEX  = flex
 CC   = gcc
-CFLAGS = -std=gnu99 -g -Wall -Wextra -rdynamic
+CFLAGS = -std=c11 -g -Wall -Wextra -rdynamic
 
 SRC := $(filter-out yy.hedgehog.c lex.hedgehog.c format.c main.c hash_test.c, $(wildcard *.c))
 OBJS := $(SRC:.c=.o)
 
-all: hg formater
+all: formater
 
-hg: main.c parser.o $(OBJS)
-	$(CC) $(CFLAGS) -o hg main.c parser.o $(OBJS)
-
-hash_test: hash_test.c $(OBJS)
-	$(CC) $(CFLAGS) -o hash_test hash_test.c $(OBJS)
-
-formater: format.c $(OBJS)
+formater: format.c $(OBJS) parser.o
 	$(CC) $(CFLAGS) -o formater format.c parser.o $(OBJS)
 
 parser.o: parse.y lex.l
@@ -28,7 +22,5 @@ $(OBJS):%.o: %.c
 clean:
 	rm -f yy.hedgehog.* lex.hedgehog.* *.o
 	rm -f formater
-	rm -f tags
 	rm -f hg
-	rm -f hash_test
 	rm -rf *.dSYM
