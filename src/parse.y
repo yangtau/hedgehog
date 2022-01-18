@@ -15,7 +15,7 @@
 
 %define api.pure          full
 %define api.prefix        {hg_yy_}
-%define api.symbol.prefix {hg_yy_s_}
+// %define api.symbol.prefix {hg_yy_s_}
 %define api.token.prefix  {hg_yy_t_}
 %define parse.error       verbose
 %define parse.lac         full

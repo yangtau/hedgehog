@@ -6,6 +6,7 @@
 extern int hg_yy_parse(struct hg_parser_state* p);
 
 extern struct yy_buffer_state* hg_yy_scan_string(const char* yystr);
+extern int hg_yylex_destroy(void);
 
 int main(int argc, char** argv) {
     struct hg_parser_state p = {
@@ -26,10 +27,12 @@ int main(int argc, char** argv) {
         while (hg_yy_parse(&p))
             ;
         fclose(hg_yyin);
+        hg_yylex_destroy();
     } else if (argc == 3 && strcmp(argv[1], "-e") == 0) {
         hg_yy_scan_string(argv[2]);
         while (hg_yy_parse(&p))
             ;
+        hg_yylex_destroy();
     } else {
         fprintf(stderr, "Usage: %s [filename]\n\t%s -s [code]\n", argv[0],
                 argv[0]);
