@@ -13,23 +13,29 @@
 
 %}
 
-%define api.pure
+%define api.pure          full
+%define api.prefix        {hg_yy_}
+%define api.symbol.prefix {hg_yy_s_}
+%define api.token.prefix  {hg_yy_t_}
+%define parse.error       verbose
+%define parse.lac         full
+
 %parse-param {struct hg_parser_state* p}
 %lex-param {p}
 
 %union {
     void* node;
 }
- 
+
 %{
-int yylex(YYSTYPE* lval, struct hg_parser_state* p);
-static void yyerror(struct hg_parser_state* p, const char* s);
+int hg_yy_lex(YYSTYPE* lval, struct hg_parser_state* p);
+static void hg_yy_error(struct hg_parser_state* p, const char* s);
 %}
 
 // precedence table
 %right op_assign
 %left op_or
-%left op_and 
+%left op_and
 %right op_not
 %left op_neq op_eq op_ge op_le op_gt op_ls
 %left op_add op_sub
@@ -59,6 +65,10 @@ stats:
     stats seps stat {
         print("\n%d: shift stat to stats (append)\n", __LINE__);
     }
+    |
+    stats error
+    |
+    error
     ;
 
 block:
@@ -80,16 +90,14 @@ optional_seps:
 
 seps:
     sep
-    | 
+    |
     seps sep {
         yyerrok;
     }
     ;
 
 sep:
-    sep_semic {
-       yyerrok;
-    }
+    sep_semic
     |
     sep_nl {
        yyerrok;
@@ -146,7 +154,7 @@ parameters:
     parameters sep_comma lit_id;
 
 assignment_stat:
-    vars op_assign exprs; 
+    vars op_assign exprs;
 
 vars:
     var_declarator
@@ -255,10 +263,10 @@ expr:
     }
     |
     expr op_or expr {
-    } 
+    }
     |
     expr op_ls expr {
-    } 
+    }
     |
     expr op_gt expr {
     }
@@ -321,11 +329,11 @@ primary:
 
 #include "lex.hedgehog.c"
 
-static void yyerror(struct hg_parser_state* p, const char* s) {
+static void hg_yy_error(struct hg_parser_state* p, const char* s) {
     p->nerr++;
     if (p->fname) {
-        fprintf(stderr, "%s:%d:%s:\n`%s`\n", p->fname, p->lineno, s, yytext);
+        fprintf(stderr, "%s:%d:%s:\n`%s`\n", p->fname, p->lineno, s, hg_yytext);
     } else {
-        fprintf(stderr, "%d:%s:\n`%s`\n", p->lineno, s, yytext);
+        fprintf(stderr, "%d:%s:\n`%s`\n", p->lineno, s, hg_yytext);
     }
 }
