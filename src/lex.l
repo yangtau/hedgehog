@@ -4,53 +4,53 @@
 
 #include <string.h>
 
-#define YY_DECL int yylex(YYSTYPE* lval, struct hg_parser_state* p)
+#define YY_DECL int hg_yy_lex(YYSTYPE* lval, struct hg_parser_state* p)
 
 static int lex_return(struct hg_parser_state* p, int c) {
     p->lineno = p->tline;
     p->tline = yylineno;
 #ifdef LEX_DEBUG
     switch (c) {
-        case op_dot: printf(".");                      break;
-        case op_assign: printf("=");                   break;
-        case op_or: printf("||");                      break;
-        case op_and: printf("&&");                     break;
-        case op_not: printf("!");                      break;
-        case op_neq: printf("!=");                     break;
-        case op_eq: printf("==");                      break;
-        case op_ge: printf(">=");                      break;
-        case op_le: printf("<=");                      break;
-        case op_gt: printf(">");                       break;
-        case op_ls: printf("<");                       break;
-        case op_add: printf("+");                      break;
-        case op_sub: printf("-");                      break;
-        case op_mul: printf("*");                      break;
-        case op_div: printf("/");                      break;
-        case op_mod: printf("%%");                     break;
-        case sep_lp: printf("{");                      break;
-        case sep_rp: printf("}");                      break;
-        case sep_ls: printf("[");                      break;
-        case sep_rs: printf("]");                      break;
-        case sep_lb: printf("(");                      break;
-        case sep_rb: printf(")");                      break;
-        case sep_nl: printf("\\n\n");                  break;
-        case sep_semic: printf(";");                   break;
-        case sep_comma: printf(",");                   break;
-        case sep_colon: printf(":");                   break;
-        case kw_if: printf("if ");                     break;
-        case kw_else: printf("else ");                 break;
-        case kw_for: printf("for ");                   break;
-        case kw_break: printf("brk ");                 break;
-        case kw_continue: printf("conti ");            break;
-        case kw_return: printf("ret ");                break;
-        case kw_fn: printf("fn ");                     break;
-        case kw_in: printf("in ");                     break;
-        case lit_int: printf("%s:int ", yytext);       break;
-        case lit_string: printf("`%s`:str ", yytext);  break;
-        case lit_float: printf("%s:float ", yytext);   break;
-        case lit_false: printf("false:bool ", yytext); break;
-        case lit_true: printf("true:bool ", yytext);   break;
-        case lit_id: printf("@%s", yytext);            break;
+        case hg_yy_t_op_dot: printf(".");                          break;
+        case hg_yy_t_op_assign: printf("=");                       break;
+        case hg_yy_t_op_or: printf("||");                          break;
+        case hg_yy_t_op_and: printf("&&");                         break;
+        case hg_yy_t_op_not: printf("!");                          break;
+        case hg_yy_t_op_neq: printf("!=");                         break;
+        case hg_yy_t_op_eq: printf("==");                          break;
+        case hg_yy_t_op_ge: printf(">=");                          break;
+        case hg_yy_t_op_le: printf("<=");                          break;
+        case hg_yy_t_op_gt: printf(">");                           break;
+        case hg_yy_t_op_ls: printf("<");                           break;
+        case hg_yy_t_op_add: printf("+");                          break;
+        case hg_yy_t_op_sub: printf("-");                          break;
+        case hg_yy_t_op_mul: printf("*");                          break;
+        case hg_yy_t_op_div: printf("/");                          break;
+        case hg_yy_t_op_mod: printf("%%");                         break;
+        case hg_yy_t_sep_lp: printf("{");                          break;
+        case hg_yy_t_sep_rp: printf("}");                          break;
+        case hg_yy_t_sep_ls: printf("[");                          break;
+        case hg_yy_t_sep_rs: printf("]");                          break;
+        case hg_yy_t_sep_lb: printf("(");                          break;
+        case hg_yy_t_sep_rb: printf(")");                          break;
+        case hg_yy_t_sep_nl: printf("\\n\n");                      break;
+        case hg_yy_t_sep_semic: printf(";");                       break;
+        case hg_yy_t_sep_comma: printf(",");                       break;
+        case hg_yy_t_sep_colon: printf(":");                       break;
+        case hg_yy_t_kw_if: printf("if ");                         break;
+        case hg_yy_t_kw_else: printf("else ");                     break;
+        case hg_yy_t_kw_for: printf("for ");                       break;
+        case hg_yy_t_kw_break: printf("brk ");                     break;
+        case hg_yy_t_kw_continue: printf("conti ");                break;
+        case hg_yy_t_kw_return: printf("ret ");                    break;
+        case hg_yy_t_kw_fn: printf("fn ");                         break;
+        case hg_yy_t_kw_in: printf("in ");                         break;
+        case hg_yy_t_lit_int: printf("%s:int ", hg_yytext);       break;
+        case hg_yy_t_lit_string: printf("`%s`:str ", hg_yytext);  break;
+        case hg_yy_t_lit_float: printf("%s:float ", hg_yytext);   break;
+        case hg_yy_t_lit_false: printf("false:bool ", hg_yytext); break;
+        case hg_yy_t_lit_true: printf("true:bool ", hg_yytext);   break;
+        case hg_yy_t_lit_id: printf("@%s", hg_yytext);            break;
         default: printf("#ERROR");
     }
     fflush(stdout);
@@ -61,83 +61,88 @@ static int lex_return(struct hg_parser_state* p, int c) {
 #define LEX_RETURN(c) return lex_return(p, c)
 %}
 
+%option prefix="hg_yy"
 %option yylineno
 %option noyywrap
 
 TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 %%
-"."{TRAIL}                      LEX_RETURN(op_dot);
-"+"{TRAIL}                      LEX_RETURN(op_add);
-"-"{TRAIL}                      LEX_RETURN(op_sub);
-"*"{TRAIL}                      LEX_RETURN(op_mul);
-"/"{TRAIL}                      LEX_RETURN(op_div);
-"%"{TRAIL}                      LEX_RETURN(op_mod);
-"=="{TRAIL}                     LEX_RETURN(op_eq);
-"!="{TRAIL}                     LEX_RETURN(op_neq);
-"<"{TRAIL}                      LEX_RETURN(op_ls);
-"<="{TRAIL}                     LEX_RETURN(op_le);
-">"{TRAIL}                      LEX_RETURN(op_gt);
-">="{TRAIL}                     LEX_RETURN(op_ge);
-"&&"{TRAIL}                     LEX_RETURN(op_and);
-"||"{TRAIL}                     LEX_RETURN(op_or);
-"!"{TRAIL}                      LEX_RETURN(op_not);
-"="{TRAIL}                      LEX_RETURN(op_assign);
-":"{TRAIL}                      LEX_RETURN(sep_colon);
-"["{TRAIL}                      LEX_RETURN(sep_ls);
-"("{TRAIL}                      LEX_RETURN(sep_lb);
-"{"{TRAIL}                      LEX_RETURN(sep_lp);
-","{TRAIL}                      LEX_RETURN(sep_comma);
-{TRAIL}"]"                      LEX_RETURN(sep_rs);
-{TRAIL}")"                      LEX_RETURN(sep_rb);
-{TRAIL}"}"                      LEX_RETURN(sep_rp);
-";"{TRAIL}                      LEX_RETURN(sep_semic);
-"\n"{TRAIL}                     LEX_RETURN(sep_nl);
-"#"[^\n]*"\n"                   LEX_RETURN(sep_nl);
-{TRAIL}"in"{TRAIL}              LEX_RETURN(kw_in);
-{TRAIL}"else"{TRAIL}            LEX_RETURN(kw_else);
-"if"{TRAIL}                     LEX_RETURN(kw_if);
-"break"{TRAIL}                  LEX_RETURN(kw_break);
-"continue"{TRAIL}               LEX_RETURN(kw_continue);
-"return"{TRAIL}                 LEX_RETURN(kw_return);
-"for"{TRAIL}                    LEX_RETURN(kw_for);
-"fn"{TRAIL}                     LEX_RETURN(kw_fn);
+"."{TRAIL}                      LEX_RETURN(hg_yy_t_op_dot);
+"+"{TRAIL}                      LEX_RETURN(hg_yy_t_op_add);
+"-"{TRAIL}                      LEX_RETURN(hg_yy_t_op_sub);
+"*"{TRAIL}                      LEX_RETURN(hg_yy_t_op_mul);
+"/"{TRAIL}                      LEX_RETURN(hg_yy_t_op_div);
+"%"{TRAIL}                      LEX_RETURN(hg_yy_t_op_mod);
+"=="{TRAIL}                     LEX_RETURN(hg_yy_t_op_eq);
+"!="{TRAIL}                     LEX_RETURN(hg_yy_t_op_neq);
+"<"{TRAIL}                      LEX_RETURN(hg_yy_t_op_ls);
+"<="{TRAIL}                     LEX_RETURN(hg_yy_t_op_le);
+">"{TRAIL}                      LEX_RETURN(hg_yy_t_op_gt);
+">="{TRAIL}                     LEX_RETURN(hg_yy_t_op_ge);
+"&&"{TRAIL}                     LEX_RETURN(hg_yy_t_op_and);
+"||"{TRAIL}                     LEX_RETURN(hg_yy_t_op_or);
+"!"{TRAIL}                      LEX_RETURN(hg_yy_t_op_not);
+"="{TRAIL}                      LEX_RETURN(hg_yy_t_op_assign);
+":"{TRAIL}                      LEX_RETURN(hg_yy_t_sep_colon);
+"["{TRAIL}                      LEX_RETURN(hg_yy_t_sep_ls);
+"("{TRAIL}                      LEX_RETURN(hg_yy_t_sep_lb);
+"{"{TRAIL}                      LEX_RETURN(hg_yy_t_sep_lp);
+","{TRAIL}                      LEX_RETURN(hg_yy_t_sep_comma);
+{TRAIL}"]"                      LEX_RETURN(hg_yy_t_sep_rs);
+{TRAIL}")"                      LEX_RETURN(hg_yy_t_sep_rb);
+{TRAIL}"}"                      LEX_RETURN(hg_yy_t_sep_rp);
+";"{TRAIL}                      LEX_RETURN(hg_yy_t_sep_semic);
+"\n"{TRAIL}                     LEX_RETURN(hg_yy_t_sep_nl);
+"#"[^\n]*"\n"                   LEX_RETURN(hg_yy_t_sep_nl);
+{TRAIL}"in"{TRAIL}              LEX_RETURN(hg_yy_t_kw_in);
+{TRAIL}"else"{TRAIL}            LEX_RETURN(hg_yy_t_kw_else);
+"if"{TRAIL}                     LEX_RETURN(hg_yy_t_kw_if);
+"break"{TRAIL}                  LEX_RETURN(hg_yy_t_kw_break);
+"continue"{TRAIL}               LEX_RETURN(hg_yy_t_kw_continue);
+"return"{TRAIL}                 LEX_RETURN(hg_yy_t_kw_return);
+"for"{TRAIL}                    LEX_RETURN(hg_yy_t_kw_for);
+"fn"{TRAIL}                     LEX_RETURN(hg_yy_t_kw_fn);
 
 "true" {
     // lval->node = ast_node_bool_new(p, true);
-    LEX_RETURN(lit_true);
+    LEX_RETURN(hg_yy_t_lit_true);
 }
 "false" {
     // lval->node = ast_node_bool_new(p, false);
-    LEX_RETURN(lit_false);
+    LEX_RETURN(hg_yy_t_lit_false);
 }
 
 [A-Za-z_][A-Za-z0-9_]* {
     // lval->node = ast_node_symbol_new(p, yytext);
-    LEX_RETURN(lit_id);
+    LEX_RETURN(hg_yy_t_lit_id);
 };
 
 (([1-9][0-9]*)|0) {
     int64_t t;
     // sscanf(yytext, "%ld", &t);
     // lval->node = ast_node_int_new(p, t);
-    LEX_RETURN(lit_int);
+    LEX_RETURN(hg_yy_t_lit_int);
 }
 
 (([1-9][0-9]*)|0)(\.[0-9]+) {
     double t;
     // sscanf(yytext, "%lf", &t);
     // lval->node = ast_node_float_new(p, t);
-    LEX_RETURN(lit_float);
+    LEX_RETURN(hg_yy_t_lit_float);
 };
 
 \"([^\\\"]|\\.)*\" {
     // lval->node = ast_node_str_len_new(p, yytext+1, strlen(yytext)-2);
-    LEX_RETURN(lit_string);
+    LEX_RETURN(hg_yy_t_lit_string);
 };
 
-[ \t] ; 
+[ \t] ;
 
-. { 
-    fprintf(stderr, "%s:%d:lexical error:\n `%s`\n", p->fname, p->lineno, yytext); 
+. {
+    if (p->fname) {
+        fprintf(stderr, "%s:%d:lexical error:\n `%s`\n", p->fname, p->lineno, hg_yytext);
+    } else {
+        fprintf(stderr, "%d:lexical error:\n `%s`\n", p->lineno, hg_yytext);
+    }
 };
-%% 
+%%

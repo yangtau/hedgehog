@@ -1,30 +1,41 @@
 #include "common.h"
 #include "ast.h"
 #include "memory.h"
+#include <string.h>
 
-extern int yyparse(struct hg_parser_state* p);
+extern int hg_yy_parse(struct hg_parser_state* p);
+
+extern struct yy_buffer_state* hg_yy_scan_string(const char* yystr);
 
 int main(int argc, char** argv) {
-    extern FILE* yyin;
-
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s [filename]\n", argv[0]);
-        return -1;
-    }
-
-    FILE* f;
-    if ((f = fopen(argv[1], "r")) == NULL) {
-        fprintf(stderr, "faild to open `%s`\n", argv[1]);
-        return -1;
-    }
-
-    yyin = f;
-
     struct hg_parser_state p = {
-        .lineno = 1, .tline = 1, .lval = NULL, .fname = argv[1]};
+        .nerr   = 0,
+        .lval   = NULL,
+        .lineno = 1,
+        .tline  = 1,
+    };
 
-    while (yyparse(&p))
-        ;
+    if (argc == 2) {
+        extern FILE* hg_yyin;
+        if ((hg_yyin = fopen(argv[1], "r")) == NULL) {
+            fprintf(stderr, "faild to open `%s`\n", argv[1]);
+            return -1;
+        }
+
+        p.fname = argv[1];
+        while (hg_yy_parse(&p))
+            ;
+        fclose(hg_yyin);
+    } else if (argc == 3 && strcmp(argv[1], "-e") == 0) {
+        hg_yy_scan_string(argv[2]);
+        while (hg_yy_parse(&p))
+            ;
+    } else {
+        fprintf(stderr, "Usage: %s [filename]\n\t%s -s [code]\n", argv[0],
+                argv[0]);
+        return -1;
+    }
+
     // ast_node_dump(p.lval, 0, stdout);
     // ast_node_free(p.lval);
     // assert(hg_memory_usage() == 0u);
