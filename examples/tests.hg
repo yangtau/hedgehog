@@ -1,7 +1,4 @@
-a = {}
-b = {"a": a}
-
-
+## fac funtions ##
 # first line comments
 fn fac(n) {
   if n <=1 { return 1 } else { return n * fac(n-1) }
@@ -15,16 +12,19 @@ fn fac_tailcall(n) {
   return f(1, n)
 }
 
+## import modules ##
 math = require("math") # -- math is a local number
 
 math.add(3, 9) # 12
 print(math.pi) # --> 3.14159
 
+## global variables via table `G` ##
 print = G.print # -- all modules share the same `G` table
 G = {} # -- override global locally
 
 greet = fn() {print("hello")}
 
+## Car object ##
 fn Car(speed) {
   car = {postion: 0}
 
@@ -37,6 +37,7 @@ car = Car(4)
 car.run(3)
 print(car.postion) # --> 12
 
+## metatable ##
 fn Base() {
   o = {}
   o.hello = fn () { return "hello from base" }
@@ -54,6 +55,7 @@ fn A() {
 a = A()
 a.hello() # -- `hello` of base will be called
 
+## access properties of sub object ##
 fn Greeter(Namer) {
   o = {}
   o.greet = fn () { return "hello, " + Namer.name() }
@@ -70,7 +72,7 @@ fn Human(name) {
 a = Human("yangtao")
 a.greet()
 
-# functional
+## functional ##
 fn Fun(t) {
   m = {}
   setmeta(t, m)
@@ -96,29 +98,40 @@ fn Fun(t) {
   return t
 }
 
+Fun({1, 2, 3, 4, 5, 6}).
+    map(fn (x) {return x*x}).
+    filter(fn (x) {return x>10})
+#--> {16, 25, 36}
+
+
+## special cases  ##
 {hello: fn(){print("ho")}}.hello()
 
-fn() {} ()
+fn() { print("hello") } ()
 
 fn() {
-
 } ()
-
-
-fn() {} (
-
-)
-
-fn(
-
-) {} ()
 
 fn() {
   return fn(a) {print(a)}
 } ()("hello")
 
-lists[1], a.a = 1, 2 #fn(a) {print(a)}
+
+t = {}
+t[1], t.a = 1, fn(a) {print(a)}
+t.a(t[1]) #--> 1
+t[a](t[1]) #--> 1
 
 _ = fn () {}
+
+nested = {
+  outer: {
+    inner: {
+        foo: fn (n) {x=n+100;print(x)}
+    }
+  }
+}
+
+nested[outer].inner[foo](100) #->> 100
 
 # last line comments
