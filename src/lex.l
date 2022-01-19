@@ -1,6 +1,7 @@
 %{
 #include "yy.hedgehog.h"
 
+#include "common.h"
 #include "string.h"
 
 #define YY_DECL int hg_yy_lex(YYSTYPE* lval, struct hg_parser_state* p)
@@ -104,10 +105,11 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 
 "true" {
     LEX_RETURN(hg_yy_t_lit_true);
-}
+};
+
 "false" {
     LEX_RETURN(hg_yy_t_lit_false);
-}
+};
 
 [A-Za-z_][A-Za-z0-9_]* {
     lval->s = hg_string_new(yytext, strlen(yytext));
@@ -115,15 +117,15 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 };
 
 (([1-9][0-9]*)|0) {
-    int64_t t;
-    sscanf(yytext, "%ld", &t);
+    hg_int t;
+    sscanf(yytext, "%" HGFormatInt, &t);
     lval->i = t;
     LEX_RETURN(hg_yy_t_lit_int);
-}
+};
 
 (([1-9][0-9]*)|0)(\.[0-9]+) {
-    double t;
-    sscanf(yytext, "%lf", &t);
+    hg_float t;
+    sscanf(yytext, "%" HGFormatFloat, &t);
     lval->d = t;
     LEX_RETURN(hg_yy_t_lit_float);
 };

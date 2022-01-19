@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <inttypes.h>
 #include <execinfo.h>
 #include <unistd.h>
 
@@ -46,9 +47,18 @@ static _force_inline_ void print_backtrace() {
         exit(-1);                                             \
     } while (0)
 
+// type checks:
 #define is_compatible_(x, T) _Generic((x), T : true, default : false)
 #define ensure_type_(p, t)               \
     _Static_assert(is_compatible_(p, t), \
                    "incorrect type for parameter '" #p "', expected " #t)
+// types used by inner HG
+typedef int64_t hg_int;
+typedef double hg_float;
+typedef const char* hg_char;
+typedef bool hg_bool;
+
+#define HGFormatInt   PRId64
+#define HGFormatFloat "lf"
 
 #endif // HG_COMMON_H_

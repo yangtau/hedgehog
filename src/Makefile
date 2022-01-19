@@ -9,12 +9,12 @@ OBJS := $(SRC:.c=.o)
 all: formater
 
 formater: format.c $(OBJS) parser.o
-	$(CC) $(CFLAGS) -o formater format.c parser.o $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
 
 parser.o: parse.y lex.l
 	$(YACC) -v -d -o yy.hedgehog.c parse.y
 	$(LEX) -o lex.hedgehog.c lex.l
-	$(CC) $(CFLAGS) -c yy.hedgehog.c -o parser.o
+	$(CC) $(CFLAGS) -c yy.hedgehog.c -o $@
 
 $(OBJS):%.o: %.c
 	$(CC) $(CFLAGS) -c $<
