@@ -142,7 +142,7 @@ struct hg_ast_node* hg_ast_func_stat_new(struct hg_parser* p,
                                          struct hg_ast_node* block) {
     assert(params == NULL || params->type == AST_NODE_ARRAY);
     assert(block->type == AST_NODE_ARRAY);
-    assert(id->type = AST_NODE_LITERAL_ID);
+    assert(id->type == AST_NODE_LITERAL_ID);
 
     _new(stat, struct hg_ast_func_stat);
 

@@ -202,7 +202,7 @@ var_declarator:
 
 for_stat:
     kw_for parameters kw_in expr block {
-        $<node>$ = hg_ast_for_stat_new(p, $<node>2, $<node>3, $<node>4);
+        $<node>$ = hg_ast_for_stat_new(p, $<node>2, $<node>4, $<node>5);
     }
     ;
 

@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
 #include <inttypes.h>
 #include <execinfo.h>
 #include <unistd.h>
