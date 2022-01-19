@@ -4,9 +4,9 @@
 #include "common.h"
 #include "string.h"
 
-#define YY_DECL int hg_yy_lex(YYSTYPE* lval, struct hg_parser_state* p)
+#define YY_DECL int hg_yy_lex(YYSTYPE* lval, struct hg_parser* p)
 
-static int lex_return(struct hg_parser_state* p, int c) {
+static int lex_return(struct hg_parser* p, int c) {
     p->lineno = p->tline;
     p->tline = yylineno;
 #ifdef LEX_DEBUG

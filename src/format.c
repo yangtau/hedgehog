@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-extern int hg_yy_parse(struct hg_parser_state* p);
+extern int hg_yy_parse(struct hg_parser* p);
 
 extern struct yy_buffer_state* hg_yy_scan_string(const char* yystr);
 extern int hg_yylex_destroy(void);
@@ -14,12 +14,10 @@ int main(int argc, char** argv) {
 
     hg_string_init();
 
-    struct hg_parser_state p = {
+    struct hg_parser p = {
         .nerr   = 0,
-        .lval   = NULL,
         .lineno = 1,
         .tline  = 1,
-        .ast    = hg_ast_new(),
     };
 
     if (argc == 2) {
@@ -44,6 +42,5 @@ int main(int argc, char** argv) {
 
     hg_string_free();
     hg_yylex_destroy();
-    hg_ast_free(p.ast);
     return ret;
 }
