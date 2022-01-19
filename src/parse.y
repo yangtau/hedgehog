@@ -24,7 +24,9 @@
 %lex-param {p}
 
 %union {
-    void* node;
+    char*   s;
+    int64_t i;
+    double  d;
 }
 
 %{
@@ -299,17 +301,25 @@ expr:
     };
 
 primary:
-    lit_string
+    lit_string {
+        print("`%s`:string\n", $<s>1);
+    }
     |
     lit_true
     |
     lit_false
     |
-    lit_int
+    lit_int{
+        print("%ld:int\n", $<i>1);
+    }
     |
-    lit_float
+    lit_float {
+        print("%lf:double\n", $<d>1);
+    }
     |
-    lit_id
+    lit_id {
+        print("@%s\n", $<s>1);
+    }
     |
     table_expr {
         print("\n%d: reduce table to primary\n", __LINE__);

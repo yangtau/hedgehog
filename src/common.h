@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include <execinfo.h>
 #include <unistd.h>
 
@@ -44,5 +45,10 @@ static _force_inline_ void print_backtrace() {
         print_backtrace();                                    \
         exit(-1);                                             \
     } while (0)
+
+#define is_compatible_(x, T) _Generic((x), T : true, default : false)
+#define ensure_type_(p, t)               \
+    _Static_assert(is_compatible_(p, t), \
+                   "incorrect type for parameter '" #p "', expected " #t)
 
 #endif // HG_COMMON_H_
