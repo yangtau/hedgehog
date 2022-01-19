@@ -1,8 +1,7 @@
 %{
-#include "ast.h"
 #include "yy.hedgehog.h"
 
-#include <string.h>
+#include "string.h"
 
 #define YY_DECL int hg_yy_lex(YYSTYPE* lval, struct hg_parser_state* p)
 
@@ -104,35 +103,33 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "fn"{TRAIL}                     LEX_RETURN(hg_yy_t_kw_fn);
 
 "true" {
-    // lval->node = ast_node_bool_new(p, true);
     LEX_RETURN(hg_yy_t_lit_true);
 }
 "false" {
-    // lval->node = ast_node_bool_new(p, false);
     LEX_RETURN(hg_yy_t_lit_false);
 }
 
 [A-Za-z_][A-Za-z0-9_]* {
-    // lval->node = ast_node_symbol_new(p, yytext);
+    lval->s = hg_string_new(yytext, strlen(yytext));
     LEX_RETURN(hg_yy_t_lit_id);
 };
 
 (([1-9][0-9]*)|0) {
     int64_t t;
-    // sscanf(yytext, "%ld", &t);
-    // lval->node = ast_node_int_new(p, t);
+    sscanf(yytext, "%ld", &t);
+    lval->i = t;
     LEX_RETURN(hg_yy_t_lit_int);
 }
 
 (([1-9][0-9]*)|0)(\.[0-9]+) {
     double t;
-    // sscanf(yytext, "%lf", &t);
-    // lval->node = ast_node_float_new(p, t);
+    sscanf(yytext, "%lf", &t);
+    lval->d = t;
     LEX_RETURN(hg_yy_t_lit_float);
 };
 
 \"([^\\\"]|\\.)*\" {
-    // lval->node = ast_node_str_len_new(p, yytext+1, strlen(yytext)-2);
+    lval->s = hg_string_new(yytext+1, strlen(yytext)-2);
     LEX_RETURN(hg_yy_t_lit_string);
 };
 
