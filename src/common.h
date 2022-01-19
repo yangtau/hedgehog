@@ -52,6 +52,7 @@ static _force_inline_ void print_backtrace() {
 #define ensure_type_(p, t)               \
     _Static_assert(is_compatible_(p, t), \
                    "incorrect type for parameter '" #p "', expected " #t)
+
 // types used by inner HG
 typedef int64_t hg_int;
 typedef double hg_float;
@@ -60,5 +61,8 @@ typedef bool hg_bool;
 
 #define HGFormatInt   PRId64
 #define HGFormatFloat "lf"
+
+// disable unused warnings
+#define unused_(x) ((void)(x))
 
 #endif // HG_COMMON_H_
