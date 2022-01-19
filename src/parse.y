@@ -1,4 +1,5 @@
 %{
+#include "common.h"
 #include "ast.h"
 
 #define YYDEBUG 1
@@ -24,9 +25,9 @@
 %lex-param {p}
 
 %union {
-    char*   s;
-    int64_t i;
-    double  d;
+    hg_char   s;
+    hg_int i;
+    hg_float  d;
 }
 
 %{
@@ -184,7 +185,7 @@ return_stat:
         print("\n%d: return nothing\n", __LINE__);
     }
     |
-    kw_return expr {
+    kw_return exprs {
         print("\n%d: return expr\n", __LINE__);
     };
 

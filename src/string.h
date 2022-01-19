@@ -5,6 +5,6 @@
 
 void hg_string_init();
 void hg_string_free();
-char* hg_string_new(char* from, size_t len);
+hg_char hg_string_new(const char* from, size_t len);
 
 #endif // HG_STRING_H_
