@@ -1,7 +1,9 @@
 #include "string.h"
 #include "memory.h"
 
+#include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 static struct {
     hg_char* arr;
@@ -10,9 +12,11 @@ static struct {
 } _string_table;
 
 #ifdef HG_DEBUG
-static const size_t _start_cap = 1;
+static const size_t _start_cap              = 1;
+static const size_t _buffer_shink_threshold = 0;
 #else
-static const size_t _start_cap = 32;
+static const size_t _start_cap              = 32;
+static const size_t _buffer_shink_threshold = 32;
 #endif
 
 void hg_string_init() {
@@ -46,11 +50,72 @@ hg_char hg_string_new(const char* from, size_t len) {
     return strncpy(s, from, len);
 }
 
-struct hg_string_buffer* hg_string_buffer_new(size_t cap) {
+void hg_string_buffer_init(struct hg_string_buffer* buf, size_t cap) {
+    assert(cap > 1);
+
+    buf->_cap   = cap;
+    buf->len    = 0;
+    buf->_moved = false;
+    buf->_str   = hg_alloc(sizeof(char) * cap);
 }
 
-bool hg_string_buffer_append(struct hg_string_buffer*, const char* fmt, ...) {
+void hg_string_buffer_free(struct hg_string_buffer* buf) {
+    if (!buf->_moved) {
+        hg_free(buf->_str);
+    }
 }
 
-hg_char hg_string_buffer_to_str(struct hg_string_buffer*) {
+static void _string_buffer_expend(struct hg_string_buffer* buf, size_t want) {
+
+    while ((buf->_cap - buf->len - 1) < want) {
+        buf->_cap *= 2;
+    }
+
+    buf->_str = hg_realloc(buf->_str, sizeof(char) * buf->_cap);
+}
+
+static void _string_buffer_shrink(struct hg_string_buffer* buf) {
+    assert(buf->_cap > buf->len + 1);
+    buf->_str = hg_realloc(buf->_str, sizeof(char) * (buf->len + 1));
+}
+
+bool hg_string_buffer_append(struct hg_string_buffer* buf, const char* fmt,
+                             ...) {
+    va_list args;
+    assert(buf->_cap > buf->len + 1);
+
+    for (int i = 0; i < 2; i++) {
+        size_t left = buf->_cap - buf->len - 1; // reserve 1 char for '\0'
+        char* start = buf->_str + buf->len;
+
+        va_start(args, fmt);
+        int written = vsnprintf(start, left, fmt, args);
+        va_end(args);
+
+        if (written < 0) {
+            return false; // error
+        }
+        if (written <= (int)(left)) {
+            buf->len += written;
+            return true;
+        }
+
+        if (i == 0) {
+            // buf is not enough, retry
+            _string_buffer_expend(buf, written);
+        }
+    }
+    return false;
+}
+
+hg_char hg_string_buffer_to_str(struct hg_string_buffer* buf) {
+    if (buf->_cap > buf->len + 1 + _buffer_shink_threshold) {
+        _string_buffer_shrink(buf);
+    }
+
+    buf->_str[buf->len] = '\0';
+    buf->_moved         = true;
+
+    _string_table_append(buf->_str);
+    return buf->_str;
 }

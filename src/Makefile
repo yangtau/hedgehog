@@ -24,3 +24,4 @@ clean:
 	rm -f formater
 	rm -f hg
 	rm -rf *.dSYM
+	make -C test $@
