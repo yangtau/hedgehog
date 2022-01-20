@@ -45,3 +45,12 @@ hg_char hg_string_new(const char* from, size_t len) {
 
     return strncpy(s, from, len);
 }
+
+struct hg_string_buffer* hg_string_buffer_new(size_t cap) {
+}
+
+bool hg_string_buffer_append(struct hg_string_buffer*, const char* fmt, ...) {
+}
+
+hg_char hg_string_buffer_to_str(struct hg_string_buffer*) {
+}

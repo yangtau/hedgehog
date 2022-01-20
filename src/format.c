@@ -33,10 +33,14 @@ int main(int argc, char** argv) {
         while (hg_yyparse(&p, scanner))
             ;
         fclose(yyin);
+
+        hg_ast_node_free(p.ast);
     } else if (argc == 3 && strcmp(argv[1], "-e") == 0) {
         assert(hg_yy_scan_string(argv[2], scanner));
         while (hg_yyparse(&p, scanner))
             ;
+
+        hg_ast_node_free(p.ast);
     } else {
         fprintf(stderr, "Usage: %s [filename]\n\t%s -s [code]\n", argv[0],
                 argv[0]);

@@ -74,9 +74,9 @@ struct hg_ast_node* hg_ast_node_array_append(struct hg_parser* p,
 
 struct hg_ast_for_stat {
     _hg_ast_head;
-    struct hg_ast_node_array* params;
+    struct hg_ast_node* params;
     struct hg_ast_node* iterator;
-    struct hg_ast_node_array* block;
+    struct hg_ast_node* block;
 };
 struct hg_ast_node* hg_ast_for_stat_new(struct hg_parser* p,
                                         struct hg_ast_node* params,
@@ -95,7 +95,7 @@ struct hg_ast_node* hg_ast_continue_stat_new(struct hg_parser* p);
 
 struct hg_ast_return_stat {
     _hg_ast_head;
-    struct hg_ast_node_array* exprs;
+    struct hg_ast_node* exprs;
 };
 struct hg_ast_node* hg_ast_return_stat_new(struct hg_parser* p,
                                            struct hg_ast_node* exprs);
@@ -103,8 +103,8 @@ struct hg_ast_node* hg_ast_return_stat_new(struct hg_parser* p,
 struct hg_ast_if_stat {
     _hg_ast_head;
     struct hg_ast_node* condition;
-    struct hg_ast_node_array* block;
-    struct hg_ast_node_array* else_block;
+    struct hg_ast_node* block;
+    struct hg_ast_node* else_block;
 };
 struct hg_ast_node* hg_ast_if_stat_new(struct hg_parser* p,
                                        struct hg_ast_node* cond,
@@ -113,8 +113,8 @@ struct hg_ast_node* hg_ast_if_stat_new(struct hg_parser* p,
 
 struct hg_ast_assignment_stat {
     _hg_ast_head;
-    struct hg_ast_node_array* vars;
-    struct hg_ast_node_array* exprs;
+    struct hg_ast_node* vars;
+    struct hg_ast_node* exprs;
 };
 struct hg_ast_node* hg_ast_assignment_stat_new(struct hg_parser* p,
                                                struct hg_ast_node* vars,
@@ -123,8 +123,8 @@ struct hg_ast_node* hg_ast_assignment_stat_new(struct hg_parser* p,
 struct hg_ast_func_stat {
     _hg_ast_head;
     struct hg_ast_node* id;
-    struct hg_ast_node_array* params;
-    struct hg_ast_node_array* block;
+    struct hg_ast_node* params;
+    struct hg_ast_node* block;
 };
 struct hg_ast_node* hg_ast_func_stat_new(struct hg_parser* p,
                                          struct hg_ast_node* id,
@@ -133,8 +133,8 @@ struct hg_ast_node* hg_ast_func_stat_new(struct hg_parser* p,
 
 struct hg_ast_func_def_expr {
     _hg_ast_head;
-    struct hg_ast_node_array* params;
-    struct hg_ast_node_array* block;
+    struct hg_ast_node* params;
+    struct hg_ast_node* block;
 };
 struct hg_ast_node* hg_ast_func_def_new(struct hg_parser* p,
                                         struct hg_ast_node* params,
@@ -163,7 +163,7 @@ struct hg_ast_node* hg_ast_binary_expr_new(struct hg_parser* p,
 struct hg_ast_call_expr {
     _hg_ast_head;
     struct hg_ast_node* callable;
-    struct hg_ast_node_array* args;
+    struct hg_ast_node* args;
 };
 struct hg_ast_node* hg_ast_call_expr_new(struct hg_parser* p,
                                          struct hg_ast_node* callable,
@@ -189,7 +189,7 @@ struct hg_ast_node* hg_ast_index_expr_new(struct hg_parser* p,
 
 struct hg_ast_table_expr {
     _hg_ast_head;
-    struct hg_ast_node_array* entries;
+    struct hg_ast_node* entries;
 };
 
 struct hg_ast_node* hg_ast_table_expr_new(struct hg_parser* p,
@@ -221,5 +221,8 @@ struct hg_ast_node* hg_ast_literal_int_new(struct hg_parser* p, hg_int i);
 struct hg_ast_node* hg_ast_literal_bool_new(struct hg_parser* p, hg_bool b);
 
 #undef _hg_ast_head
+
+hg_char hg_ast_node_to_str(struct hg_ast_node* node, uint32_t indent);
+void hg_ast_node_free(struct hg_ast_node* node);
 
 #endif // HG_AST_H_
