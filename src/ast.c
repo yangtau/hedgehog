@@ -1,5 +1,6 @@
 #include "ast.h"
 #include "memory.h"
+#include "string.h"
 
 #define _new(x, t) t* x = hg_alloc(sizeof(t))
 
@@ -59,8 +60,8 @@ struct hg_ast_node* hg_ast_for_stat_new(struct hg_parser* p,
 
     for_stat->node.type = AST_NODE_FOR;
     for_stat->node.line = params->line;
-    for_stat->params    = _raw(params, struct hg_ast_node_array);
-    for_stat->block     = _raw(block, struct hg_ast_node_array);
+    for_stat->params    = params;
+    for_stat->block     = block;
     for_stat->iterator  = iterator;
 
     unused_(p);
@@ -93,7 +94,7 @@ struct hg_ast_node* hg_ast_return_stat_new(struct hg_parser* p,
 
     stat->node.type = AST_NODE_RETURN;
     stat->node.line = exprs != NULL ? exprs->line : p->lineno;
-    stat->exprs     = _raw(exprs, struct hg_ast_node_array);
+    stat->exprs     = exprs;
 
     unused_(p);
     return &stat->node;
@@ -108,12 +109,11 @@ struct hg_ast_node* hg_ast_if_stat_new(struct hg_parser* p,
 
     _new(stat, struct hg_ast_if_stat);
 
-    stat->node.type = AST_NODE_IF;
-    stat->node.line = cond->line;
-    stat->condition = cond;
-    stat->block     = _raw(block, struct hg_ast_node_array);
-    stat->else_block =
-        else_block == NULL ? NULL : _raw(else_block, struct hg_ast_node_array);
+    stat->node.type  = AST_NODE_IF;
+    stat->node.line  = cond->line;
+    stat->condition  = cond;
+    stat->block      = block;
+    stat->else_block = else_block == NULL ? NULL : else_block;
 
     unused_(p);
     return &stat->node;
@@ -129,8 +129,8 @@ struct hg_ast_node* hg_ast_assignment_stat_new(struct hg_parser* p,
 
     stat->node.type = AST_NODE_ASSIGNMENT;
     stat->node.line = vars->line;
-    stat->vars      = _raw(vars, struct hg_ast_node_array);
-    stat->exprs     = _raw(exprs, struct hg_ast_node_array);
+    stat->vars      = vars;
+    stat->exprs     = exprs;
 
     unused_(p);
     return &stat->node;
@@ -149,8 +149,8 @@ struct hg_ast_node* hg_ast_func_stat_new(struct hg_parser* p,
     stat->node.type = AST_NODE_FUNC;
     stat->node.line = id->line;
     stat->id        = id;
-    stat->params    = _raw(params, struct hg_ast_node_array);
-    stat->block     = _raw(block, struct hg_ast_node_array);
+    stat->params    = params;
+    stat->block     = block;
 
     unused_(p);
     return &stat->node;
@@ -166,8 +166,8 @@ struct hg_ast_node* hg_ast_func_def_new(struct hg_parser* p,
 
     expr->node.type = AST_NODE_FUNC_DEF;
     expr->node.line = params != NULL ? params->line : block->line;
-    expr->params    = _raw(params, struct hg_ast_node_array);
-    expr->block     = _raw(block, struct hg_ast_node_array);
+    expr->params    = params;
+    expr->block     = block;
 
     unused_(p);
     return &expr->node;
@@ -213,7 +213,7 @@ struct hg_ast_node* hg_ast_call_expr_new(struct hg_parser* p,
     expr->node.type = AST_NODE_CALL;
     expr->node.line = callable->line;
     expr->callable  = callable;
-    expr->args      = _raw(args, struct hg_ast_node_array);
+    expr->args      = args;
 
     unused_(p);
     return &expr->node;
@@ -257,7 +257,7 @@ struct hg_ast_node* hg_ast_table_expr_new(struct hg_parser* p,
 
     expr->node.type = AST_NODE_TABLE;
     expr->node.line = arr != NULL ? arr->line : p->lineno;
-    expr->entries   = _raw(arr, struct hg_ast_node_array);
+    expr->entries   = arr;
 
     unused_(p);
     return &expr->node;
@@ -325,6 +325,138 @@ struct hg_ast_node* hg_ast_literal_bool_new(struct hg_parser* p, hg_bool b) {
     lit->as_bool   = b;
 
     return &lit->node;
+}
+
+void hg_ast_node_free(struct hg_ast_node* _node) {
+    if (_node == NULL)
+        return;
+
+    switch (_node->type) {
+    case AST_NODE_ASSIGNMENT: {
+        _raw_to(_node, struct hg_ast_assignment_stat, node);
+        hg_ast_node_free(node->exprs);
+        hg_ast_node_free(node->vars);
+        hg_free(node);
+    } break;
+    case AST_NODE_FOR: {
+        _raw_to(_node, struct hg_ast_for_stat, node);
+        hg_ast_node_free(node->params);
+        hg_ast_node_free(node->iterator);
+        hg_ast_node_free(node->block);
+        hg_free(node);
+    } break;
+    case AST_NODE_IF: {
+        _raw_to(_node, struct hg_ast_if_stat, node);
+        hg_ast_node_free(node->condition);
+        hg_ast_node_free(node->block);
+        hg_ast_node_free(node->else_block);
+        hg_free(node);
+    } break;
+    case AST_NODE_FUNC: {
+        _raw_to(_node, struct hg_ast_func_stat, node);
+        hg_ast_node_free(node->id);
+        hg_ast_node_free(node->params);
+        hg_ast_node_free(node->block);
+        hg_free(node);
+    } break;
+    case AST_NODE_BREAK: {
+        _raw_to(_node, struct hg_ast_break_stat, node);
+        hg_free(node);
+    } break;
+    case AST_NODE_CONTINUE: {
+        _raw_to(_node, struct hg_ast_continue_stat, node);
+        hg_free(node);
+    } break;
+    case AST_NODE_RETURN: {
+        _raw_to(_node, struct hg_ast_return_stat, node);
+        hg_ast_node_free(node->exprs);
+        hg_free(node);
+    } break;
+    case AST_NODE_CALL: {
+        _raw_to(_node, struct hg_ast_call_expr, node);
+        hg_ast_node_free(node->callable);
+        hg_ast_node_free(node->args);
+        hg_free(node);
+    } break;
+    case AST_NODE_FIELD: {
+        _raw_to(_node, struct hg_ast_field_expr, node);
+        hg_ast_node_free(node->prefix);
+        hg_ast_node_free(node->field);
+        hg_free(node);
+    } break;
+    case AST_NODE_INDEX: {
+        _raw_to(_node, struct hg_ast_index_expr, node);
+        hg_ast_node_free(node->prefix);
+        hg_ast_node_free(node->index);
+        hg_free(node);
+    } break;
+    case AST_NODE_FUNC_DEF: {
+        _raw_to(_node, struct hg_ast_func_def_expr, node);
+        hg_ast_node_free(node->params);
+        hg_ast_node_free(node->block);
+        hg_free(node);
+    } break;
+    case AST_NODE_BINARY_EXPR: {
+        _raw_to(_node, struct hg_ast_binary_expr, node);
+        hg_ast_node_free(node->left);
+        hg_ast_node_free(node->right);
+        hg_free(node);
+    } break;
+    case AST_NODE_UNARY_EXPR: {
+        _raw_to(_node, struct hg_ast_unary_expr, node);
+        hg_ast_node_free(node->expr);
+        hg_free(node);
+    } break;
+    case AST_NODE_TABLE: {
+        _raw_to(_node, struct hg_ast_table_expr, node);
+        hg_ast_node_free(node->entries);
+        hg_free(node);
+    } break;
+    case AST_NODE_TABLE_ENTRY: {
+        _raw_to(_node, struct hg_ast_table_entry, node);
+        hg_ast_node_free(node->key);
+        hg_ast_node_free(node->value);
+        hg_free(node);
+    } break;
+    case AST_NODE_LITERAL_STR: {
+        _raw_to(_node, struct hg_ast_literal, node);
+        // TODO: free referrence to str
+        hg_free(node);
+    } break;
+    case AST_NODE_LITERAL_ID: {
+        _raw_to(_node, struct hg_ast_literal, node);
+        // TODO: free referrence to str
+        hg_free(node);
+    } break;
+    case AST_NODE_LITERAL_BOOL: {
+        _raw_to(_node, struct hg_ast_literal, node);
+        hg_free(node);
+    } break;
+    case AST_NODE_LITERAL_INT: {
+        _raw_to(_node, struct hg_ast_literal, node);
+        hg_free(node);
+    } break;
+    case AST_NODE_LITERAL_FLOAT: {
+        _raw_to(_node, struct hg_ast_literal, node);
+        hg_free(node);
+    } break;
+    case AST_NODE_ARRAY: {
+        _raw_to(_node, struct hg_ast_node_array, node);
+        for (int i = 0; i < node->len; i++) {
+            hg_free(node->arr[i]);
+        }
+        hg_free(node);
+    } break;
+    default:
+        unreachable_();
+    }
+}
+
+static void _node_to_str(struct hg_ast_node* node, uint32_t indent,
+                         struct hg_string_buffer* buffer) {
+}
+
+hg_char hg_ast_node_to_str(struct hg_ast_node* node, uint32_t indent) {
 }
 
 #undef _new
