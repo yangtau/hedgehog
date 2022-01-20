@@ -2,6 +2,8 @@
 #include "common.h"
 #include "ast.h"
 
+#include "yy.hedgehog.h"
+
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 
@@ -15,14 +17,14 @@
 %}
 
 %define api.pure          full
-%define api.prefix        {hg_yy_}
+%define api.prefix        {hg_yy}
 // %define api.symbol.prefix {hg_yy_s_}
 %define api.token.prefix  {hg_yy_t_}
 %define parse.error       verbose
 %define parse.lac         full
 
-%parse-param {struct hg_parser* p}
-%lex-param {p}
+%parse-param {struct hg_parser* p} {void* scanner}
+%lex-param {p}{scanner}
 
 %union {
     hg_char            s;
@@ -32,8 +34,8 @@
 }
 
 %{
-int hg_yy_lex(YYSTYPE* lval, struct hg_parser* p);
-static void hg_yy_error(struct hg_parser* p, const char* s);
+int yylex(YYSTYPE* lval, struct hg_parser* p, void* scanner);
+static void yyerror(struct hg_parser* p, void* scanner, const char* s);
 %}
 
 // precedence table
@@ -53,7 +55,7 @@ static void hg_yy_error(struct hg_parser* p, const char* s);
        kw_if kw_else kw_for kw_break kw_continue kw_return kw_in kw_fn
        op_dot
 
-%token <node> lit_float lit_int lit_true lit_false lit_string lit_id
+%token lit_true lit_false lit_string lit_id lit_int lit_float 
 
 %%
 
@@ -434,11 +436,11 @@ primary:
 
 #include "lex.hedgehog.c"
 
-static void hg_yy_error(struct hg_parser* p, const char* s) {
+static void yyerror(struct hg_parser* p, void* scanner,const char* s) {
     p->nerr++;
     if (p->fname) {
-        fprintf(stderr, "%s:%d:%s:\n`%s`\n", p->fname, p->lineno, s, hg_yytext);
+        fprintf(stderr, "%s:%d:%s:\n`%s`\n", p->fname, p->lineno, s, hg_yyget_text(scanner));
     } else {
-        fprintf(stderr, "%d:%s:\n`%s`\n", p->lineno, s, hg_yytext);
+        fprintf(stderr, "%d:%s:\n`%s`\n", p->lineno, s, hg_yyget_text(scanner));
     }
 }
