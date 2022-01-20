@@ -67,7 +67,7 @@ program:
 
 stats:
     stat {
-        $<node>$ = hg_ast_node_array_new(p);
+        $<node>$ = hg_ast_node_array_new(p, HG_AST_NODE_ARRAY_STATS);
         $<node>$ = hg_ast_node_array_append(p, $<node>$, $<node>1);
     }
     |
@@ -81,13 +81,13 @@ stats:
     }
     |
     error {
-        $<node>$ = hg_ast_node_array_new(p);
+        $<node>$ = hg_ast_node_array_new(p, HG_AST_NODE_ARRAY_STATS);
     }
     ;
 
 block:
     sep_lp sep_rp {
-        $<node>$ = hg_ast_node_array_new(p);
+        $<node>$ = hg_ast_node_array_new(p, HG_AST_NODE_ARRAY_STATS);
         print("\n%d: empty block \n", __LINE__);
     }
     |
@@ -168,7 +168,7 @@ function_stat:
 
 parameters:
     ident {
-        $<node>$ = hg_ast_node_array_new(p);
+        $<node>$ = hg_ast_node_array_new(p, HG_AST_NODE_ARRAY_PARAMS);
         $<node>$ = hg_ast_node_array_append(p, $<node>$, $<node>1);
     }
     |
@@ -185,7 +185,7 @@ assignment_stat:
 
 vars:
     var_declarator {
-        $<node>$ = hg_ast_node_array_new(p);
+        $<node>$ = hg_ast_node_array_new(p, HG_AST_NODE_ARRAY_VARS);
         $<node>$ = hg_ast_node_array_append(p, $<node>$, $<node>1);
     }
     |
@@ -250,7 +250,7 @@ else_stat:
 
 exprs:
     expr {
-        $<node>$ = hg_ast_node_array_new(p);
+        $<node>$ = hg_ast_node_array_new(p, HG_AST_NODE_ARRAY_EXPRS);
         $<node>$ = hg_ast_node_array_append(p, $<node>$, $<node>1);
     }
     |
@@ -310,7 +310,7 @@ table_expr:
 table_entris:
     expr sep_colon expr {
         print("\n%d: reduce expr:expr to entries\n", __LINE__);
-        $<node>$ = hg_ast_node_array_new(p);
+        $<node>$ = hg_ast_node_array_new(p, HG_AST_NODE_ARRAY_TABLE_ENTRIES);
         $<node>$ = hg_ast_node_array_append(p, $<node>$, hg_ast_table_entry_new(p, $<node>1, $<node>3));
     }
     |
@@ -326,63 +326,63 @@ expr:
     }
     |
     op_sub primary {
-        $<node>$ = hg_ast_unary_expr_new(p, AST_NODE_OP_SUB, $<node>2);
+        $<node>$ = hg_ast_unary_expr_new(p, HG_AST_NODE_OP_SUB, $<node>2);
     }
     |
     op_not expr {
-        $<node>$ = hg_ast_unary_expr_new(p, AST_NODE_OP_NOT, $<node>2);
+        $<node>$ = hg_ast_unary_expr_new(p, HG_AST_NODE_OP_NOT, $<node>2);
     }
     |
     expr op_and expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_AND, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_AND, $<node>1, $<node>2);
     }
     |
     expr op_or expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_OR, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_OR, $<node>1, $<node>2);
     }
     |
     expr op_ls expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_OR, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_OR, $<node>1, $<node>2);
     }
     |
     expr op_gt expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_GT, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_GT, $<node>1, $<node>2);
     }
     |
     expr op_ge expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_GE, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_GE, $<node>1, $<node>2);
     }
     |
     expr op_le expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_LE, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_LE, $<node>1, $<node>2);
     }
     |
     expr op_eq expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_EQ, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_EQ, $<node>1, $<node>2);
     }
     |
     expr op_neq expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_NEQ, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_NEQ, $<node>1, $<node>2);
     }
     |
     expr op_add expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_ADD, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_ADD, $<node>1, $<node>2);
     }
     |
     expr op_sub expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_SUB, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_SUB, $<node>1, $<node>2);
     }
     |
     expr op_mod expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_MOD, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_MOD, $<node>1, $<node>2);
     }
     |
     expr op_div expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_DIV, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_DIV, $<node>1, $<node>2);
     }
     |
     expr op_mul expr {
-        $<node>$ = hg_ast_binary_expr_new(p, AST_NODE_OP_MUL, $<node>1, $<node>2);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_MUL, $<node>1, $<node>2);
     }
     ;
 

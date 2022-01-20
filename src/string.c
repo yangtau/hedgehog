@@ -13,10 +13,10 @@ static struct {
 
 #ifdef HG_DEBUG
 static const size_t _start_cap              = 1;
-static const size_t _buffer_shink_threshold = 0;
+static const size_t _buffer_shrink_threshold = 0;
 #else
 static const size_t _start_cap              = 32;
-static const size_t _buffer_shink_threshold = 32;
+static const size_t _buffer_shrink_threshold = 32;
 #endif
 
 void hg_string_init() {
@@ -109,7 +109,7 @@ bool hg_string_buffer_append(struct hg_string_buffer* buf, const char* fmt,
 }
 
 hg_char hg_string_buffer_to_str(struct hg_string_buffer* buf) {
-    if (buf->_cap > buf->len + 1 + _buffer_shink_threshold) {
+    if (buf->_cap > buf->len + 1 + _buffer_shrink_threshold) {
         _string_buffer_shrink(buf);
     }
 
