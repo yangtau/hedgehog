@@ -11,49 +11,62 @@ struct hg_parser {
     struct hg_ast_node* ast;
 };
 
+// TODO: rename enums
 enum hg_ast_node_type {
+    // arrays:
+    _HG_AST_NODE_ARRAY_START,
+    HG_AST_NODE_ARRAY_STATS,
+    HG_AST_NODE_ARRAY_EXPRS,
+    HG_AST_NODE_ARRAY_VARS,
+    HG_AST_NODE_ARRAY_PARAMS,
+    HG_AST_NODE_ARRAY_TABLE_ENTRIES,
+    _HG_AST_NODE_ARRAY_END,
     // statement:
-    AST_NODE_ASSIGNMENT,
-    AST_NODE_FOR,
-    AST_NODE_IF,
-    AST_NODE_FUNC,
-    AST_NODE_BREAK,
-    AST_NODE_CONTINUE,
-    AST_NODE_RETURN,
+    _HG_AST_NODE_STAT_START,
+    HG_AST_NODE_ASSIGNMENT,
+    HG_AST_NODE_FOR,
+    HG_AST_NODE_IF,
+    HG_AST_NODE_FUNC,
+    HG_AST_NODE_BREAK,
+    HG_AST_NODE_CONTINUE,
+    HG_AST_NODE_RETURN,
+    _HG_AST_NODE_STAT_END,
     // exprs:
-    AST_NODE_CALL,
-    AST_NODE_FIELD,
-    AST_NODE_INDEX,
-    AST_NODE_FUNC_DEF,
-    AST_NODE_BINARY_EXPR,
-    AST_NODE_UNARY_EXPR,
-    AST_NODE_TABLE,
-    AST_NODE_TABLE_ENTRY,
+    _HG_AST_NODE_EXPR_START,
+    HG_AST_NODE_CALL,
+    HG_AST_NODE_FIELD,
+    HG_AST_NODE_INDEX,
+    HG_AST_NODE_FUNC_DEF,
+    HG_AST_NODE_BINARY_EXPR,
+    HG_AST_NODE_UNARY_EXPR,
+    HG_AST_NODE_TABLE,
+    HG_AST_NODE_TABLE_ENTRY,
+    _HG_AST_NODE_EXPR_END,
     // literal:
-    AST_NODE_LITERAL_STR,
-    AST_NODE_LITERAL_ID,
-    AST_NODE_LITERAL_BOOL,
-    AST_NODE_LITERAL_INT,
-    AST_NODE_LITERAL_FLOAT,
-    // inner:
-    AST_NODE_ARRAY,
+    _HG_AST_NODE_LITERAL_START,
+    HG_AST_NODE_LITERAL_STR,
+    HG_AST_NODE_LITERAL_ID,
+    HG_AST_NODE_LITERAL_BOOL,
+    HG_AST_NODE_LITERAL_INT,
+    HG_AST_NODE_LITERAL_FLOAT,
+    _HG_AST_NODE_LITERAL_END,
 };
 
 enum ast_node_op {
-    AST_NODE_OP_AND, // and
-    AST_NODE_OP_OR,  // or
-    AST_NODE_OP_NOT, // not
-    AST_NODE_OP_NEQ, // !=
-    AST_NODE_OP_EQ,  // ==
-    AST_NODE_OP_GE,  // >=
-    AST_NODE_OP_LE,  // <=
-    AST_NODE_OP_GT,  // >
-    AST_NODE_OP_LS,  // <
-    AST_NODE_OP_ADD, // +
-    AST_NODE_OP_SUB, // -
-    AST_NODE_OP_MUL, // *
-    AST_NODE_OP_DIV, // /
-    AST_NODE_OP_MOD, // %
+    HG_AST_NODE_OP_AND, // and
+    HG_AST_NODE_OP_OR,  // or
+    HG_AST_NODE_OP_NOT, // not
+    HG_AST_NODE_OP_NEQ, // !=
+    HG_AST_NODE_OP_EQ,  // ==
+    HG_AST_NODE_OP_GE,  // >=
+    HG_AST_NODE_OP_LE,  // <=
+    HG_AST_NODE_OP_GT,  // >
+    HG_AST_NODE_OP_LS,  // <
+    HG_AST_NODE_OP_ADD, // +
+    HG_AST_NODE_OP_SUB, // -
+    HG_AST_NODE_OP_MUL, // *
+    HG_AST_NODE_OP_DIV, // /
+    HG_AST_NODE_OP_MOD, // %
 };
 
 struct hg_ast_node {
@@ -67,7 +80,8 @@ struct hg_ast_node_array {
     size_t len, cap;
     struct hg_ast_node* arr[];
 };
-struct hg_ast_node* hg_ast_node_array_new(struct hg_parser* p);
+struct hg_ast_node* hg_ast_node_array_new(struct hg_parser* p,
+                                          enum hg_ast_node_type type);
 struct hg_ast_node* hg_ast_node_array_append(struct hg_parser* p,
                                              struct hg_ast_node* arr,
                                              struct hg_ast_node* node);

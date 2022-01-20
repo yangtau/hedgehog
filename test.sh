@@ -17,6 +17,7 @@ test_error() {
     $command -e "if () {} else {}"
     $command -e "fn ()()"
     $command -e "G={1, key:value}"
+    $command -e " if (a) { )) } "
 }
 
 make UDEF='-DHG_DEBUG' > /dev/null 2>&1 

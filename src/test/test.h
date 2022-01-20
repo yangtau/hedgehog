@@ -9,6 +9,14 @@
 
 #define test_func(fn) static void test_##fn()
 
+#define test_main(...)                \
+    int main(int argc, char** argv) { \
+        ((void)argc);                 \
+        ((void)argv);                 \
+        __VA_ARGS__;                  \
+        return 0;                     \
+    }
+
 #define printf_dec_format(x) \
     _Generic((x), \
     char: "%c", \
