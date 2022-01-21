@@ -12,10 +12,10 @@ static struct {
 } _string_table;
 
 #ifdef HG_DEBUG
-static const size_t _start_cap              = 1;
+static const size_t _start_cap               = 1;
 static const size_t _buffer_shrink_threshold = 0;
 #else
-static const size_t _start_cap              = 32;
+static const size_t _start_cap               = 32;
 static const size_t _buffer_shrink_threshold = 32;
 #endif
 
@@ -76,6 +76,7 @@ static void _string_buffer_expend(struct hg_string_buffer* buf, size_t want) {
 
 static void _string_buffer_shrink(struct hg_string_buffer* buf) {
     assert(buf->_cap > buf->len + 1);
+    buf->_cap = buf->len + 1;
     buf->_str = hg_realloc(buf->_str, sizeof(char) * (buf->len + 1));
 }
 

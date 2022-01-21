@@ -30,6 +30,7 @@ enum hg_ast_node_type {
     HG_AST_NODE_BREAK,
     HG_AST_NODE_CONTINUE,
     HG_AST_NODE_RETURN,
+    HG_AST_NODE_EXPR_STAT,
     _HG_AST_NODE_STAT_END,
     // exprs:
     _HG_AST_NODE_EXPR_START,
@@ -52,7 +53,7 @@ enum hg_ast_node_type {
     _HG_AST_NODE_LITERAL_END,
 };
 
-enum ast_node_op {
+enum hg_ast_node_op {
     HG_AST_NODE_OP_AND, // and
     HG_AST_NODE_OP_OR,  // or
     HG_AST_NODE_OP_NOT, // not
@@ -145,6 +146,13 @@ struct hg_ast_node* hg_ast_func_stat_new(struct hg_parser* p,
                                          struct hg_ast_node* params,
                                          struct hg_ast_node* block);
 
+struct hg_ast_expr_stat {
+    _hg_ast_head;
+    struct hg_ast_node* expr;
+};
+struct hg_ast_node* hg_ast_expr_stat_new(struct hg_parser* p,
+                                         struct hg_ast_node* expr);
+
 struct hg_ast_func_def_expr {
     _hg_ast_head;
     struct hg_ast_node* params;
@@ -156,32 +164,32 @@ struct hg_ast_node* hg_ast_func_def_new(struct hg_parser* p,
 
 struct hg_ast_unary_expr {
     _hg_ast_head;
-    enum ast_node_op op;
+    enum hg_ast_node_op op;
     struct hg_ast_node* expr;
 };
 struct hg_ast_node* hg_ast_unary_expr_new(struct hg_parser* p,
-                                          enum ast_node_op op,
+                                          enum hg_ast_node_op op,
                                           struct hg_ast_node* expr);
 
 struct hg_ast_binary_expr {
     _hg_ast_head;
-    enum ast_node_op op;
+    enum hg_ast_node_op op;
     struct hg_ast_node* left;
     struct hg_ast_node* right;
 };
 struct hg_ast_node* hg_ast_binary_expr_new(struct hg_parser* p,
-                                           enum ast_node_op op,
+                                           enum hg_ast_node_op op,
                                            struct hg_ast_node* left,
                                            struct hg_ast_node* right);
 
 struct hg_ast_call_expr {
     _hg_ast_head;
     struct hg_ast_node* callable;
-    struct hg_ast_node* args;
+    struct hg_ast_node* exprs; // args
 };
 struct hg_ast_node* hg_ast_call_expr_new(struct hg_parser* p,
                                          struct hg_ast_node* callable,
-                                         struct hg_ast_node* args);
+                                         struct hg_ast_node* exprs);
 
 struct hg_ast_field_expr {
     _hg_ast_head;

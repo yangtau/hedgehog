@@ -150,6 +150,7 @@ stat:
     }
     |
     expr {
+        $<node>$ = hg_ast_expr_stat_new(p, $<node>1);
         print("\n%d: reduce expr to stat\n", __LINE__);
     }
     ;
