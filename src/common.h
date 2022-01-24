@@ -55,7 +55,7 @@ static _force_inline_ void print_backtrace() {
 // types used by inner HG
 typedef int64_t hg_int;
 typedef double hg_float;
-typedef const char* hg_char;
+typedef const char* hg_str;
 typedef bool hg_bool;
 
 #define HGFormatInt   PRId64

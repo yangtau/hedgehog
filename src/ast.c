@@ -2,6 +2,8 @@
 #include "memory.h"
 #include "string.h"
 
+// TODO: add expr type for `(a<2 && (a<2 || b <1))`
+
 #define _new(x, t) t* x = hg_alloc(sizeof(t))
 
 #define _raw(head_ptr, t)                                           \
@@ -312,7 +314,7 @@ struct hg_ast_node* hg_ast_table_entry_new(struct hg_parser* p,
     return &entry->node;
 }
 
-struct hg_ast_node* hg_ast_literal_id_new(struct hg_parser* p, hg_char str) {
+struct hg_ast_node* hg_ast_literal_id_new(struct hg_parser* p, hg_str str) {
     _new(lit, struct hg_ast_literal);
 
     lit->node.type = HG_AST_NODE_LITERAL_ID;
@@ -322,7 +324,7 @@ struct hg_ast_node* hg_ast_literal_id_new(struct hg_parser* p, hg_char str) {
     return &lit->node;
 }
 
-struct hg_ast_node* hg_ast_literal_str_new(struct hg_parser* p, hg_char str) {
+struct hg_ast_node* hg_ast_literal_str_new(struct hg_parser* p, hg_str str) {
     _new(lit, struct hg_ast_literal);
 
     lit->node.type = HG_AST_NODE_LITERAL_STR;
@@ -363,6 +365,7 @@ struct hg_ast_node* hg_ast_literal_bool_new(struct hg_parser* p, hg_bool b) {
 }
 
 void hg_ast_node_free(struct hg_ast_node* _node) {
+    // TODO: remove this to reduce bugs
     if (_node == NULL)
         return;
 
@@ -497,33 +500,35 @@ void hg_ast_node_free(struct hg_ast_node* _node) {
 }
 
 static void _node_to_str(struct hg_ast_node* node, uint32_t indent,
-                         uint32_t depth, struct hg_string_buffer* buffer);
+                         uint32_t depth, struct hg_strbuf* buffer);
 
-hg_char hg_ast_node_to_str(struct hg_ast_node* node, uint32_t indent) {
-    struct hg_string_buffer buf;
-    hg_string_buffer_init(&buf, 512);
+hg_str hg_ast_node_to_str(struct hg_ast_node* node, uint32_t indent) {
+    struct hg_strbuf buf;
+
+    hg_strbuf_init(&buf);
 
     _node_to_str(node, indent, 0, &buf);
 
-    hg_char ret = hg_string_buffer_to_str(&buf);
-    hg_string_buffer_free(&buf);
+    hg_str ret = hg_strbuf_to_str(&buf);
+    hg_strbuf_free(&buf);
     return ret;
 }
 
-static hg_char _get_indent_str(uint32_t indent, uint32_t depth) {
-    hg_char indent_str;
+static hg_str _get_indent_str(uint32_t indent, uint32_t depth) {
+    hg_str indent_str;
 
-    struct hg_string_buffer indent_buf;
-    hg_string_buffer_init(&indent_buf, indent * depth + 1);
+    struct hg_strbuf indent_buf;
+    hg_strbuf_init(&indent_buf);
 
     for (size_t i = 0; i < indent * depth; i++)
-        assert(hg_string_buffer_append(&indent_buf, " "));
-    indent_str = hg_string_buffer_to_str(&indent_buf);
-    hg_string_buffer_free(&indent_buf);
+        assert(hg_strbuf_append(&indent_buf, " "));
+    indent_str = hg_strbuf_to_str(&indent_buf);
+    hg_strbuf_free(&indent_buf);
     return indent_str;
 }
 
-static const char* _op_to_char(enum hg_ast_node_op op) {
+static const char* _op_to_str(enum hg_ast_node_op op) {
+    assert(op < _HG_AST_NODE_OP_END && op > _HG_AST_NODE_OP_START);
     const char* const chars[] = {
         [HG_AST_NODE_OP_AND] = "and", // and
         [HG_AST_NODE_OP_OR]  = "or",  // or
@@ -545,19 +550,19 @@ static const char* _op_to_char(enum hg_ast_node_op op) {
 }
 
 static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
-                         uint32_t depth, struct hg_string_buffer* buf) {
-#define add_indent hg_string_buffer_append(buf, _get_indent_str(indent, depth))
-#define add_nl     hg_string_buffer_append(buf, "\n")
-#define add_space  hg_string_buffer_append(buf, " ")
+                         uint32_t depth, struct hg_strbuf* buf) {
+#define add_indent hg_strbuf_append(buf, _get_indent_str(indent, depth))
+#define add_nl     hg_strbuf_append(buf, "\n")
+#define add_space  hg_strbuf_append(buf, " ")
 #define add_block(block, end)                                  \
     do {                                                       \
         if (_raw(block, struct hg_ast_node_array)->len == 0) { \
-            hg_string_buffer_append(buf, "{}%s", end);         \
+            hg_strbuf_append(buf, "{}%s", end);         \
         } else {                                               \
-            hg_string_buffer_append(buf, "{\n");               \
-            _node_to_str(block, indent, depth, buf);           \
+            hg_strbuf_append(buf, "{\n");               \
+            _node_to_str(block, indent, depth + 1, buf);       \
             add_indent;                                        \
-            hg_string_buffer_append(buf, "}%s", end);          \
+            hg_strbuf_append(buf, "}%s", end);          \
         }                                                      \
     } while (0)
 
@@ -567,7 +572,7 @@ static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
 
         add_indent;
         _node_to_str(node->vars, indent, depth, buf);
-        hg_string_buffer_append(buf, " = ");
+        hg_strbuf_append(buf, " = ");
         _node_to_str(node->exprs, indent, depth, buf);
         add_nl;
     } break;
@@ -575,9 +580,9 @@ static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
         _raw_to(_node, struct hg_ast_for_stat, node);
 
         add_indent;
-        hg_string_buffer_append(buf, "for ");
+        hg_strbuf_append(buf, "for ");
         _node_to_str(node->params, indent, depth, buf);
-        hg_string_buffer_append(buf, " in ");
+        hg_strbuf_append(buf, " in ");
         _node_to_str(node->iterator, indent, depth, buf);
 
         add_space;
@@ -587,18 +592,16 @@ static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
         _raw_to(_node, struct hg_ast_if_stat, node);
 
         add_indent;
-        hg_string_buffer_append(buf, "if ");
+        hg_strbuf_append(buf, "if ");
         _node_to_str(node->condition, indent, depth, buf);
+        add_space;
 
         // if block
-        hg_string_buffer_append(buf, " {\n");
-        _node_to_str(node->block, indent, depth, buf);
-        add_indent;
-        hg_string_buffer_append(buf, "}%s", node->else_block ? " " : "\n");
+        add_block(node->block, node->else_block ? " " : "\n");
 
         // else block
         if (node->else_block) {
-            hg_string_buffer_append(buf, "else ");
+            hg_strbuf_append(buf, "else ");
             // TODO: do not inline this
             add_block(node->else_block, "\n");
         }
@@ -607,28 +610,30 @@ static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
         _raw_to(_node, struct hg_ast_func_stat, node);
 
         add_indent;
-        hg_string_buffer_append(buf, "fn ");
+        hg_strbuf_append(buf, "fn ");
         _node_to_str(node->id, indent, depth, buf);
 
-        hg_string_buffer_append(buf, " (");
-        _node_to_str(node->params, indent, depth, buf);
-        hg_string_buffer_append(buf, " ) ");
+        hg_strbuf_append(buf, "(");
+        if (node->params) {
+            _node_to_str(node->params, indent, depth, buf);
+        }
+        hg_strbuf_append(buf, ") ");
 
         add_block(node->block, "\n");
     } break;
     case HG_AST_NODE_BREAK: {
         add_indent;
-        hg_string_buffer_append(buf, "break\n");
+        hg_strbuf_append(buf, "break\n");
     } break;
     case HG_AST_NODE_CONTINUE: {
         add_indent;
-        hg_string_buffer_append(buf, "continue\n");
+        hg_strbuf_append(buf, "continue\n");
     } break;
     case HG_AST_NODE_RETURN: {
         _raw_to(_node, struct hg_ast_return_stat, node);
 
         add_indent;
-        hg_string_buffer_append(buf, "return");
+        hg_strbuf_append(buf, "return");
 
         if (node->exprs) {
             add_space;
@@ -648,15 +653,17 @@ static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
 
         _node_to_str(node->callable, indent, depth, buf);
 
-        hg_string_buffer_append(buf, "(");
-        _node_to_str(node->exprs, indent, depth, buf);
-        hg_string_buffer_append(buf, ")");
+        hg_strbuf_append(buf, "(");
+        if (node->exprs) {
+            _node_to_str(node->exprs, indent, depth, buf);
+        }
+        hg_strbuf_append(buf, ")");
     } break;
     case HG_AST_NODE_FIELD: {
         _raw_to(_node, struct hg_ast_field_expr, node);
 
         _node_to_str(node->prefix, indent, depth, buf);
-        hg_string_buffer_append(buf, ".");
+        hg_strbuf_append(buf, ".");
         _node_to_str(node->field, indent, depth, buf);
     } break;
     case HG_AST_NODE_INDEX: {
@@ -664,69 +671,73 @@ static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
 
         _node_to_str(node->prefix, indent, depth, buf);
 
-        hg_string_buffer_append(buf, "[");
+        hg_strbuf_append(buf, "[");
         _node_to_str(node->index, indent, depth, buf);
-        hg_string_buffer_append(buf, "]");
+        hg_strbuf_append(buf, "]");
     } break;
     case HG_AST_NODE_FUNC_DEF: {
         _raw_to(_node, struct hg_ast_func_def_expr, node);
 
-        hg_string_buffer_append(buf, "fn");
+        hg_strbuf_append(buf, "fn ");
 
-        hg_string_buffer_append(buf, " (");
-        _node_to_str(node->params, indent, depth, buf);
-        hg_string_buffer_append(buf, ") ");
+        hg_strbuf_append(buf, "(");
+        if (node->params) {
+            _node_to_str(node->params, indent, depth, buf);
+        }
+        hg_strbuf_append(buf, ") ");
 
         add_block(node->block, "");
     } break;
     case HG_AST_NODE_BINARY_EXPR: {
         _raw_to(_node, struct hg_ast_binary_expr, node);
         _node_to_str(node->left, indent, depth, buf);
-        hg_string_buffer_append(buf, " %s ", _op_to_char(node->op));
+        hg_strbuf_append(buf, " %s ", _op_to_str(node->op));
         _node_to_str(node->right, indent, depth, buf);
     } break;
     case HG_AST_NODE_UNARY_EXPR: {
         _raw_to(_node, struct hg_ast_unary_expr, node);
-        hg_string_buffer_append(buf, _op_to_char(node->op));
+        hg_strbuf_append(buf, "%s ", _op_to_str(node->op));
         _node_to_str(node->expr, indent, depth, buf);
     } break;
     case HG_AST_NODE_TABLE: {
         _raw_to(_node, struct hg_ast_table_expr, node);
-        hg_string_buffer_append(buf, "{");
-        _node_to_str(node->entries, indent, depth, buf);
-        hg_string_buffer_append(buf, "}");
+        hg_strbuf_append(buf, "{");
+        if (node->entries) {
+            _node_to_str(node->entries, indent, depth, buf);
+        }
+        hg_strbuf_append(buf, "}");
     } break;
     case HG_AST_NODE_TABLE_ENTRY: {
         _raw_to(_node, struct hg_ast_table_entry, node);
         _node_to_str(node->key, indent, depth, buf);
-        hg_string_buffer_append(buf, ": ");
+        hg_strbuf_append(buf, ": ");
         _node_to_str(node->value, indent, depth, buf);
     } break;
     case HG_AST_NODE_LITERAL_STR: {
         _raw_to(_node, struct hg_ast_literal, node);
-        hg_string_buffer_append(buf, "\"%s\"", node->as_str);
+        hg_strbuf_append(buf, "\"%s\"", node->as_str);
     } break;
     case HG_AST_NODE_LITERAL_ID: {
         _raw_to(_node, struct hg_ast_literal, node);
-        hg_string_buffer_append(buf, "%s", node->as_id);
+        hg_strbuf_append(buf, "%s", node->as_id);
     } break;
     case HG_AST_NODE_LITERAL_BOOL: {
         _raw_to(_node, struct hg_ast_literal, node);
-        hg_string_buffer_append(buf, "%s", node->as_bool ? "true" : "false");
+        hg_strbuf_append(buf, "%s", node->as_bool ? "true" : "false");
     } break;
     case HG_AST_NODE_LITERAL_INT: {
         _raw_to(_node, struct hg_ast_literal, node);
-        hg_string_buffer_append(buf, HGFormatInt, node->as_int);
+        hg_strbuf_append(buf, "%" HGFormatInt, node->as_int);
     } break;
     case HG_AST_NODE_LITERAL_FLOAT: {
         _raw_to(_node, struct hg_ast_literal, node);
-        hg_string_buffer_append(buf, HGFormatFloat, node->as_float);
+        hg_strbuf_append(buf, "%" HGFormatFloat, node->as_float);
     } break;
     case HG_AST_NODE_ARRAY_STATS: {
         _raw_to(_node, struct hg_ast_node_array, node);
         for (size_t i = 0; i < node->len; i++) {
             _node_to_str(node->arr[i], indent, depth, buf);
-            add_nl;
+            // add_nl;
         }
     } break;
     case HG_AST_NODE_ARRAY_EXPRS:
@@ -737,15 +748,17 @@ static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
         for (size_t i = 0; i < node->len; i++) {
             _node_to_str(node->arr[i], indent, depth, buf);
             if (i != node->len - 1) {
-                hg_string_buffer_append(buf, ", ");
+                hg_strbuf_append(buf, ", ");
             }
         }
     } break;
+        break;
     default:
         unreachable_();
     }
 #undef add_indent
 #undef add_nl
+#undef add_space
 #undef add_block
 }
 

@@ -54,6 +54,7 @@ enum hg_ast_node_type {
 };
 
 enum hg_ast_node_op {
+    _HG_AST_NODE_OP_START,
     HG_AST_NODE_OP_AND, // and
     HG_AST_NODE_OP_OR,  // or
     HG_AST_NODE_OP_NOT, // not
@@ -68,6 +69,7 @@ enum hg_ast_node_op {
     HG_AST_NODE_OP_MUL, // *
     HG_AST_NODE_OP_DIV, // /
     HG_AST_NODE_OP_MOD, // %
+    _HG_AST_NODE_OP_END,
 };
 
 struct hg_ast_node {
@@ -229,22 +231,22 @@ struct hg_ast_node* hg_ast_table_entry_new(struct hg_parser* p,
 struct hg_ast_literal {
     _hg_ast_head;
     union {
-        hg_char as_id;
-        hg_char as_str;
+        hg_str as_id;
+        hg_str as_str;
         hg_float as_float;
         hg_int as_int;
         hg_bool as_bool;
     };
 };
-struct hg_ast_node* hg_ast_literal_id_new(struct hg_parser* p, hg_char str);
-struct hg_ast_node* hg_ast_literal_str_new(struct hg_parser* p, hg_char str);
+struct hg_ast_node* hg_ast_literal_id_new(struct hg_parser* p, hg_str str);
+struct hg_ast_node* hg_ast_literal_str_new(struct hg_parser* p, hg_str str);
 struct hg_ast_node* hg_ast_literal_float_new(struct hg_parser* p, hg_float d);
 struct hg_ast_node* hg_ast_literal_int_new(struct hg_parser* p, hg_int i);
 struct hg_ast_node* hg_ast_literal_bool_new(struct hg_parser* p, hg_bool b);
 
 #undef _hg_ast_head
 
-hg_char hg_ast_node_to_str(struct hg_ast_node* node, uint32_t indent);
+hg_str hg_ast_node_to_str(struct hg_ast_node* node, uint32_t indent);
 void hg_ast_node_free(struct hg_ast_node* node);
 
 #endif // HG_AST_H_
