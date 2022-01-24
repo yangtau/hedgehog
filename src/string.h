@@ -3,22 +3,22 @@
 
 #include "common.h"
 
-void hg_string_init();
-void hg_string_free();
+void hg_strtable_init();
+void hg_strtable_free();
 // copy `from`, and append return value to the global string_table
-hg_char hg_string_new(const char* from, size_t len);
+hg_str hg_str_new(const char* from, size_t len);
 
-struct hg_string_buffer {
+struct hg_strbuf {
     size_t len;
     size_t _cap;
     char* _str;
     bool _moved; // if the `_str` has been moved to string table
 };
-void hg_string_buffer_init(struct hg_string_buffer* buf, size_t cap);
-void hg_string_buffer_free(struct hg_string_buffer* buf);
-bool hg_string_buffer_append(struct hg_string_buffer* buf, const char* fmt,
-                             ...);
-// change string_buffer to str, and append it to the global string_table
-hg_char hg_string_buffer_to_str(struct hg_string_buffer* buf);
+
+void hg_strbuf_init(struct hg_strbuf* buf);
+void hg_strbuf_free(struct hg_strbuf* buf);
+bool hg_strbuf_append(struct hg_strbuf* buf, const char* fmt, ...);
+// change strbuf to str, and append it to the global string_table
+hg_str hg_strbuf_to_str(struct hg_strbuf* buf);
 
 #endif // HG_STRING_H_

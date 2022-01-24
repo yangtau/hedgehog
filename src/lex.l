@@ -9,6 +9,7 @@
 #define LEX_RETURN(c) return lex_return(p, yyscanner, c)
 
 static int lex_return(struct hg_parser* p, void* scanner, int c);
+// TODO: reserve comments and newline as TOKEN
 %}
 
 %option prefix="hg_yy"
@@ -30,9 +31,9 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "<="{TRAIL}                     LEX_RETURN(hg_yy_t_op_le);
 ">"{TRAIL}                      LEX_RETURN(hg_yy_t_op_gt);
 ">="{TRAIL}                     LEX_RETURN(hg_yy_t_op_ge);
-"&&"{TRAIL}                     LEX_RETURN(hg_yy_t_op_and);
-"||"{TRAIL}                     LEX_RETURN(hg_yy_t_op_or);
-"!"{TRAIL}                      LEX_RETURN(hg_yy_t_op_not);
+"and"{TRAIL}                    LEX_RETURN(hg_yy_t_op_and);
+"or"{TRAIL}                     LEX_RETURN(hg_yy_t_op_or);
+"not"{TRAIL}                    LEX_RETURN(hg_yy_t_op_not);
 "="{TRAIL}                      LEX_RETURN(hg_yy_t_op_assign);
 ":"{TRAIL}                      LEX_RETURN(hg_yy_t_sep_colon);
 "["{TRAIL}                      LEX_RETURN(hg_yy_t_sep_ls);
@@ -63,7 +64,7 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 };
 
 [A-Za-z_][A-Za-z0-9_]* {
-    yylval->s = hg_string_new(yytext, strlen(yytext));
+    yylval->s = hg_str_new(yytext, strlen(yytext));
     LEX_RETURN(hg_yy_t_lit_id);
 };
 
@@ -82,7 +83,7 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 };
 
 \"([^\\\"]|\\.)*\" {
-    yylval->s = hg_string_new(yytext+1, strlen(yytext)-2);
+    yylval->s = hg_str_new(yytext+1, strlen(yytext)-2);
     LEX_RETURN(hg_yy_t_lit_string);
 };
 
