@@ -1,0 +1,45 @@
+print = require("std").print
+
+## Car object ##
+fn Car(speed) {
+  car = {postion: 0}
+
+  # -- methods of a object
+  car.run = fn (time) { car.postion = car.postion + time }
+  return car
+}
+
+car = Car(4)
+car.run(3)
+print(car.postion) # --> 12
+
+## metatable ##
+# TODO: only symbols can be accessed by `.`
+base = {"hello": fn () { return "hello from base" }}
+
+fn A() {
+  a = {}
+  setmeta(a, base)
+  return a
+}
+
+a = A()
+print(a.hello()) # -- `hello` of base will be called
+
+## access properties of sub object ##
+fn Greeter(Namer) {
+  o = {}
+  o.greet = fn () { return "hello, " + Namer.name() }
+  return o
+}
+
+fn Human(name) {
+  o = {}
+  G.setmeta(o, Greeter(o))
+  o.name = fn () { return name }
+  return o
+}
+
+a = Human("yangtao")
+a.greet()
+

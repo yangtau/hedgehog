@@ -1,0 +1,38 @@
+print = require("std").print
+fn Car(speed) {
+  car = {postion: 0}
+  car.run = fn (time) {
+    car.postion = car.postion + time
+  }
+  return car
+}
+car = Car(4)
+car.run(3)
+print(car.postion)
+base = {"hello": fn () {
+  return "hello from base"
+}}
+fn A() {
+  a = {}
+  setmeta(a, base)
+  return a
+}
+a = A()
+print(a.hello())
+fn Greeter(Namer) {
+  o = {}
+  o.greet = fn () {
+    return "hello, " + Namer.name()
+  }
+  return o
+}
+fn Human(name) {
+  o = {}
+  G.setmeta(o, Greeter(o))
+  o.name = fn () {
+    return name
+  }
+  return o
+}
+a = Human("yangtao")
+a.greet()

@@ -1,0 +1,35 @@
+print   = require("std").print
+setmeta = require("std").setmeta
+
+## functional ##
+fn Fun(t) {
+  m = {}
+  setmeta(t, m)
+  
+  m.map = fn (f) {
+    res = {}
+    setmeta(res, m)
+    for k, v in t {
+      res[k] = f(v)
+    }
+    return res
+  }
+    
+  m.filter = fn (f) {
+    res = {}
+    setmeta(res, m)
+    for k, v in t {
+      res[k] = f(v)
+    }
+    return res
+  }
+  
+  return t
+}
+
+res = Fun({1, 2, 3, 4, 5, 6}).
+    map(fn (x) {return x*x}).
+    filter(fn (x) {return x>10})
+
+print(res) #--> {16, 25, 36}
+
