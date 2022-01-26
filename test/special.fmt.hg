@@ -1,0 +1,24 @@
+{hello: fn () {
+  print("ho")
+}}.hello()
+fn () {
+  print("hello")
+}()
+fn () {}()
+fn () {
+  return fn (a) {
+    print(a)
+  }
+}()("hello")
+t = {}
+t[1], t.a = 1, fn (a) {
+  print(a)
+}
+t.a(t[1])
+t[a](t[1])
+_ = fn () {}
+nested = {outer: {inner: {foo: fn (n) {
+  x = n + 100
+  print(x)
+}}}}
+nested[outer].inner[foo](100)

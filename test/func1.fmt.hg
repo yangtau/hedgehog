@@ -1,0 +1,31 @@
+std = require("std")
+fn fac(n) {
+  if n <= 1 {
+    return 1
+  } else {
+    return n * fac(n - 1)
+  }
+}
+fn fac_tailcall(n) {
+  fn f(acc, n) {
+    if n <= 1 {
+      return acc
+    } else {
+      return f(acc * n, n - 1)
+    }
+  }
+  return f(1, n)
+}
+std.print(fac(1))
+std.print(fac_tailcall(1))
+std.print(fac(0))
+std.print(fac_tailcall(0))
+std.print(fac(4))
+std.print(fac_tailcall(4))
+fn swap(x, y) {
+  return y, x
+}
+x, y = 1, 2
+std.print(x, y)
+x, y = swap(x, y)
+std.print(x, y)
