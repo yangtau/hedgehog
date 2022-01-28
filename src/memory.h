@@ -12,6 +12,7 @@ static void* hg_realloc(void* p, size_t size) {
 }
 
 static void hg_free(void* p) {
+    assert(p);
     return free(p);
 }
 

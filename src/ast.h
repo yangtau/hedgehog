@@ -42,6 +42,7 @@ enum hg_ast_node_type {
     HG_AST_NODE_UNARY_EXPR,
     HG_AST_NODE_TABLE,
     HG_AST_NODE_TABLE_ENTRY,
+    HG_AST_NODE_BRACK_EXPR, // (expr)
     _HG_AST_NODE_EXPR_END,
     // literal:
     _HG_AST_NODE_LITERAL_START,
@@ -112,7 +113,7 @@ struct hg_ast_node* hg_ast_continue_stat_new(struct hg_parser* p);
 
 struct hg_ast_return_stat {
     _hg_ast_head;
-    struct hg_ast_node* exprs;
+    struct hg_ast_node* exprs; // null when we just return nothing
 };
 struct hg_ast_node* hg_ast_return_stat_new(struct hg_parser* p,
                                            struct hg_ast_node* exprs);
@@ -121,7 +122,7 @@ struct hg_ast_if_stat {
     _hg_ast_head;
     struct hg_ast_node* condition;
     struct hg_ast_node* block;
-    struct hg_ast_node* else_block;
+    struct hg_ast_node* else_block; // null when there is no else branch
 };
 struct hg_ast_node* hg_ast_if_stat_new(struct hg_parser* p,
                                        struct hg_ast_node* cond,
@@ -140,7 +141,7 @@ struct hg_ast_node* hg_ast_assignment_stat_new(struct hg_parser* p,
 struct hg_ast_func_stat {
     _hg_ast_head;
     struct hg_ast_node* id;
-    struct hg_ast_node* params;
+    struct hg_ast_node* params; // null when there is no parameters
     struct hg_ast_node* block;
 };
 struct hg_ast_node* hg_ast_func_stat_new(struct hg_parser* p,
@@ -157,7 +158,7 @@ struct hg_ast_node* hg_ast_expr_stat_new(struct hg_parser* p,
 
 struct hg_ast_func_def_expr {
     _hg_ast_head;
-    struct hg_ast_node* params;
+    struct hg_ast_node* params; // null when there is no parameters
     struct hg_ast_node* block;
 };
 struct hg_ast_node* hg_ast_func_def_new(struct hg_parser* p,
@@ -213,7 +214,7 @@ struct hg_ast_node* hg_ast_index_expr_new(struct hg_parser* p,
 
 struct hg_ast_table_expr {
     _hg_ast_head;
-    struct hg_ast_node* entries;
+    struct hg_ast_node* entries; // null when where is no entries
 };
 
 struct hg_ast_node* hg_ast_table_expr_new(struct hg_parser* p,
@@ -227,6 +228,13 @@ struct hg_ast_table_entry {
 struct hg_ast_node* hg_ast_table_entry_new(struct hg_parser* p,
                                            struct hg_ast_node* key,
                                            struct hg_ast_node* value);
+
+struct hg_ast_brack_expr {
+    _hg_ast_head;
+    struct hg_ast_node* expr;
+};
+struct hg_ast_node* hg_ast_brack_expr_new(struct hg_parser* p,
+                                          struct hg_ast_node* expr);
 
 struct hg_ast_literal {
     _hg_ast_head;

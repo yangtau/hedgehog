@@ -430,7 +430,7 @@ primary:
     field_expr
     |
     sep_lb expr sep_rb {
-        $<node>$ = $<node>2;
+        $<node>$ = hg_ast_brack_expr_new(p, $<node>2);
     }
     |
     function_def_expr;

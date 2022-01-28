@@ -6,7 +6,15 @@ CFLAGS = -std=c11 -g -Wall -Wextra -rdynamic $(UDEF)
 SRC := $(filter-out yy.hedgehog.c lex.hedgehog.c format.c, $(wildcard *.c))
 OBJS := $(SRC:.c=.o)
 
-all: formater
+.PHONY : test run_test clean
+
+all: formater test
+
+test:
+	make -C test
+
+run_test:
+	make -C test run
 
 formater: format.c $(OBJS) parser.o
 	$(CC) $(CFLAGS) -o $@ $^
