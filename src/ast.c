@@ -704,7 +704,8 @@ static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
     } break;
     case HG_AST_NODE_UNARY_EXPR: {
         __hg_ast_raw_to(_node, struct hg_ast_unary_expr, node);
-        hg_strbuf_append(buf, "%s ", _op_to_str(node->op));
+        hg_strbuf_append(buf, "%s%s", _op_to_str(node->op),
+                         node->op == HG_AST_NODE_OP_SUB ? "" : " ");
         _node_to_str(node->expr, indent, depth, buf);
     } break;
     case HG_AST_NODE_TABLE: {
