@@ -1,0 +1,20 @@
+print = require("std").print
+
+a = 10
+if not a > 10 and a > 0 { print(a) }
+
+if false and true {
+    print("false and true")
+} else {
+if false or true {
+    print("false or true")
+}
+}
+
+
+
+if not (a < 1 or a > 20) and (a<20 and a <30) {
+    print(4*(2+1)-(5%4)*100/4)
+}
+
+

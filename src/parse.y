@@ -343,7 +343,7 @@ expr:
     }
     |
     expr op_ls expr {
-        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_OR, $<node>1, $<node>3);
+        $<node>$ = hg_ast_binary_expr_new(p, HG_AST_NODE_OP_LS, $<node>1, $<node>3);
     }
     |
     expr op_gt expr {
