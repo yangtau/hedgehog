@@ -309,18 +309,24 @@ table_expr:
     ;
 
 table_entris:
-    expr sep_colon expr {
+    entry_key sep_colon expr {
         print("\n%d: reduce expr:expr to entries\n", __LINE__);
         $<node>$ = hg_ast_node_array_new(p, HG_AST_NODE_ARRAY_TABLE_ENTRIES);
         $<node>$ = hg_ast_node_array_append(p, $<node>$, hg_ast_table_entry_new(p, $<node>1, $<node>3));
     }
     |
-    table_entris sep_comma expr sep_colon expr {
+    table_entris sep_comma entry_key sep_colon expr {
         print("\n%d: append table entries\n", __LINE__);
         $<node>$ = hg_ast_node_array_append(p, $<node>1, hg_ast_table_entry_new(p, $<node>3, $<node>5));
     }
     ;
 
+entry_key:
+    expr
+    |
+    op_dot lit_id {
+        $<node>$ = hg_ast_literal_sym_new(p, $<s>2);
+    };
 
 expr:
     primary {

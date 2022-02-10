@@ -1,5 +1,5 @@
 print = require("std").print
-{hello: fn () {
+{.hello: fn () {
   print("ho")
 }}.hello()
 fn () {
@@ -17,7 +17,7 @@ t[1], t.a = 1, fn (a) {
 }
 t.a(t[1])
 _ = fn () {}
-nested = {outer: {inner: {"foo": fn (n) {
+nested = {.outer: {.inner: {"foo": fn (n) {
   x = n + 100
   print(x)
 }}}}

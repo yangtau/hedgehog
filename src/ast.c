@@ -331,6 +331,16 @@ struct hg_ast_node* hg_ast_literal_str_new(struct hg_parser* p, hg_str str) {
     return &lit->node;
 }
 
+struct hg_ast_node* hg_ast_literal_sym_new(struct hg_parser* p, hg_str str) {
+    __hg_new_ast(lit, struct hg_ast_literal);
+
+    lit->node.type = HG_AST_NODE_LITERAL_SYMBOL;
+    lit->node.line = p->lineno;
+    lit->as_str    = str;
+
+    return &lit->node;
+}
+
 struct hg_ast_node* hg_ast_literal_float_new(struct hg_parser* p, hg_float d) {
     __hg_new_ast(lit, struct hg_ast_literal);
 
@@ -467,6 +477,11 @@ void hg_ast_node_free(struct hg_ast_node* _node) {
     case HG_AST_NODE_BRACK_EXPR: {
         __hg_ast_raw_to(_node, struct hg_ast_brack_expr, node);
         hg_ast_node_free(node->expr);
+        hg_free(node);
+    } break;
+    case HG_AST_NODE_LITERAL_SYMBOL: {
+        __hg_ast_raw_to(_node, struct hg_ast_literal, node);
+        // TODO: free reference to str
         hg_free(node);
     } break;
     case HG_AST_NODE_LITERAL_STR: {
@@ -731,6 +746,10 @@ static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
     case HG_AST_NODE_LITERAL_STR: {
         __hg_ast_raw_to(_node, struct hg_ast_literal, node);
         hg_strbuf_append(buf, "\"%s\"", node->as_str);
+    } break;
+    case HG_AST_NODE_LITERAL_SYMBOL: {
+        __hg_ast_raw_to(_node, struct hg_ast_literal, node);
+        hg_strbuf_append(buf, ".%s", node->as_str);
     } break;
     case HG_AST_NODE_LITERAL_ID: {
         __hg_ast_raw_to(_node, struct hg_ast_literal, node);

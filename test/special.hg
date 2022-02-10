@@ -1,6 +1,6 @@
 print = require("std").print
 ## special cases  ##
-{hello: fn(){print("ho")}}.hello()
+{.hello: fn(){print("ho")}}.hello()
 
 fn() { print("hello") } ()
 
@@ -19,8 +19,8 @@ t.a(t[1]) #--> 1
 _ = fn () {}
 
 nested = {
-  outer: {
-    inner: {
+  .outer: {
+    .inner: {
         "foo": fn (n) {x=n+100;print(x)}
     }
   }

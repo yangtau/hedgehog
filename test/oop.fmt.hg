@@ -1,6 +1,6 @@
 print = require("std").print
 fn Car(speed) {
-  car = {postion: 0}
+  car = {.postion: 0}
   car.run = fn (time) {
     car.postion = car.postion + time
   }
@@ -9,7 +9,7 @@ fn Car(speed) {
 car = Car(4)
 car.run(3)
 print(car.postion)
-base = {"hello": fn () {
+base = {.hello: fn () {
   return "hello from base"
 }}
 fn A() {

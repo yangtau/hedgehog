@@ -48,6 +48,7 @@ enum hg_ast_node_type {
     _HG_AST_NODE_LITERAL_START,
     HG_AST_NODE_LITERAL_STR,
     HG_AST_NODE_LITERAL_ID,
+    HG_AST_NODE_LITERAL_SYMBOL,
     HG_AST_NODE_LITERAL_BOOL,
     HG_AST_NODE_LITERAL_INT,
     HG_AST_NODE_LITERAL_FLOAT,
@@ -241,6 +242,7 @@ struct hg_ast_literal {
     union {
         hg_str as_id;
         hg_str as_str;
+        hg_str as_sym; // symbol
         hg_float as_float;
         hg_int as_int;
         hg_bool as_bool;
@@ -248,6 +250,7 @@ struct hg_ast_literal {
 };
 struct hg_ast_node* hg_ast_literal_id_new(struct hg_parser* p, hg_str str);
 struct hg_ast_node* hg_ast_literal_str_new(struct hg_parser* p, hg_str str);
+struct hg_ast_node* hg_ast_literal_sym_new(struct hg_parser* p, hg_str str);
 struct hg_ast_node* hg_ast_literal_float_new(struct hg_parser* p, hg_float d);
 struct hg_ast_node* hg_ast_literal_int_new(struct hg_parser* p, hg_int i);
 struct hg_ast_node* hg_ast_literal_bool_new(struct hg_parser* p, hg_bool b);
