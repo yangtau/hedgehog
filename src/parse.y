@@ -69,19 +69,12 @@ stats:
     stat {
         $<node>$ = hg_ast_node_array_new(p, HG_AST_NODE_ARRAY_STATS);
         $<node>$ = hg_ast_node_array_append(p, $<node>$, $<node>1);
+        print("\n%d: stat -> stats\n", __LINE__);
     }
     |
     stats seps stat {
         $<node>$ = hg_ast_node_array_append(p, $<node>1, $<node>3);
         print("\n%d: shift stat to stats (append)\n", __LINE__);
-    }
-    |
-    stats error {
-        $<node>$ = $<node>1;
-    }
-    |
-    error {
-        $<node>$ = hg_ast_node_array_new(p, HG_AST_NODE_ARRAY_STATS);
     }
     ;
 
@@ -452,4 +445,6 @@ static void yyerror(struct hg_parser* p, void* scanner,const char* s) {
     } else {
         fprintf(stderr, "%d:%s:\n`%s`\n", p->lineno, s, hg_yyget_text(scanner));
     }
+
+    exit(1);
 }
