@@ -257,7 +257,7 @@ struct hg_ast_node* hg_ast_literal_bool_new(struct hg_parser* p, hg_bool b);
 
 #undef _hg_ast_head
 
-hg_str hg_ast_node_to_str(struct hg_ast_node* node, uint32_t indent);
+hg_str hg_ast_node_to_str(const struct hg_ast_node* node, uint32_t indent);
 void hg_ast_node_free(struct hg_ast_node* node);
 
 #endif // HG_AST_H_

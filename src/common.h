@@ -48,9 +48,9 @@ static _force_inline_ void print_backtrace() {
 
 // type checks:
 #define is_compatible_(x, T) _Generic((x), T : true, default : false)
-#define ensure_type_(p, t)               \
-    _Static_assert(is_compatible_(p, t), \
-                   "incorrect type for parameter '" #p "', expected " #t)
+#define ensure_type_(p, T)               \
+    _Static_assert(is_compatible_(p, T), \
+                   "incorrect type for parameter '" #p "', expected " #T)
 
 // types used by inner HG
 typedef int64_t hg_int;
