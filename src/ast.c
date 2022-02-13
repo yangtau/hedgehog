@@ -4,10 +4,13 @@
 
 #define __hg_new_ast(x, t) t* x = hg_alloc(sizeof(t))
 
-#define __hg_ast_raw(head_ptr, t)                                   \
-    ({                                                              \
-        ensure_type_(head_ptr, struct hg_ast_node*);                \
-        ((t*)((intptr_t)(head_ptr)-struct_field_offset_(t, node))); \
+#define __hg_ast_raw(head_ptr, t)                                    \
+    ({                                                               \
+        _Static_assert(                                              \
+            is_compatible_(head_ptr, struct hg_ast_node*) ||         \
+                is_compatible_(head_ptr, const struct hg_ast_node*), \
+            "incorrect type for (const) struct hg_ast_node*");       \
+        ((t*)((intptr_t)(head_ptr)-struct_field_offset_(t, node)));  \
     })
 
 #define __hg_ast_raw_to(head_ptr, t, var) t* var = __hg_ast_raw((head_ptr), t)
@@ -513,7 +516,7 @@ void hg_ast_node_free(struct hg_ast_node* _node) {
     case HG_AST_NODE_ARRAY_TABLE_ENTRIES: {
         __hg_ast_raw_to(_node, struct hg_ast_node_array, node);
         for (size_t i = 0; i < node->len; i++) {
-            hg_free(node->arr[i]);
+            hg_ast_node_free(node->arr[i]);
         }
         hg_free(node);
     } break;
@@ -522,10 +525,10 @@ void hg_ast_node_free(struct hg_ast_node* _node) {
     }
 }
 
-static void _node_to_str(struct hg_ast_node* node, uint32_t indent,
+static void _node_to_str(const struct hg_ast_node* node, uint32_t indent,
                          uint32_t depth, struct hg_strbuf* buffer);
 
-hg_str hg_ast_node_to_str(struct hg_ast_node* node, uint32_t indent) {
+hg_str hg_ast_node_to_str(const struct hg_ast_node* node, uint32_t indent) {
     struct hg_strbuf buf;
 
     hg_strbuf_init(&buf);
@@ -538,6 +541,25 @@ hg_str hg_ast_node_to_str(struct hg_ast_node* node, uint32_t indent) {
 }
 
 static hg_str _get_indent_str(uint32_t indent, uint32_t depth) {
+    switch (indent * depth) {
+    case 0:
+        return "";
+    case 2:
+        return "  ";
+    case 4:
+        return "    ";
+    case 6:
+        return "      ";
+    case 8:
+        return "        ";
+    case 10:
+        return "          ";
+    case 12:
+        return "            ";
+    case 16:
+        return "                ";
+    }
+
     hg_str indent_str;
 
     struct hg_strbuf indent_buf;
@@ -572,7 +594,7 @@ static const char* _op_to_str(enum hg_ast_node_op op) {
     return chars[op];
 }
 
-static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
+static void _node_to_str(const struct hg_ast_node* _node, uint32_t indent,
                          uint32_t depth, struct hg_strbuf* buf) {
 #define __add_indent hg_strbuf_append(buf, _get_indent_str(indent, depth))
 #define __add_nl     hg_strbuf_append(buf, "\n")
@@ -786,7 +808,6 @@ static void _node_to_str(struct hg_ast_node* _node, uint32_t indent,
             }
         }
     } break;
-        break;
     default:
         unreachable_();
     }
