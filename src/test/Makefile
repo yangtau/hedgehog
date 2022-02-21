@@ -7,12 +7,16 @@ all: test
 
 run: test
 	./test_string
+	./test_vm
 
-test: test_string
+test: test_string test_vm
 
 test_string: string_test.c test.h ../string.h ../string.c
 	$(CC) $(CFLAGS) ../string.c string_test.c -o test_string
 
+test_vm: vm_test.c test.h ../vm.c ../vm.h
+	$(CC) $(CFLAGS) ../vm.c vm_test.c -o test_vm
+
 clean:
 	rm -f test_string
-	rm -rf *.dSYM
+	rm -f test_vm
