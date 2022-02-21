@@ -1,6 +1,6 @@
 # Hedgehog
 
-It is hard to design a good programming language 😭.
+It is hard to design a good programming language.
 
 ```
 fn fac(n) {
