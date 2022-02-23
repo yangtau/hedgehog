@@ -189,7 +189,7 @@ struct hg_ast_node* hg_ast_binary_expr_new(struct hg_parser* p,
 struct hg_ast_call_expr {
     _hg_ast_head;
     struct hg_ast_node* callable;
-    struct hg_ast_node* exprs; // args
+    struct hg_ast_node* exprs; // null when where is no args
 };
 struct hg_ast_node* hg_ast_call_expr_new(struct hg_parser* p,
                                          struct hg_ast_node* callable,

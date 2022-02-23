@@ -430,7 +430,9 @@ void hg_ast_node_free(struct hg_ast_node* _node) {
     case HG_AST_NODE_CALL: {
         __hg_ast_raw_to(_node, struct hg_ast_call_expr, node);
         hg_ast_node_free(node->callable);
-        hg_ast_node_free(node->exprs);
+        if (node->exprs) {
+            hg_ast_node_free(node->exprs);
+        }
         hg_free(node);
     } break;
     case HG_AST_NODE_FIELD: {
