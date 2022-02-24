@@ -65,7 +65,7 @@ test_func(vm_fac) {
         [15] = {.op = HG_OP_RETURN},
     };
 
-    struct hg_function main, fac;
+    struct hg_function entry, fac;
 
     struct hg_value constants[] = {
         [0] = {.as.i = 1},
@@ -74,7 +74,7 @@ test_func(vm_fac) {
     };
     int64_t* input = &constants[0].as.i;
 
-    main = (struct hg_function){
+    entry = (struct hg_function){
         .num_args    = 0,
         .num_returns = 0,
         .constants   = constants,
@@ -94,54 +94,49 @@ test_func(vm_fac) {
         .frames     = hg_alloc(sizeof(struct hg_call_frame) * (1 << 10)),
     };
 
-    vs.frame_cur = vs.frames;
-
     struct hg_value ret;
 
     *input = 0;
-    ret    = hg_vm_execute(&vs, &main);
+    ret    = hg_vm_execute(&vs, &entry);
     test_assert(ret.as.i == 1);
-    test_assert(vs.frame_cur == vs.frames);
 
     *input = 1;
-    ret    = hg_vm_execute(&vs, &main);
+    ret    = hg_vm_execute(&vs, &entry);
     test_assert(ret.as.i == 1);
-    test_assert(vs.frame_cur == vs.frames);
 
     *input = 2;
-    ret    = hg_vm_execute(&vs, &main);
+    ret    = hg_vm_execute(&vs, &entry);
     test_assert(ret.as.i == 2);
-    test_assert(vs.frame_cur == vs.frames);
 
     *input = 3;
-    ret    = hg_vm_execute(&vs, &main);
+    ret    = hg_vm_execute(&vs, &entry);
     test_assert(ret.as.i == 6);
-    test_assert(vs.frame_cur == vs.frames);
 
     *input = 4;
-    ret    = hg_vm_execute(&vs, &main);
+    ret    = hg_vm_execute(&vs, &entry);
     test_assert(ret.as.i == 24);
-    test_assert(vs.frame_cur == vs.frames);
 
     *input = 5;
-    ret    = hg_vm_execute(&vs, &main);
+    ret    = hg_vm_execute(&vs, &entry);
     test_assert(ret.as.i == 120);
-    test_assert(vs.frame_cur == vs.frames);
 
     *input = 6;
-    ret    = hg_vm_execute(&vs, &main);
+    ret    = hg_vm_execute(&vs, &entry);
     test_assert(ret.as.i == 720);
-    test_assert(vs.frame_cur == vs.frames);
 
     *input = 10;
-    ret    = hg_vm_execute(&vs, &main);
+    ret    = hg_vm_execute(&vs, &entry);
     test_assert(ret.as.i == 3628800);
-    test_assert(vs.frame_cur == vs.frames);
 
-    *input = 15;
-    ret    = hg_vm_execute(&vs, &main);
-    test_assert(ret.as.i == 1307674368000);
-    test_assert(vs.frame_cur == vs.frames);
+    clock_t start = now();
+    const int N   = 100000;
+    for (int i = 0; i < N; i++) {
+        *input = 15;
+        ret    = hg_vm_execute(&vs, &entry);
+        test_assert(ret.as.i == 1307674368000);
+    }
+    test_println("#%d factorial elapsed: %s", N,
+                 duration2str(since(start), MACROSEC));
 
     hg_free(vs.stack);
     hg_free(vs.frames);

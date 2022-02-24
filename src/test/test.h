@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #define test_assert(e)                                                        \
     do {                                                                      \
@@ -36,5 +37,39 @@
     char *: "%s", \
     void *: "%p")
 
-#define print(x)   printf(printf_dec_format(x), x)
-#define println(x) printf(printf_dec_format(x), x), printf("\n");
+#define print(x)               printf(printf_dec_format(x), x)
+#define println(x)             printf(printf_dec_format(x), x), printf("\n")
+#define test_println(fmt, ...) printf("TEST: " fmt "\n", __VA_ARGS__)
+
+typedef clock_t duration_t;
+
+static clock_t now() {
+    return clock();
+}
+
+static duration_t since(clock_t t) {
+    return clock() - t;
+}
+
+const static long long int SEC      = CLOCKS_PER_SEC;
+const static long long int MILLISEC = SEC / 1000;
+const static long long int MACROSEC = MILLISEC / 1000;
+
+static const char* duration2str(duration_t d, long long int type) {
+    char* s;
+    switch (type) {
+    case SEC:
+        s = "seconds";
+        break;
+    case MILLISEC:
+        s = "milliseconds";
+        break;
+    case MACROSEC:
+        s = "macrosec";
+        break;
+    }
+
+    static _Thread_local char buf[1024];
+    sprintf(buf, "%lld %s", (long long int)(d) / type, s);
+    return buf;
+}

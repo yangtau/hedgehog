@@ -102,8 +102,6 @@ struct hg_vm_state {
     hg_stk_ptr stack;
     size_t size_frame;
     struct hg_call_frame* frames;
-    struct hg_call_frame* frame_cur;
-    struct hg_ins* pc;
 };
 
 struct hg_value hg_vm_execute(struct hg_vm_state*, struct hg_function*);
