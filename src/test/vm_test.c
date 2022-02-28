@@ -75,16 +75,20 @@ test_func(vm_fac) {
     int64_t* input = &constants[0].as.i;
 
     entry = (struct hg_function){
-        .num_args    = 0,
-        .num_returns = 0,
-        .constants   = constants,
-        .code        = codes,
+        .num_args      = 0,
+        .num_returns   = 0,
+        .constants     = constants,
+        .num_constants = sizeof(constants) / sizeof(struct hg_value),
+        .code          = codes,
+        .size_code     = sizeof(codes) / sizeof(struct hg_ins),
     };
     fac = (struct hg_function){
-        .num_args    = 2,
-        .num_returns = 1,
-        .constants   = constants,
-        .code        = &codes[fac_ptr],
+        .num_args      = 2,
+        .num_returns   = 1,
+        .constants     = constants,
+        .num_constants = 0,
+        .code          = &codes[fac_ptr],
+        .size_code     = 0,
     };
 
     struct hg_vm_state vs = {
@@ -135,8 +139,7 @@ test_func(vm_fac) {
         ret    = hg_vm_execute(&vs, &entry);
         test_assert(ret.as.i == 1307674368000);
     }
-    test_println("#%d factorial elapsed: %s", N,
-                 duration2str(since(start), MACROSEC));
+    test_println("#%d factorial elapsed: %s", N, duration2str(since(start), MACROSEC));
 
     hg_free(vs.stack);
     hg_free(vs.frames);
