@@ -53,21 +53,16 @@ test_func(strbuf) {
         test_assert(buf.len == strlen("hello, worldhello, worldhello, world"));
 
         test_assert(hg_strbuf_append(&buf, " a=%d+%d,b=%c", 10, 20, 'c'));
-        test_assert(buf.len ==
-                    strlen("hello, worldhello, worldhello, world a=10+20,b=c"));
+        test_assert(buf.len == strlen("hello, worldhello, worldhello, world a=10+20,b=c"));
 
         test_assert(hg_strbuf_append(&buf, ""));
-        test_assert(buf.len ==
-                    strlen("hello, worldhello, worldhello, world a=10+20,b=c"));
+        test_assert(buf.len == strlen("hello, worldhello, worldhello, world a=10+20,b=c"));
 
         test_assert(hg_strbuf_append(&buf, "  "));
-        test_assert(
-            buf.len ==
-            strlen("hello, worldhello, worldhello, world a=10+20,b=c  "));
+        test_assert(buf.len == strlen("hello, worldhello, worldhello, world a=10+20,b=c  "));
 
         const char* t = hg_strbuf_to_str(&buf);
-        test_assert(strcmp("hello, worldhello, worldhello, world a=10+20,b=c  ",
-                           t) == 0);
+        test_assert(strcmp("hello, worldhello, worldhello, world a=10+20,b=c  ", t) == 0);
         test_assert(buf._moved);
 
         hg_strbuf_free(&buf);

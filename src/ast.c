@@ -4,13 +4,12 @@
 
 #define __hg_new_ast(x, t) t* x = hg_alloc(sizeof(t))
 
-#define __hg_ast_raw(head_ptr, t)                                    \
-    ({                                                               \
-        _Static_assert(                                              \
-            is_compatible_(head_ptr, struct hg_ast_node*) ||         \
-                is_compatible_(head_ptr, const struct hg_ast_node*), \
-            "incorrect type for (const) struct hg_ast_node*");       \
-        ((t*)((intptr_t)(head_ptr)-struct_field_offset_(t, node)));  \
+#define __hg_ast_raw(head_ptr, t)                                               \
+    ({                                                                          \
+        _Static_assert(is_compatible_(head_ptr, struct hg_ast_node*) ||         \
+                           is_compatible_(head_ptr, const struct hg_ast_node*), \
+                       "incorrect type for (const) struct hg_ast_node*");       \
+        ((t*)((intptr_t)(head_ptr)-struct_field_offset_(t, node)));             \
     })
 
 #define __hg_ast_raw_to(head_ptr, t, var) t* var = __hg_ast_raw((head_ptr), t)
@@ -21,13 +20,11 @@ static const size_t _start_array_cap = 1;
 static const size_t _start_array_cap = 4;
 #endif
 
-struct hg_ast_node* hg_ast_node_array_new(struct hg_parser* p,
-                                          enum hg_ast_node_type type) {
+struct hg_ast_node* hg_ast_node_array_new(struct hg_parser* p, enum hg_ast_node_type type) {
     assert(type > _HG_AST_NODE_ARRAY_START && type < _HG_AST_NODE_ARRAY_END);
 
     struct hg_ast_node_array* arr =
-        hg_alloc(sizeof(struct hg_ast_node_array) +
-                 sizeof(struct hg_ast_node*) * _start_array_cap);
+        hg_alloc(sizeof(struct hg_ast_node_array) + sizeof(struct hg_ast_node*) * _start_array_cap);
 
     arr->node.type = type;
     arr->node.line = p->lineno;
@@ -37,18 +34,14 @@ struct hg_ast_node* hg_ast_node_array_new(struct hg_parser* p,
     return &arr->node;
 }
 
-struct hg_ast_node* hg_ast_node_array_append(struct hg_parser* p,
-                                             struct hg_ast_node* _arr,
-                                             struct hg_ast_node* node) {
-    assert(_arr->type > _HG_AST_NODE_ARRAY_START &&
-           _arr->type < _HG_AST_NODE_ARRAY_END);
+struct hg_ast_node* hg_ast_node_array_append(struct hg_parser* p, struct hg_ast_node* _arr, struct hg_ast_node* node) {
+    assert(_arr->type > _HG_AST_NODE_ARRAY_START && _arr->type < _HG_AST_NODE_ARRAY_END);
 
     __hg_ast_raw_to(_arr, struct hg_ast_node_array, arr);
 
     if (arr->len >= arr->cap) {
         arr->cap *= 2;
-        arr = hg_realloc(arr, sizeof(struct hg_ast_node_array) +
-                                  sizeof(struct hg_ast_node*) * arr->cap);
+        arr = hg_realloc(arr, sizeof(struct hg_ast_node_array) + sizeof(struct hg_ast_node*) * arr->cap);
     }
 
     arr->arr[arr->len++] = node;
@@ -57,9 +50,7 @@ struct hg_ast_node* hg_ast_node_array_append(struct hg_parser* p,
     return &arr->node;
 }
 
-struct hg_ast_node* hg_ast_for_stat_new(struct hg_parser* p,
-                                        struct hg_ast_node* params,
-                                        struct hg_ast_node* iterator,
+struct hg_ast_node* hg_ast_for_stat_new(struct hg_parser* p, struct hg_ast_node* params, struct hg_ast_node* iterator,
                                         struct hg_ast_node* block) {
     assert(block->type == HG_AST_NODE_ARRAY_STATS);
     assert(params->type == HG_AST_NODE_ARRAY_PARAMS);
@@ -94,8 +85,7 @@ struct hg_ast_node* hg_ast_continue_stat_new(struct hg_parser* p) {
     return &stat->node;
 }
 
-struct hg_ast_node* hg_ast_return_stat_new(struct hg_parser* p,
-                                           struct hg_ast_node* exprs) {
+struct hg_ast_node* hg_ast_return_stat_new(struct hg_parser* p, struct hg_ast_node* exprs) {
     assert(exprs == NULL || exprs->type == HG_AST_NODE_ARRAY_EXPRS);
 
     __hg_new_ast(stat, struct hg_ast_return_stat);
@@ -108,9 +98,7 @@ struct hg_ast_node* hg_ast_return_stat_new(struct hg_parser* p,
     return &stat->node;
 }
 
-struct hg_ast_node* hg_ast_if_stat_new(struct hg_parser* p,
-                                       struct hg_ast_node* cond,
-                                       struct hg_ast_node* block,
+struct hg_ast_node* hg_ast_if_stat_new(struct hg_parser* p, struct hg_ast_node* cond, struct hg_ast_node* block,
                                        struct hg_ast_node* else_block) {
     assert(block->type == HG_AST_NODE_ARRAY_STATS);
     assert(else_block == NULL || else_block->type == HG_AST_NODE_ARRAY_STATS);
@@ -127,8 +115,7 @@ struct hg_ast_node* hg_ast_if_stat_new(struct hg_parser* p,
     return &stat->node;
 }
 
-struct hg_ast_node* hg_ast_assignment_stat_new(struct hg_parser* p,
-                                               struct hg_ast_node* vars,
+struct hg_ast_node* hg_ast_assignment_stat_new(struct hg_parser* p, struct hg_ast_node* vars,
                                                struct hg_ast_node* exprs) {
     assert(vars->type == HG_AST_NODE_ARRAY_VARS);
     assert(exprs->type == HG_AST_NODE_ARRAY_EXPRS);
@@ -144,9 +131,7 @@ struct hg_ast_node* hg_ast_assignment_stat_new(struct hg_parser* p,
     return &stat->node;
 }
 
-struct hg_ast_node* hg_ast_func_stat_new(struct hg_parser* p,
-                                         struct hg_ast_node* id,
-                                         struct hg_ast_node* params,
+struct hg_ast_node* hg_ast_func_stat_new(struct hg_parser* p, struct hg_ast_node* id, struct hg_ast_node* params,
                                          struct hg_ast_node* block) {
     assert(params == NULL || params->type == HG_AST_NODE_ARRAY_PARAMS);
     assert(block->type == HG_AST_NODE_ARRAY_STATS);
@@ -164,8 +149,7 @@ struct hg_ast_node* hg_ast_func_stat_new(struct hg_parser* p,
     return &stat->node;
 }
 
-struct hg_ast_node* hg_ast_expr_stat_new(struct hg_parser* p,
-                                         struct hg_ast_node* expr) {
+struct hg_ast_node* hg_ast_expr_stat_new(struct hg_parser* p, struct hg_ast_node* expr) {
     __hg_new_ast(stat, struct hg_ast_expr_stat);
 
     stat->node.type = HG_AST_NODE_EXPR_STAT;
@@ -176,9 +160,7 @@ struct hg_ast_node* hg_ast_expr_stat_new(struct hg_parser* p,
     return &stat->node;
 }
 
-struct hg_ast_node* hg_ast_func_def_new(struct hg_parser* p,
-                                        struct hg_ast_node* params,
-                                        struct hg_ast_node* block) {
+struct hg_ast_node* hg_ast_func_def_new(struct hg_parser* p, struct hg_ast_node* params, struct hg_ast_node* block) {
     assert(params == NULL || params->type == HG_AST_NODE_ARRAY_PARAMS);
     assert(block->type == HG_AST_NODE_ARRAY_STATS);
 
@@ -193,9 +175,7 @@ struct hg_ast_node* hg_ast_func_def_new(struct hg_parser* p,
     return &expr->node;
 }
 
-struct hg_ast_node* hg_ast_unary_expr_new(struct hg_parser* p,
-                                          enum hg_ast_node_op op,
-                                          struct hg_ast_node* expr) {
+struct hg_ast_node* hg_ast_unary_expr_new(struct hg_parser* p, enum hg_ast_node_op op, struct hg_ast_node* expr) {
     __hg_new_ast(unary, struct hg_ast_unary_expr);
 
     unary->node.type = HG_AST_NODE_UNARY_EXPR;
@@ -207,9 +187,7 @@ struct hg_ast_node* hg_ast_unary_expr_new(struct hg_parser* p,
     return &unary->node;
 }
 
-struct hg_ast_node* hg_ast_binary_expr_new(struct hg_parser* p,
-                                           enum hg_ast_node_op op,
-                                           struct hg_ast_node* left,
+struct hg_ast_node* hg_ast_binary_expr_new(struct hg_parser* p, enum hg_ast_node_op op, struct hg_ast_node* left,
                                            struct hg_ast_node* right) {
     __hg_new_ast(expr, struct hg_ast_binary_expr);
 
@@ -223,9 +201,7 @@ struct hg_ast_node* hg_ast_binary_expr_new(struct hg_parser* p,
     return &expr->node;
 }
 
-struct hg_ast_node* hg_ast_call_expr_new(struct hg_parser* p,
-                                         struct hg_ast_node* callable,
-                                         struct hg_ast_node* exprs) {
+struct hg_ast_node* hg_ast_call_expr_new(struct hg_parser* p, struct hg_ast_node* callable, struct hg_ast_node* exprs) {
     assert(exprs == NULL || exprs->type == HG_AST_NODE_ARRAY_EXPRS);
 
     __hg_new_ast(expr, struct hg_ast_call_expr);
@@ -239,9 +215,7 @@ struct hg_ast_node* hg_ast_call_expr_new(struct hg_parser* p,
     return &expr->node;
 }
 
-struct hg_ast_node* hg_ast_field_expr_new(struct hg_parser* p,
-                                          struct hg_ast_node* prefix,
-                                          struct hg_ast_node* field) {
+struct hg_ast_node* hg_ast_field_expr_new(struct hg_parser* p, struct hg_ast_node* prefix, struct hg_ast_node* field) {
     assert(field->type == HG_AST_NODE_LITERAL_ID);
 
     __hg_new_ast(expr, struct hg_ast_field_expr);
@@ -255,9 +229,7 @@ struct hg_ast_node* hg_ast_field_expr_new(struct hg_parser* p,
     return &expr->node;
 }
 
-struct hg_ast_node* hg_ast_index_expr_new(struct hg_parser* p,
-                                          struct hg_ast_node* prefix,
-                                          struct hg_ast_node* index) {
+struct hg_ast_node* hg_ast_index_expr_new(struct hg_parser* p, struct hg_ast_node* prefix, struct hg_ast_node* index) {
     __hg_new_ast(expr, struct hg_ast_index_expr);
 
     expr->node.type = HG_AST_NODE_INDEX;
@@ -269,10 +241,8 @@ struct hg_ast_node* hg_ast_index_expr_new(struct hg_parser* p,
     return &expr->node;
 }
 
-struct hg_ast_node* hg_ast_table_expr_new(struct hg_parser* p,
-                                          struct hg_ast_node* arr) {
-    assert(arr == NULL ||
-           arr->type == HG_AST_NODE_ARRAY_TABLE_ENTRIES /* for maps */ ||
+struct hg_ast_node* hg_ast_table_expr_new(struct hg_parser* p, struct hg_ast_node* arr) {
+    assert(arr == NULL || arr->type == HG_AST_NODE_ARRAY_TABLE_ENTRIES /* for maps */ ||
            arr->type == HG_AST_NODE_ARRAY_EXPRS /* for lists*/);
 
     __hg_new_ast(expr, struct hg_ast_table_expr);
@@ -285,9 +255,7 @@ struct hg_ast_node* hg_ast_table_expr_new(struct hg_parser* p,
     return &expr->node;
 }
 
-struct hg_ast_node* hg_ast_table_entry_new(struct hg_parser* p,
-                                           struct hg_ast_node* key,
-                                           struct hg_ast_node* value) {
+struct hg_ast_node* hg_ast_table_entry_new(struct hg_parser* p, struct hg_ast_node* key, struct hg_ast_node* value) {
     __hg_new_ast(entry, struct hg_ast_table_entry);
 
     entry->node.type = HG_AST_NODE_TABLE_ENTRY;
@@ -299,10 +267,8 @@ struct hg_ast_node* hg_ast_table_entry_new(struct hg_parser* p,
     return &entry->node;
 }
 
-struct hg_ast_node* hg_ast_brack_expr_new(struct hg_parser* p,
-                                          struct hg_ast_node* expr) {
-    assert(expr->type > _HG_AST_NODE_EXPR_START &&
-           expr->type < _HG_AST_NODE_EXPR_END);
+struct hg_ast_node* hg_ast_brack_expr_new(struct hg_parser* p, struct hg_ast_node* expr) {
+    assert(expr->type > _HG_AST_NODE_EXPR_START && expr->type < _HG_AST_NODE_EXPR_END);
 
     __hg_new_ast(node, struct hg_ast_brack_expr);
 
@@ -527,8 +493,7 @@ void hg_ast_node_free(struct hg_ast_node* _node) {
     }
 }
 
-static void _node_to_str(const struct hg_ast_node* node, uint32_t indent,
-                         uint32_t depth, struct hg_strbuf* buffer);
+static void _node_to_str(const struct hg_ast_node* node, uint32_t indent, uint32_t depth, struct hg_strbuf* buffer);
 
 hg_str hg_ast_node_to_str(const struct hg_ast_node* node, uint32_t indent) {
     struct hg_strbuf buf;
@@ -596,8 +561,7 @@ static const char* _op_to_str(enum hg_ast_node_op op) {
     return chars[op];
 }
 
-static void _node_to_str(const struct hg_ast_node* _node, uint32_t indent,
-                         uint32_t depth, struct hg_strbuf* buf) {
+static void _node_to_str(const struct hg_ast_node* _node, uint32_t indent, uint32_t depth, struct hg_strbuf* buf) {
 #define __add_indent hg_strbuf_append(buf, _get_indent_str(indent, depth))
 #define __add_nl     hg_strbuf_append(buf, "\n")
 #define __add_space  hg_strbuf_append(buf, " ")
@@ -743,8 +707,7 @@ static void _node_to_str(const struct hg_ast_node* _node, uint32_t indent,
     } break;
     case HG_AST_NODE_UNARY_EXPR: {
         __hg_ast_raw_to(_node, struct hg_ast_unary_expr, node);
-        hg_strbuf_append(buf, "%s%s", _op_to_str(node->op),
-                         node->op == HG_AST_NODE_OP_SUB ? "" : " ");
+        hg_strbuf_append(buf, "%s%s", _op_to_str(node->op), node->op == HG_AST_NODE_OP_SUB ? "" : " ");
         _node_to_str(node->expr, indent, depth, buf);
     } break;
     case HG_AST_NODE_TABLE: {

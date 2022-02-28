@@ -17,8 +17,7 @@ int main(int argc, char** argv) {
     hg_strtable_init();
     assert(hg_yylex_init(&scanner) == 0);
 
-    struct hg_parser p = {
-        .fname = NULL, .nerr = 0, .lineno = 1, .tline = 1, .ast = NULL};
+    struct hg_parser p = {.fname = NULL, .nerr = 0, .lineno = 1, .tline = 1, .ast = NULL};
 
     if (argc == 2) {
         FILE* yyin;
@@ -40,8 +39,7 @@ int main(int argc, char** argv) {
             ;
 
     } else {
-        fprintf(stderr, "Usage: %s [filename]\n\t%s -s [code]\n", argv[0],
-                argv[0]);
+        fprintf(stderr, "Usage: %s [filename]\n\t%s -s [code]\n", argv[0], argv[0]);
     }
 
     if (p.ast) {

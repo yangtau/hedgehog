@@ -1,11 +1,9 @@
 #include <stdio.h>
 #include <time.h>
 
-#define test_assert(e)                                                        \
-    do {                                                                      \
-        (e) ? 1                                                               \
-            : fprintf(stderr, "test: %s:%d: in %s: Assertion `%s' failed.\n", \
-                      __FILE__, __LINE__, __func__, #e);                      \
+#define test_assert(e)                                                                                               \
+    do {                                                                                                             \
+        (e) ? 1 : fprintf(stderr, "test: %s:%d: in %s: Assertion `%s' failed.\n", __FILE__, __LINE__, __func__, #e); \
     } while (0)
 
 #define test_func(fn) static void test_##fn()
