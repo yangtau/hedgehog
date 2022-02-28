@@ -34,8 +34,7 @@ void hg_strtable_free() {
 static void _strtable_append(hg_str s) {
     if (_string_table.len >= _string_table.cap) {
         _string_table.cap *= 2;
-        _string_table.arr =
-            hg_realloc(_string_table.arr, sizeof(hg_str) * _string_table.cap);
+        _string_table.arr = hg_realloc(_string_table.arr, sizeof(hg_str) * _string_table.cap);
     }
 
     _string_table.arr[_string_table.len++] = s;
