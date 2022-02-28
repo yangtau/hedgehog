@@ -22,7 +22,7 @@ enum hg_opcode {
     HG_OP_JUMPFALSE, // jumpfalse RX L       if !RX goto L
     HG_OP_JUMP,      // jump      L          goto L
 
-    HG_OP_CALL, // call      RX N M     call RX(R{X+1},...,R{X+N}); N args, M returns
+    HG_OP_CALL,   // call      RX N M     call RX(R{X+1},...,R{X+N}); N args, M returns
     HG_OP_RETURN, // return
     HG_OP_MOVE,   // move      RX RY      RX = RY
     HG_OP_LOADC,  // loadc     RT N       RT = constants[N]
@@ -69,8 +69,7 @@ struct __attribute__((__packed__)) hg_ins {
     } as;
 };
 
-_Static_assert(sizeof(struct hg_ins) == 4,
-               "sizeof(struct hg_ins) should be 4 bytes");
+_Static_assert(sizeof(struct hg_ins) == 4, "sizeof(struct hg_ins) should be 4 bytes");
 
 struct hg_value {
     union {
@@ -82,9 +81,13 @@ struct hg_value {
 struct hg_function {
     size_t num_args;    // number of arguments
     size_t num_returns; // number of return values
-    // size_t num_constants;      // number of constants
+
+    size_t num_constants; // number of constants
+    // 0: the function is not responsible for the memory menagement
     struct hg_value* constants; // constants used by this function
-    // size_t size_code;           // size of opcodes (number of instrucations)
+
+    size_t size_code; // size of opcodes (number of instrucations)
+    // 0: the function is not responsible for the memory menagement
     struct hg_ins* code; // opcodes (instrucations)
 };
 
@@ -108,9 +111,8 @@ struct hg_value hg_vm_execute(struct hg_vm_state*, struct hg_function*);
 
 // limits:
 // register number: 256
-// max locals: 256
-// max jump
-// max args
+// max jump: 2^16
+// max (args+locals): 256
 
 /*
 

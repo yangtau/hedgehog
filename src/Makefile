@@ -1,7 +1,7 @@
 YACC = bison
 LEX  = flex
 CC   = gcc
-CFLAGS = -std=c11 -g -Wall -Wextra -rdynamic $(UDEF)
+CFLAGS = -std=c11 -Wall -Wextra -rdynamic $(UDEF)
 
 SRC := $(filter-out yy.hedgehog.c lex.hedgehog.c format.c, $(wildcard *.c))
 OBJS := $(SRC:.c=.o)
