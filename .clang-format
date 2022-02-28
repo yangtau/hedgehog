@@ -18,3 +18,4 @@ IndentCaseLabels: false
 DerivePointerAlignment: false
 PointerAlignment: Left
 SortIncludes: false
+ColumnLimit: 120
