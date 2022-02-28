@@ -82,10 +82,19 @@ struct hg_value {
 struct hg_function {
     size_t num_args;    // number of arguments
     size_t num_returns; // number of return values
-    // size_t num_constants;      // number of constants
+
+    size_t num_constants; // number of constants
+    // 0: the function is not responsible for the memory menagement
     struct hg_value* constants; // constants used by this function
-    // size_t size_code;           // size of opcodes (number of instrucations)
+
+    size_t size_code; // size of opcodes (number of instrucations)
+    // 0: the function is not responsible for the memory menagement
     struct hg_ins* code; // opcodes (instrucations)
+
+#ifdef HG_VM_INLINE_THREADED
+    void** code_to_mc; // vm code to machine code
+    void* machine_code;
+#endif
 };
 
 typedef struct hg_value* hg_stk_ptr;
@@ -108,9 +117,8 @@ struct hg_value hg_vm_execute(struct hg_vm_state*, struct hg_function*);
 
 // limits:
 // register number: 256
-// max locals: 256
-// max jump
-// max args
+// max jump: 2^16
+// max (args+locals): 256
 
 /*
 
