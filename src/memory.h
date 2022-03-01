@@ -3,15 +3,15 @@
 
 #include "common.h"
 
-static void* hg_alloc(size_t size) {
+static _force_inline_ void* hg_alloc(size_t size) {
     return malloc(size);
 }
 
-static void* hg_realloc(void* p, size_t size) {
+static _force_inline_ void* hg_realloc(void* p, size_t size) {
     return realloc(p, size);
 }
 
-static void hg_free(void* p) {
+static _force_inline_ void hg_free(void* p) {
     assert(p);
     return free(p);
 }
