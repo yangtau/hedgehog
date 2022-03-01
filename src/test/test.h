@@ -41,11 +41,11 @@
 
 typedef clock_t duration_t;
 
-static clock_t now() {
+static inline clock_t now() {
     return clock();
 }
 
-static duration_t since(clock_t t) {
+static inline duration_t since(clock_t t) {
     return clock() - t;
 }
 
@@ -53,7 +53,7 @@ static duration_t since(clock_t t) {
 #define MILLISEC ((long long int)SEC / 1000)
 #define MACROSEC ((long long int)MILLISEC / 1000)
 
-static const char* duration2str(duration_t d, long long int type) {
+static inline const char* duration2str(duration_t d, long long int type) {
     const char* s;
     if (type == SEC)
         s = "seconds";
