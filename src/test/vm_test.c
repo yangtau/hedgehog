@@ -42,7 +42,7 @@ test_func(vm_fac) {
      2    -> fac
      */
 
-    const int fac_ptr     = 5;
+#define fac_ptr 5
     struct hg_ins codes[] = {
         // main:
         [0] = {.op = HG_OP_LOADC, .as.load = {0, 2}},

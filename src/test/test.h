@@ -49,23 +49,18 @@ static duration_t since(clock_t t) {
     return clock() - t;
 }
 
-const static long long int SEC      = CLOCKS_PER_SEC;
-const static long long int MILLISEC = SEC / 1000;
-const static long long int MACROSEC = MILLISEC / 1000;
+#define SEC      ((long long int)CLOCKS_PER_SEC)
+#define MILLISEC ((long long int)SEC / 1000)
+#define MACROSEC ((long long int)MILLISEC / 1000)
 
 static const char* duration2str(duration_t d, long long int type) {
-    char* s;
-    switch (type) {
-    case SEC:
+    const char* s;
+    if (type == SEC)
         s = "seconds";
-        break;
-    case MILLISEC:
+    if (type == MILLISEC)
         s = "milliseconds";
-        break;
-    case MACROSEC:
-        s = "macrosec";
-        break;
-    }
+    if (type == MACROSEC)
+        s = "macroseconds";
 
     static _Thread_local char buf[1024];
     sprintf(buf, "%lld %s", (long long int)(d) / type, s);
