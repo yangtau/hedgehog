@@ -3,7 +3,7 @@
 #include "../string.h"
 #include <string.h>
 
-test_func(strbuf) {
+void test_strbuf() {
     hg_strtable_init();
 
     struct hg_strbuf buf;
@@ -43,7 +43,6 @@ test_func(strbuf) {
         test_assert(buf.len == 0);
 
         test_assert(hg_strbuf_append(&buf, "hello, %s", "world"));
-        println(buf.len);
         test_assert(buf.len == strlen("hello, world"));
 
         test_assert(hg_strbuf_append(&buf, "hello, %s", "world"));
@@ -71,4 +70,4 @@ test_func(strbuf) {
     hg_strtable_free();
 }
 
-test_main(test_strbuf();)
+test_main(test_strbuf)
