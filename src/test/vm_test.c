@@ -3,7 +3,7 @@
 #include "../vm.h"
 #include "../memory.h"
 
-test_func(vm_fac) {
+void test_vm_fac() {
     /*
      # hg code:
      fn fac(n, acc) {
@@ -145,4 +145,9 @@ test_func(vm_fac) {
     hg_free(vs.frames);
 }
 
-test_main(test_vm_fac();)
+void test_vm_fib() {
+}
+void test_vm() {
+}
+
+test_main(test_vm_fac, test_vm, test_vm_fib);
