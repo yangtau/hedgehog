@@ -17,8 +17,10 @@ fn fac_tailcall(n) {
 ```
 ## Modules
 
+A module is an anonymous function.
+
 ```
--- math.
+# math
 m = {}
 m.pi = 3.14159
 
@@ -28,10 +30,10 @@ return m
 ```
 
 ```
-math = require("math") -- math is a local number
+math = require("math") # import math module
 print = require("std").print
 
-math.add(3, 9) --> 12
+math.add(3, 9) # 12
 print(math.pi) --> 3.14159
 ```
 
@@ -47,69 +49,29 @@ fu () {
 }()
 ```
 
-
-## OOP
-
-```
-fn Car(speed) {
-  car = {.postion = 0}
-
-  -- methods of a object
-  car.run = fn (time) { car.postion += time }
-  return car
-}
-
-car = Car(4)
-car.run(3)
-print(car.postion) --> 12
-```
-
-```
-fn Base() {
-  return {.hello: fn () { return "hello from base" }}
-}
-
-base = Base()
-
-fn A() {
-  a = {}
-  setmeta(a, base)
-  return a
-}
-
-a = A()
-a.hello() -- `hello` of base will be called
-```
-
 ## functional
 
 ```
-fn Fun(t) {
-  m = {}
-  setmeta(t, m)
-  
-  m.map = fn (f) {
+fn filter(t, predicate) {
     res = {}
-    setmeta(res, m)
     for k, v in t {
-      res[k] = f(v)
+        if predicate(v) {
+            res[k] = v
+        }
     }
     return res
-  }
-    
-  m.filter = fn (f) {
-    res = {}
-    setmeta(res, m)
-    for k, v in t {
-      res[k] = f(v)
-    }
-    return res
-  }
-  
-  return t
 }
 
-Fun({1, 2, 3, 4}).
-    filter(>0).
-    map(+1)
+fn map(t, f) {
+    res = {}
+    for k, v in t {
+        res[k] = f(v)
+    }
+    return res
+}
+
+# `x.f(y)` is a syntax sugar for `f(x, y)`
+{1, 2, 3, 4}.
+    filter(fn (x) {return x>1}).
+    map(fn (x) {return x+1}) # --> 3, 4, 5
 ```
