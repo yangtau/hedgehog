@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -29,21 +30,21 @@
 #define println(x)             printf(printf_dec_format(x), x), printf("\n")
 #define test_println(fmt, ...) printf("        TEST: " fmt "\n", __VA_ARGS__)
 
-typedef clock_t duration_t;
+typedef uint64_t duration_t;
 
-static inline clock_t now() {
-    return clock();
+static inline duration_t now() {
+    return (uint64_t)clock();
 }
 
-static inline duration_t since(clock_t t) {
-    return clock() - t;
+static inline duration_t since(duration_t t) {
+    return (uint64_t)clock() - t;
 }
 
-#define SEC      ((long long int)CLOCKS_PER_SEC)
-#define MILLISEC ((long long int)SEC / 1000)
-#define MACROSEC ((long long int)MILLISEC / 1000)
+#define SEC      ((uint64_t)CLOCKS_PER_SEC)
+#define MILLISEC ((uint64_t)SEC / 1000)
+#define MACROSEC ((uint64_t)MILLISEC / 1000)
 
-static inline const char* duration2str(duration_t d, long long int type) {
+static inline const char* duration2str(duration_t d, uint64_t type) {
     const char* s;
     if (type == SEC)
         s = "seconds";
@@ -53,7 +54,7 @@ static inline const char* duration2str(duration_t d, long long int type) {
         s = "macroseconds";
 
     static _Thread_local char buf[1024];
-    sprintf(buf, "%lld %s", (long long int)(d) / type, s);
+    sprintf(buf, "%lld %s", d / type, s);
     return buf;
 }
 

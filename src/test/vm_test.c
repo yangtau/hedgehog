@@ -132,8 +132,8 @@ void test_vm_fac() {
     ret    = hg_vm_execute(&vs, &entry);
     test_assert(ret.as.i == 3628800);
 
-    clock_t start = now();
-    const int N   = 100000;
+    duration_t start = now();
+    const int N      = 100000;
     for (int i = 0; i < N; i++) {
         *input = 15;
         ret    = hg_vm_execute(&vs, &entry);
