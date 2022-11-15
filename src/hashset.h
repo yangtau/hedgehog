@@ -2,9 +2,6 @@
 #define HG_HASHSET_H_
 #include "common.h"
 
-#define HG_HASHSET_LOAD_FACTOR (0.75)
-#define HG_HASHSET_TOMB_FACTOR (0.3) // the maximum number of tombstones is capacity*HASH_TOMB_FACTOR
-
 typedef uint32_t (*hg_hash_hashfunc)(const void*);
 typedef bool (*hg_hash_eqfunc)(const void*, const void*);
 
@@ -37,7 +34,7 @@ void hg_hashset_put(struct hg_hashset* set, void* item);
 // It also returns NULL if the user has inserted NULL.
 void* hg_hashset_get(struct hg_hashset* set, void* item);
 void* hg_hashset_remove(struct hg_hashset* set, void* item);
-bool hashset_contains(struct hg_hashset* set, void* item);
+bool hg_hashset_contains(struct hg_hashset* set, void* item);
 void hg_hashset_clear(struct hg_hashset* set);
 void hg_hashset_foreach(struct hg_hashset* set, void (*fn)(void*));
 

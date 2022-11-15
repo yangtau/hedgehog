@@ -2,7 +2,35 @@
 #include "memory.h"
 #include <string.h>
 
+// static const double HG_HASHSET_LOAD_FACTOR = 0.75;
+// the maximum number of tombstones is capacity*HASH_TOMB_FACTOR
+// static const double HG_HASHSET_TOMB_FACTOR = 0.25;
+
+// To make sure there is always at least one empty bucket, capacity*HG_HASHSET_LOAD_FACTOR < capacity-1
+// ==> capacity > 1/(1-HG_HASHSET_LOAD_FACTOR)
+static const size_t HG_HASHSET_MIN_CAPACITY = 8;
+
+static inline size_t compute_new_cap(struct hg_hashset* set) {
+    size_t cap = set->capacity;
+
+    // load factor is 0.75
+    if ((cap - (cap >> 2)) < set->len) { // cap*0.75 < len
+        return cap * 2;
+    }
+
+    // tomb factor is 0.25
+    if ((cap >> 2) < set->tomb_cnt) { // cap*0.25 < tomb_cnt
+        return cap;
+    }
+
+    return 0;
+}
+
 void hg_hashset_init(struct hg_hashset* set, size_t capacity, hg_hash_hashfunc hash, hg_hash_eqfunc eq) {
+    if (capacity < HG_HASHSET_MIN_CAPACITY) {
+        capacity = HG_HASHSET_MIN_CAPACITY;
+    }
+
     set->capacity = capacity;
     set->len      = 0;
     set->tomb_cnt = 0;
@@ -10,7 +38,7 @@ void hg_hashset_init(struct hg_hashset* set, size_t capacity, hg_hash_hashfunc h
     set->eq       = eq;
     set->buckets  = hg_alloc(capacity * sizeof(struct hg_hashset_bucket));
 
-	// TODO: use calloc
+    // TODO: use calloc
     memset(set->buckets, 0, capacity * sizeof(struct hg_hashset_bucket));
 }
 
@@ -58,10 +86,9 @@ static void hashset_resize(struct hg_hashset* set, size_t capacity) {
 }
 
 static inline void hashset_adjust(struct hg_hashset* set) {
-    if (set->capacity * HG_HASHSET_LOAD_FACTOR < set->len) {
-        hashset_resize(set, set->capacity * 2);
-    } else if (set->capacity * HG_HASHSET_TOMB_FACTOR < set->tomb_cnt) {
-        hashset_resize(set, set->capacity);
+    size_t cap = compute_new_cap(set);
+    if (cap) {
+        hashset_resize(set, cap);
     }
 }
 
@@ -92,7 +119,7 @@ void* hg_hashset_get(struct hg_hashset* set, void* item) {
     return bucket->state == HG_HASHSET_BUCKET_OCCUPIED ? bucket->item : NULL;
 }
 
-bool hashset_contains(struct hg_hashset* set, void* item) {
+bool hg_hashset_contains(struct hg_hashset* set, void* item) {
     return hashset_find(set, item)->state == HG_HASHSET_BUCKET_OCCUPIED;
 }
 

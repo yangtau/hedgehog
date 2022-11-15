@@ -5,8 +5,8 @@ uint32_t hash_int(const void* item) {
     uint32_t x = (uint32_t)(uint64_t)(item);
 
     x = ((x >> 16) ^ x) * 0x119de1f3;
-    x = ((x >> 16) ^ x) * 0x119de1f3;
-    x = (x >> 16) ^ x;
+    // x = ((x >> 16) ^ x) * 0x119de1f3;
+    // x = (x >> 16) ^ x;
     return x;
 }
 
@@ -22,7 +22,7 @@ void test_hashset() {
     struct hg_hashset set;
     hg_hashset_init(&set, 2, hash_int, eq_int);
 
-    const int N = 100000;
+    const int N = 192 * 1024;
 
     // put and contains
     duration_t start = now();
@@ -32,6 +32,8 @@ void test_hashset() {
     duration_t elapsed = since(start);
     test_println("hashset put: %d items in %s", N, duration2str(elapsed, MACROSEC));
     test_println("hashset put %lld ns/op", (elapsed / MACROSEC * 1000) / N);
+    test_println("hashset load factor: %f", (float)set.len / set.capacity);
+    test_println("hashset cap: %zu", set.capacity);
 
     test_assert(hg_hashset_len(&set) == N);
 
@@ -46,7 +48,7 @@ void test_hashset() {
     // contains
     start = now();
     for (int i = 0; i < N; i++) {
-        test_assert(hashset_contains(&set, (void*)(uint64_t)i));
+        test_assert(hg_hashset_contains(&set, (void*)(uint64_t)i));
     }
     elapsed = since(start);
     test_println("hashset contains %lld ns/op", (elapsed / MACROSEC * 1000) / N);
@@ -63,23 +65,23 @@ void test_hashset() {
 
     // put again
     for (int i = 0; i < N; i++) {
-        test_assert(!hashset_contains(&set, (void*)(uint64_t)i));
+        test_assert(!hg_hashset_contains(&set, (void*)(uint64_t)i));
         hg_hashset_put(&set, (void*)(uint64_t)i);
-        test_assert(hashset_contains(&set, (void*)(uint64_t)i));
+        test_assert(hg_hashset_contains(&set, (void*)(uint64_t)i));
     }
     test_assert(hg_hashset_len(&set) == N);
 
     // remove even numbers
     for (int i = 0; i < N; i += 2) {
         test_assert(hg_hashset_remove(&set, (void*)(uint64_t)i) == (void*)(uint64_t)i);
-        test_assert(!hashset_contains(&set, (void*)(uint64_t)i));
+        test_assert(!hg_hashset_contains(&set, (void*)(uint64_t)i));
     }
     test_assert(hg_hashset_len(&set) == N / 2);
 
     // remove odd numbers
     for (int i = 1; i < N; i += 2) {
         test_assert(hg_hashset_remove(&set, (void*)(uint64_t)i) == (void*)(uint64_t)i);
-        test_assert(!hashset_contains(&set, (void*)(uint64_t)i));
+        test_assert(!hg_hashset_contains(&set, (void*)(uint64_t)i));
     }
     test_assert(hg_hashset_len(&set) == 0);
 
@@ -109,8 +111,8 @@ void test_hashset() {
         test_assert(hg_hashset_remove(&set, (void*)(uint64_t)i) == (void*)(uint64_t)i);
         hg_hashset_put(&set, (void*)x);
 
-        test_assert(hashset_contains(&set, (void*)x));
-        test_assert(!hashset_contains(&set, (void*)(uint64_t)i));
+        test_assert(hg_hashset_contains(&set, (void*)x));
+        test_assert(!hg_hashset_contains(&set, (void*)(uint64_t)i));
     }
     test_assert(hg_hashset_len(&set) == N);
 
@@ -120,8 +122,8 @@ void test_hashset() {
         hg_hashset_put(&set, (void*)(uint64_t)i);
         test_assert(hg_hashset_remove(&set, (void*)x) == (void*)x);
 
-        test_assert(hashset_contains(&set, (void*)(uint64_t)i));
-        test_assert(!hashset_contains(&set, (void*)x));
+        test_assert(hg_hashset_contains(&set, (void*)(uint64_t)i));
+        test_assert(!hg_hashset_contains(&set, (void*)x));
     }
     test_assert(hg_hashset_len(&set) == N);
 
@@ -129,11 +131,36 @@ void test_hashset() {
     for (int i = 0; i < N; i++) {
         uint64_t x = i + N;
         hg_hashset_put(&set, (void*)x);
-        test_assert(hashset_contains(&set, (void*)x));
+        test_assert(hg_hashset_contains(&set, (void*)x));
     }
     test_assert(hg_hashset_len(&set) == 2 * N);
 
     hg_hashset_destroy(&set);
 }
 
-test_main(test_hashset)
+void test_hashset_init() {
+    struct hg_hashset set;
+    int Ns[] = {1, 2, 3, 4, 5, 7, 11, 13, 17, 19};
+
+    for (size_t i = 0; i < sizeof(Ns) / sizeof(int); i++) {
+        int N = Ns[i];
+
+        test_println("hashset init %d items", N);
+
+        hg_hashset_init(&set, N, hash_int, eq_int);
+        test_assert(hg_hashset_len(&set) == 0);
+
+        // put N
+        for (int i = 0; i < N; i++) {
+            hg_hashset_put(&set, (void*)(uint64_t)i);
+        }
+        test_assert(hg_hashset_len(&set) == (size_t)N);
+
+        // continas N?
+        test_assert(!hg_hashset_contains(&set, (void*)(uint64_t)N));
+
+        hg_hashset_destroy(&set);
+    }
+}
+
+test_main(test_hashset, test_hashset_init)
