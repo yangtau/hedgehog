@@ -54,7 +54,7 @@ static inline const char* duration2str(duration_t d, uint64_t type) {
         s = "macroseconds";
 
     static _Thread_local char buf[1024];
-    sprintf(buf, "%lld %s", d / type, s);
+    sprintf(buf, "%zu %s", d / type, s);
     return buf;
 }
 
